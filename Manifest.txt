@@ -1,0 +1,7 @@
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+bin/simple_record
+lib/simple_record.rb
+test/test_simple_record.rb
