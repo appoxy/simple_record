@@ -10,7 +10,7 @@
 # 
 # AWS_ACCESS_KEY_ID='XXXXX'
 # AWS_SECRET_ACCESS_KEY='YYYYY'
-# RightAws::ActiveSdb.establish_connection(AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY, {:multi_thread => false})
+# RightAws::ActiveSdb.establish_connection(AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY)
 # # Save an object
 # mm = MyModel.new
 # mm.name = "Travis"
@@ -29,7 +29,7 @@ require 'local_cache'
 
 module SimpleRecord
 
-VERSION = '1.0.2'
+   VERSION = '1.0.5'
 
   class Base < RightAws::ActiveSdb::Base
 
@@ -68,8 +68,6 @@ VERSION = '1.0.2'
       return @domain_name_for_class
     end
 
-
-    #  @@domain_name_for_class = nil
 
     def domain
       super # super.domain
@@ -113,6 +111,7 @@ VERSION = '1.0.2'
     def self.has_attributes(*args)
       @@attributes = args
       args.each do |arg|
+          # define reader method
         send :define_method, arg do
           ret = nil
           if self[arg.to_s].class==Array
@@ -128,6 +127,7 @@ VERSION = '1.0.2'
           return un_offset_if_int(arg, ret)
         end
 
+        # define writer method
         method_name = (arg.to_s+"=")
         send(:define_method, method_name) do |value|
           self[arg.to_s]=value#      end
@@ -154,6 +154,13 @@ VERSION = '1.0.2'
 #    @@dates = args
       #    puts 'dates=' + @@dates.inspect
     end
+	
+	@@booleans = []
+    def self.are_booleans(*args)
+      args.each do |arg|
+        @@booleans << arg if @@booleans.index(arg).nil?
+      end
+    end
 
     @@virtuals=[]
     def self.has_virtuals(*args)
@@ -166,27 +173,29 @@ VERSION = '1.0.2'
 
     @@belongs_to_map = {}
     # One belongs_to association per call. Call multiple times if there are more than one.
+    #
+    # This method will also create an {association)_id method that will return the ID of the foreign object
+    # without actually materializing it.
     def self.belongs_to(association_id, options = {})
       @@belongs_to_map[association_id] = options
       arg = association_id
+      arg_id = arg.to_s + '_id'
 
       # todo: should also handle foreign_key http://74.125.95.132/search?q=cache:KqLkxuXiBBQJ:wiki.rubyonrails.org/rails/show/belongs_to+rails+belongs_to&hl=en&ct=clnk&cd=1&gl=us
       #    puts "arg_id=#{arg}_id"
       #        puts "is defined? " + eval("(defined? #{arg}_id)").to_s
       #        puts 'atts=' + @attributes.inspect
+
+      # Define reader method
       send(:define_method, arg) do
         options2 = @@belongs_to_map[arg]
         class_name = options2[:class_name] || arg.to_s[0...1].capitalize + arg.to_s[1...arg.to_s.length]
-        #        return eval("#{arg.to_s.capitalize}.find(self['#{arg}_id']) if !self['#{arg}_id'].nil?") # (defined? #{arg}_id)
-        #        return eval("#{arg.to_s.capitalize}.find(#{arg}_id) if(defined? #{arg}_id)")
-        #     ORIGINAL   return eval("#{arg.to_s.capitalize}.find(#{arg}_id)")
-
         #      puts "attr=" + @attributes[arg_id].inspect
         #      puts 'val=' + @attributes[arg_id][0].inspect unless @attributes[arg_id].nil?
         ret = nil
         arg_id = arg.to_s + '_id'
-        if !@attributes[arg_id].nil? && @attributes[arg_id].size > 0
-          if !@@cache_store.nil?
+		if !@attributes[arg_id].nil? && @attributes[arg_id].size > 0 && @attributes[arg_id][0] != nil && @attributes[arg_id][0] != ''         
+		  if !@@cache_store.nil?
             arg_id_val = @attributes[arg_id][0]
             cache_key = self.class.cache_key(class_name, arg_id_val)
 #          puts 'cache_key=' + cache_key
@@ -211,7 +220,17 @@ VERSION = '1.0.2'
 #      puts 'ret=' + ret.inspect
         return ret
       end
-      send(:define_method, arg.to_s+"=") do |value|
+
+      # Define reader ID method
+      send(:define_method, arg_id) do
+          if !@attributes[arg_id].nil? && @attributes[arg_id].size > 0 && @attributes[arg_id][0] != nil && @attributes[arg_id][0] != ''
+              return @attributes[arg_id][0]
+          end
+          return nil
+      end
+
+      # Define writer method
+      send(:define_method, arg.to_s + "=") do |value|
         arg_id = arg.to_s + '_id'
         if value.nil?
           self[arg_id]=nil unless self[arg_id].nil? # if it went from something to nil, then we have to remember and remove attribute on save
@@ -219,6 +238,7 @@ VERSION = '1.0.2'
           self[arg_id]=value.id
         end
       end
+
       send(:define_method, "create_"+arg.to_s) do |*params|
         newsubrecord=eval(arg.to_s.classify).new(*params)
         newsubrecord.save
@@ -227,56 +247,6 @@ VERSION = '1.0.2'
       end
     end
 
-    def self.belongs_to_OLD_and_wrong(*args)
-      #create the accesor functions
-      args.each do |arg|
-        #      puts 'belongs_to ' + arg.to_s
-        send(:define_method, arg) do
-          #        return eval("#{arg.to_s.capitalize}.find(self['#{arg}_id']) if !self['#{arg}_id'].nil?") # (defined? #{arg}_id)
-          #        return eval("#{arg.to_s.capitalize}.find(#{arg}_id) if(defined? #{arg}_id)")
-          #     ORIGINAL   return eval("#{arg.to_s.capitalize}.find(#{arg}_id)")
-          puts "arg_id=#{arg}_id"
-#        puts "is defined? " + eval("(defined? #{arg}_id)").to_s
-          #        puts 'atts=' + @attributes.inspect
-          puts "attr=" + @attributes[arg.to_s + '_id'].inspect
-          puts 'val=' + @attributes[arg.to_s + '_id'][0].inspect unless @attributes[arg.to_s + '_id'].nil?
-          to_eval = "#{arg.to_s[0...1].capitalize + arg.to_s[1...arg.to_s.length]}.find(@attributes['#{arg}_id'][0], :auto_load=>true) unless @attributes['#{arg}_id'].nil?"
-          puts 'to eval=' + to_eval
-          ret = eval(to_eval) # (defined? #{arg}_id)
-          puts 'ret=' + ret.inspect
-          ret
-        end
-      end
-
-      args.each do |arg|
-        send(:define_method, arg.to_s+"=") do |value|
-          self[arg.to_s+"_id"]=value.id
-        end
-      end
-
-      #create the build_subrecord and creat_subrecord methods
-      #args.each do |arg|
-      #  send(:define_method, "build_"+arg.to_s) do |*params|
-      #    self.arg.to_s=eval(arg.to_s.classify).new
-      #  end
-      #end
-
-      args.each do |arg|
-        send(:define_method, "create_"+arg.to_s) do |*params|
-          newsubrecord=eval(arg.to_s.classify).new(*params)
-          newsubrecord.save
-          self[arg.to_s+"_id"]=newsubrecord.id
-        end
-      end
-    end #belongs_to
-
-    #  def self.has_many(*args)
-    #    args.each do |arg|
-    #      send(:define_method, arg) do
-    #        return eval(%{#{(arg.to_s).classify}.find(:all, :conditions => ["#{(self.class.name).tableize.singularize}_id = ?",id])})
-    #      end
-    #    end
-    #  end
     def self.has_many(*args)
       args.each do |arg|
         #okay, this creates an instance method with the pluralized name of the symbol passed to belongs_to
@@ -379,46 +349,9 @@ VERSION = '1.0.2'
 
     def save(*params)
       #    puts 'SAVING: ' + self.inspect
-
-      if respond_to?('validate')
-        validate
-#      puts 'AFTER VALIDATIONS, ERRORS=' + errors.inspect
-        if (!@errors.nil? && @errors.length > 0 )
-#        puts 'THERE ARE ERRORS, returning false'
-          return false
-        end
-      end
-
       is_create = self[:id].nil?
-      ok = respond_to?('before_save') ? before_save : true
+      ok = pre_save(*params)
       if ok
-        if is_create && respond_to?('before_create')
-          ok = before_create
-        elsif !is_create && respond_to?('before_update')
-          ok = before_update
-        end
-      end
-      if ok && run_before_save && is_create ? run_before_create : run_before_update
-#      puts 'ABOUT TO SAVE: ' + self.inspect
-        # First we gotta pad and offset
-        if !@@ints.nil?
-          for i in @@ints
-#          puts 'int encoding: ' + i.to_s
-            if !self[i.to_s].nil?
-#            puts 'before: ' + self[i.to_s].inspect
-              #            puts @attributes.inspect
-              #            puts @attributes[i.to_s].inspect
-              arr = @attributes[i.to_s]
-              arr.collect!{ |x|
-                self.class.pad_and_offset(x)
-              }
-              @attributes[i.to_s] = arr
-#            puts 'after: ' + @attributes[i.to_s].inspect
-            else
-              #            puts 'was nil'
-            end
-          end
-        end
         begin
           #        puts 'is frozen? ' + self.frozen?.to_s + ' - ' + self.inspect
           to_delete = get_atts_to_delete
@@ -454,6 +387,51 @@ VERSION = '1.0.2'
       end
     end
 
+    def pre_save(*params)
+      if respond_to?('validate')
+        validate
+#      puts 'AFTER VALIDATIONS, ERRORS=' + errors.inspect
+        if (!@errors.nil? && @errors.length > 0 )
+#        puts 'THERE ARE ERRORS, returning false'
+          return false
+        end
+      end
+
+      is_create = self[:id].nil?
+      ok = respond_to?('before_save') ? before_save : true
+      if ok
+        if is_create && respond_to?('before_create')
+          ok = before_create
+        elsif !is_create && respond_to?('before_update')
+          ok = before_update
+        end
+      end
+      if ok
+        ok = run_before_save && is_create ? run_before_create : run_before_update
+      end
+      if ok
+#      puts 'ABOUT TO SAVE: ' + self.inspect
+        # First we gotta pad and offset
+        if !@@ints.nil?
+          for i in @@ints
+#          puts 'int encoding: ' + i.to_s
+            if !self[i.to_s].nil?
+#            puts 'before: ' + self[i.to_s].inspect
+              #            puts @attributes.inspect
+              #            puts @attributes[i.to_s].inspect
+              arr = @attributes[i.to_s]
+              arr.collect!{ |x| self.class.pad_and_offset(x) }
+              @attributes[i.to_s] = arr
+#            puts 'after: ' + @attributes[i.to_s].inspect
+            else
+              #            puts 'was nil'
+            end
+          end
+        end
+      end
+      ok
+    end
+
     def save_attributes(*params)
       ret = super(*params)
       if ret
@@ -471,6 +449,25 @@ VERSION = '1.0.2'
         end
       end
       return to_delete
+    end
+
+    # Run pre_save on each object, then runs batch_put_attributes
+    # Returns
+    def self.batch_save(objects)
+      results = []
+      to_save = []
+      if objects && objects.size > 0
+        objects.each do |o|
+          ok = o.pre_save
+          raise "Pre save failed on object with id = " + o.id if !ok
+          results << ok
+          next if !ok
+          o.pre_save2
+          to_save << RightAws::SdbInterface::Item.new(o.id, o.attributes, true)
+        end
+      end
+      connection.batch_put_attributes(domain, to_save)
+      results
     end
 
     #
@@ -503,7 +500,25 @@ VERSION = '1.0.2'
         for d in @@dates
 #        puts 'converting created: ' + self['created'].inspect
            if d == arg
-             x = DateTime.parse(x)
+               x = to_date(x)
+           end
+#          if !self[d].nil?
+#            self[d].collect!{ |d2|
+#              if d2.is_a?(String)
+#                DateTime.parse(d2)
+#              else
+#                d2
+#              end
+#            }
+#          end
+#        puts 'after=' + self['created'].inspect
+        end
+      end
+	  if !@@booleans.nil?
+        for b in @@booleans
+#        puts 'converting created: ' + self['created'].inspect
+           if b == arg
+               x = to_bool(x)
            end
 #          if !self[d].nil?
 #            self[d].collect!{ |d2|
@@ -519,6 +534,25 @@ VERSION = '1.0.2'
       end
       x
     end
+	
+	
+  def to_date(x)
+    if x.is_a?(String)
+      DateTime.parse(x)
+    else
+      x
+    end
+
+  end
+  
+  def to_bool(x)
+    if x.is_a?(String)
+	  x == "true"
+	else
+	  x
+	end
+  end
+
 
     def un_offset_int(x)
       if x.is_a?(String)
@@ -677,7 +711,6 @@ This is done on getters now
         results=super(*params)
         cache_results(results)
       rescue RightAws::AwsError, RightAws::ActiveSdb::ActiveSdbError
-        puts "RESCUED: " + $!
         if ($!.message().index("NoSuchDomain") != nil)
           # this is ok
         elsif ($!.message() =~ @@regex_no_id)
