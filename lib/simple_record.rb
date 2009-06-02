@@ -25,11 +25,10 @@
 
 require 'right_aws'
 require 'sdb/active_sdb'
-require 'local_cache'
 
 module SimpleRecord
 
-    VERSION = '1.0.7'
+    VERSION = '1.0.8'
 
     class Base < RightAws::ActiveSdb::Base
 
@@ -409,7 +408,7 @@ module SimpleRecord
                         #            puts @attributes.inspect
                         #            puts @attributes[i.to_s].inspect
                         arr = @attributes[i.to_s]
-                        puts 'padding date=' + i.to_s
+                        #puts 'padding date=' + i.to_s
                         arr.collect!{ |x| self.class.pad_and_offset(x) }
                         @attributes[i.to_s] = arr
 #            puts 'after: ' + @attributes[i.to_s].inspect

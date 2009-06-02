@@ -36,6 +36,10 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert mm2.cool == mm.cool
     end
 
+    def test_bad_query
+        mm2 = MyModel.find(:all, :conditions=>["name =4?", "1"])
+    end
+
     def test_batch_save
         items = []
         mm = MyModel.new
