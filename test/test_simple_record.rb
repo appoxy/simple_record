@@ -11,7 +11,7 @@ class TestSimpleRecord < Test::Unit::TestCase
         @config = YAML::load(File.read('test-config.yml'))
         puts 'akey=' + @config['amazon']['access_key']
         puts 'skey=' + @config['amazon']['secret_key']
-        RightAws::ActiveSdb.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'])
+        RightAws::ActiveSdb.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :port=>80, :protocol=>"http")
         SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")
     end
 

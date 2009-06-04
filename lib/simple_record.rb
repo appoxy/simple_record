@@ -28,7 +28,7 @@ require 'sdb/active_sdb'
 
 module SimpleRecord
 
-    VERSION = '1.0.8'
+    VERSION = '1.0.9'
 
     class Base < RightAws::ActiveSdb::Base
 
@@ -306,6 +306,7 @@ module SimpleRecord
 
         @@offset = 9223372036854775808
         @@padding = 20
+        @@date_format = "%Y-%m-%dT%H:%M:%S"; # Time to second precision
 
         def self.pad_and_offset(x)
             # todo: add Float, etc
@@ -318,10 +319,15 @@ module SimpleRecord
                 return x_str
             elsif x.respond_to?(:iso8601)
                #  puts x.class.name + ' responds to iso8601'
+                #
+                # There is an issue here where Time.iso8601 on an incomparable value to DateTime.iso8601.
+                # Amazon suggests: 2008-02-10T16:52:01.000-05:00
+                #                  "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+                #
                 if x.is_a? DateTime
-                    x_str = x.new_offset(0).iso8601
+                    x_str = x.new_offset(0).strftime(@@date_format)
                 else
-                    x_str = x.getutc.iso8601
+                    x_str = x.getutc.strftime(@@date_format)
                 end
                #  puts 'utc=' + x_str
                 return x_str
@@ -477,7 +483,7 @@ module SimpleRecord
             if objects && objects.size > 0
                 objects.each do |o|
                     ok = o.pre_save
-                    raise "Pre save failed on object with id = " + o.id if !ok
+                    raise "Pre save failed on object [" + o.inspect + "]" if !ok
                     results << ok
                     next if !ok
                     o.pre_save2
@@ -687,10 +693,9 @@ This is done on getters now
 
             # Pad and Offset number attributes
             options = params[1]
-#    puts 'options=' + options.inspect
+    puts 'options=' + options.inspect
             convert_condition_params(options)
-
-#    puts 'after collect=' + params.inspect
+    puts 'after collect=' + options.inspect
 
             results = all ? [] : nil
             begin
