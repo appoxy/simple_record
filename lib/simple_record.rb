@@ -693,9 +693,9 @@ This is done on getters now
 
             # Pad and Offset number attributes
             options = params[1]
-    puts 'options=' + options.inspect
+#    puts 'options=' + options.inspect
             convert_condition_params(options)
-    puts 'after collect=' + options.inspect
+ #   puts 'after collect=' + options.inspect
 
             results = all ? [] : nil
             begin
