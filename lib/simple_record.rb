@@ -28,7 +28,7 @@ require 'sdb/active_sdb'
 
 module SimpleRecord
 
-    VERSION = '1.0.9'
+    VERSION = '1.0.16'
 
     class Base < RightAws::ActiveSdb::Base
 
@@ -189,6 +189,10 @@ module SimpleRecord
             send(:define_method, arg) do
                 options2 = @@belongs_to_map[arg]
                 class_name = options2[:class_name] || arg.to_s[0...1].capitalize + arg.to_s[1...arg.to_s.length]
+
+                # Camelize classnames with underscores (ie my_model.rb --> MyModel)
+                class_name = class_name.camelize
+
                 #      puts "attr=" + @attributes[arg_id].inspect
                 #      puts 'val=' + @attributes[arg_id][0].inspect unless @attributes[arg_id].nil?
                 ret = nil
@@ -693,9 +697,9 @@ This is done on getters now
 
             # Pad and Offset number attributes
             options = params[1]
-    #puts 'options=' + options.inspect
+#    puts 'options=' + options.inspect
             convert_condition_params(options)
-    #puts 'after collect=' + options.inspect
+ #   puts 'after collect=' + options.inspect
 
             results = all ? [] : nil
             begin
