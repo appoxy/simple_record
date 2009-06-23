@@ -2,15 +2,13 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "1.0.16"
+  s.version = "1.0.17"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "RightScale"]
-  s.date = %q{2009-06-16}
-  s.default_executable = %q{simple_record}
+  s.date = %q{2009-06-23}
   s.description = %q{Drop in replacement for ActiveRecord to Amazon SimpleDB instead.}
   s.email = %q{travis@appoxy.com}
-  s.executables = ["simple_record"]
   s.extra_rdoc_files = [
     "README.markdown"
   ]

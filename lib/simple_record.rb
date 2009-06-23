@@ -770,8 +770,8 @@ This is done on getters now
                     class_name = results.class.name
                     id = results.id
                     cache_key = self.cache_key(class_name, id)
-#        puts 'caching result at ' + cache_key + ': ' + results.inspect
-                    @@cache_store.write(cache_key, results, :expires_in =>10*60)
+        puts 'caching result at ' + cache_key + ': ' + results.inspect
+                    @@cache_store.write(cache_key, results, :expires_in =>30)
                 end
             end
         end
@@ -779,8 +779,6 @@ This is done on getters now
         def self.cache_key(class_name, id)
             return class_name + "/" + id.to_s
         end
-
-
 
         @@debug=""
         def self.debug
