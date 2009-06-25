@@ -232,6 +232,7 @@ module SimpleRecord
                 return nil
             end
 
+
             # Define writer method
             send(:define_method, arg.to_s + "=") do |value|
                 arg_id = arg.to_s + '_id'
@@ -239,6 +240,16 @@ module SimpleRecord
                     self[arg_id]=nil unless self[arg_id].nil? # if it went from something to nil, then we have to remember and remove attribute on save
                 else
                     self[arg_id]=value.id
+                end
+            end
+
+            
+            # Define writer method for setting the _id directly without the associated object
+            send(:define_method, arg_id + "=") do |value|
+                if value.nil?
+                    self[arg_id] = nil unless self[arg_id].nil? # if it went from something to nil, then we have to remember and remove attribute on save
+                else
+                    self[arg_id] = value
                 end
             end
 
