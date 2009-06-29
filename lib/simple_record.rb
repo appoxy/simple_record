@@ -154,16 +154,16 @@ module SimpleRecord
         end
 
         def self.has_ints(*args)
-            has_attributes(args)
-            are_ints(args)
+            has_attributes(*args)
+            are_ints(*args)
         end
         def self.has_dates(*args)
-            has_attributes(args)
-            are_dates(args)
+            has_attributes(*args)
+            are_dates(*args)
         end
         def self.has_booleans(*args)
-            has_attributes(args)
-            are_booleans(args)
+            has_attributes(*args)
+            are_booleans(*args)
         end
 
         @@ints = []
