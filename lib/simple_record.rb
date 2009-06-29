@@ -28,7 +28,26 @@ require 'sdb/active_sdb'
 
 module SimpleRecord
 
-    VERSION = '1.0.16'
+
+    # Create a new handle to an Sdb account. All handles share the same per process or per thread
+    # HTTP connection to Amazon Sdb. Each handle is for a specific account.
+    # The +params+ are passed through as-is to RightAws::SdbInterface.new
+    # Params:
+    #    { :server       => 'sdb.amazonaws.com'  # Amazon service host: 'sdb.amazonaws.com'(default)
+    #      :port         => 443                  # Amazon service port: 80(default) or 443
+    #      :protocol     => 'https'              # Amazon service protocol: 'http'(default) or 'https'
+    #      :signature_version => '0'             # The signature version : '0' or '1'(default)
+    #      :connection_mode  => :default         # options are
+    #                                                  :default (will use best known safe (as in won't need explicit close) option, may change in the future)
+    #                                                  :per_request (opens and closes a connection on every request to SDB)
+    #                                                  :single (one thread across entire app)
+    #                                                  :per_thread (one connection per thread)
+    #                                                  :pool (uses a connection pool with a maximum number of connections - NOT IMPLEMENTED YET)
+    #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
+    #      :nil_representation => 'mynil'}       # interpret Ruby nil as this string value; i.e. use this string in SDB to represent Ruby nils (default is the string 'nil')
+    def self.establish_connection(aws_access_key=nil, aws_secret_key=nil, params={})
+        RightAws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, params)
+    end
 
     class Base < RightAws::ActiveSdb::Base
 
@@ -132,6 +151,19 @@ module SimpleRecord
                     self[arg.to_s]=value#      end
                 end
             end
+        end
+
+        def self.has_ints(*args)
+            has_attributes(args)
+            are_ints(args)
+        end
+        def self.has_dates(*args)
+            has_attributes(args)
+            are_dates(args)
+        end
+        def self.has_booleans(*args)
+            has_attributes(args)
+            are_booleans(args)
         end
 
         @@ints = []
@@ -243,7 +275,7 @@ module SimpleRecord
                 end
             end
 
-            
+
             # Define writer method for setting the _id directly without the associated object
             send(:define_method, arg_id + "=") do |value|
                 if value.nil?
@@ -325,7 +357,7 @@ module SimpleRecord
 
         def self.pad_and_offset(x)
             # todo: add Float, etc
-        #    puts 'padding=' + x.class.name + " -- " + x.inspect
+            #    puts 'padding=' + x.class.name + " -- " + x.inspect
             if x.kind_of? Integer
                 x += @@offset
                 x_str = x.to_s
@@ -333,7 +365,7 @@ module SimpleRecord
                 x_str = '0' + x_str while x_str.size < 20
                 return x_str
             elsif x.respond_to?(:iso8601)
-               #  puts x.class.name + ' responds to iso8601'
+                #  puts x.class.name + ' responds to iso8601'
                 #
                 # There is an issue here where Time.iso8601 on an incomparable value to DateTime.iso8601.
                 # Amazon suggests: 2008-02-10T16:52:01.000-05:00
@@ -344,7 +376,7 @@ module SimpleRecord
                 else
                     x_str = x.getutc.strftime(@@date_format)
                 end
-               #  puts 'utc=' + x_str
+                #  puts 'utc=' + x_str
                 return x_str
             else
                 return x
@@ -420,7 +452,8 @@ module SimpleRecord
                 end
             end
         end
-         def convert_dates_to_sdb()
+
+        def convert_dates_to_sdb()
             if !@@dates.nil?
                 for i in @@dates
 #          puts 'int encoding: ' + i.to_s
@@ -710,7 +743,7 @@ This is done on getters now
             options = params[1]
 #    puts 'options=' + options.inspect
             convert_condition_params(options)
- #   puts 'after collect=' + options.inspect
+            #   puts 'after collect=' + options.inspect
 
             results = all ? [] : nil
             begin
@@ -781,7 +814,7 @@ This is done on getters now
                     class_name = results.class.name
                     id = results.id
                     cache_key = self.cache_key(class_name, id)
-        puts 'caching result at ' + cache_key + ': ' + results.inspect
+                    puts 'caching result at ' + cache_key + ': ' + results.inspect
                     @@cache_store.write(cache_key, results, :expires_in =>30)
                 end
             end
