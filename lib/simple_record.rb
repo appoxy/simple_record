@@ -49,6 +49,10 @@ module SimpleRecord
         RightAws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, params)
     end
 
+    def self.close_connection()
+                RightAws::ActiveSdb.close_connection
+    end
+
     class Base < RightAws::ActiveSdb::Base
 
         attr_accessor :errors
@@ -750,7 +754,7 @@ This is done on getters now
                 results=super(*params)
                 cache_results(results)
             rescue RightAws::AwsError, RightAws::ActiveSdb::ActiveSdbError
-                puts "RESCUED: " + $!
+                puts "RESCUED: " + $!.message
                 if ($!.message().index("NoSuchDomain") != nil)
                     # this is ok
                 elsif ($!.message() =~ @@regex_no_id)

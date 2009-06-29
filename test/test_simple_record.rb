@@ -1,4 +1,4 @@
-require 'minitest/unit'
+require 'test/unit'
 require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
 require "yaml"
 require 'right_aws'
@@ -8,9 +8,12 @@ require 'my_child_model'
 class TestSimpleRecord < Test::Unit::TestCase
 
     def setup
-        @config = YAML::load(File.read('test-config.yml'))
-        puts 'akey=' + @config['amazon']['access_key']
-        puts 'skey=' + @config['amazon']['secret_key']
+        f = File.expand_path("~/.amazon/#{"simple_record_tests.yml"}")
+        puts f.inspect
+        @config = YAML::load(File.open(File.expand_path("~/.amazon/#{"simple_record_tests.yml"}")))
+        puts @config.inspect
+        #puts 'akey=' + @config['amazon']['access_key']
+        #puts 'skey=' + @config['amazon']['secret_key']
         RightAws::ActiveSdb.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :port=>80, :protocol=>"http")
         SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")
     end
@@ -37,7 +40,9 @@ class TestSimpleRecord < Test::Unit::TestCase
     end
 
     def test_bad_query
-        mm2 = MyModel.find(:all, :conditions=>["name =4?", "1"])
+        assert_raise RightAws::AwsError do
+            mm2 = MyModel.find(:all, :conditions=>["name =4?", "1"])
+        end
     end
 
     def test_batch_save
