@@ -8,18 +8,14 @@ require 'my_child_model'
 class TestSimpleRecord < Test::Unit::TestCase
 
     def setup
-        f = File.expand_path("~/.amazon/#{"simple_record_tests.yml"}")
-        puts f.inspect
-        @config = YAML::load(File.open(File.expand_path("~/.amazon/#{"simple_record_tests.yml"}")))
-        puts @config.inspect
-        #puts 'akey=' + @config['amazon']['access_key']
-        #puts 'skey=' + @config['amazon']['secret_key']
-        RightAws::ActiveSdb.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :port=>80, :protocol=>"http")
+        @config = YAML::load(File.open(File.expand_path("~/.amazon/simple_record_tests.yml")))
+        #puts @config.inspect
+        SimpleRecord.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :port=>80, :protocol=>"http")
         SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")
     end
 
     def teardown
-        RightAws::ActiveSdb.close_connection()
+        SimpleRecord.close_connection()
     end
 
     def test_save_get

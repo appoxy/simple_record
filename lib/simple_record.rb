@@ -130,9 +130,10 @@ module SimpleRecord
     }
         end
 
+         @@attributes = []
         def self.has_attributes(*args)
-            @@attributes = args
             args.each do |arg|
+                @@attributes << arg if @@attributes.index(arg).nil?
                 # define reader method
                 send :define_method, arg do
                     ret = nil
@@ -818,7 +819,7 @@ This is done on getters now
                     class_name = results.class.name
                     id = results.id
                     cache_key = self.cache_key(class_name, id)
-                    puts 'caching result at ' + cache_key + ': ' + results.inspect
+                    #puts 'caching result at ' + cache_key + ': ' + results.inspect
                     @@cache_store.write(cache_key, results, :expires_in =>30)
                 end
             end
