@@ -152,14 +152,22 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert !mm.changed?
         assert mm.changed.size == 0
         assert mm.changes.size == 0
+        assert !mm.name_changed?
 
         mm.name = "Jim"
         assert !mm.changed?
         assert mm.changed.size == 1
         assert mm.changed[0] == "name"
+
         assert mm.changes.size == 1
         assert mm.changes["name"][0] == "Travis"
         assert mm.changes["name"][1] == "Jim"
+
+        assert mm.name_changed?
+        assert mm.name_was == "Travis"
+        assert mm.name_change[0] == "Travis"
+        assert mm.name_change[1] == "Jim"
+
 
     end
 end

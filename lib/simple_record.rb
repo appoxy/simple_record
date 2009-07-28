@@ -156,6 +156,25 @@ module SimpleRecord
                     @dirty[arg_s] = self[arg_s] # Store old value (not sure if we need it?)
                     self[arg.to_s]=value#      end
                 end
+
+                # Now for dirty methods: http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html
+                # define changed? method
+                send(:define_method, arg_s + "_changed?") do
+                    !@dirty[arg_s].nil?
+                end
+
+                # define change method
+                send(:define_method, arg_s + "_change") do
+                    old_val = @dirty[arg_s]
+                    return nil if old_val.nil?
+                    [old_val, self[arg_s]
+                end
+
+                 # define was method
+                send(:define_method, arg_s + "_was") do
+                    old_val = @dirty[arg_s]
+                    old_val
+                end
             end
         end
 
@@ -321,29 +340,6 @@ module SimpleRecord
 
         end
 
-        has_dates :created, :updated
-        before_create :set_created, :set_updated
-        before_update :set_updated
-
-        def initialize(attrs={})
-            super
-        end
-
-        def set_created
-#    puts 'SETTING CREATED'
-            #    @created = DateTime.now
-            self[:created] = DateTime.now
-#    @tester = 'some test value'
-            #    self[:tester] = 'some test value'
-        end
-
-        def set_updated
-#    puts 'SETTING UPDATED'
-            #    @updated = DateTime.now
-            self[:updated] = DateTime.now
-#    @tester = 'some test value updated'
-        end
-
         def initialize(*params)
             if params[0]
                 #we have to handle the virtuals. Right now, this assumes that all parameters are passed from inside an array
@@ -360,6 +356,26 @@ module SimpleRecord
             end
             @errors=SimpleRecord_errors.new
             @dirty={}
+        end
+
+
+        has_dates :created, :updated
+        before_create :set_created, :set_updated
+        before_update :set_updated
+
+        def set_created
+#    puts 'SETTING CREATED'
+            #    @created = DateTime.now
+            self[:created] = DateTime.now
+#    @tester = 'some test value'
+            #    self[:tester] = 'some test value'
+        end
+
+        def set_updated
+#    puts 'SETTING UPDATED'
+            #    @updated = DateTime.now
+            self[:updated] = DateTime.now
+#    @tester = 'some test value updated'
         end
 
 
@@ -864,7 +880,7 @@ This is done on getters now
 
         def changes
             ret = {}
-            @dirty.each_pair {|key,value| ret[key] = [value, self[key]]}
+            @dirty.each_pair {|key, value| ret[key] = [value, self[key]]}
             return ret
         end
 
