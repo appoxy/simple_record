@@ -120,7 +120,7 @@ class TestSimpleRecord < Test::Unit::TestCase
     end
 
     def test_dirty
-          mm = MyModel.new
+        mm = MyModel.new
         mm.name = "Travis"
         mm.age = 32
         mm.cool = true
@@ -138,6 +138,28 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm2.save(:dirty=>true)
 
         # todo: how do we assert this?
+
+    end
+
+    # http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html#M002136
+    def test_changed
+        mm = MyModel.new
+        mm.name = "Travis"
+        mm.age = 32
+        mm.cool = true
+        mm.save
+
+        assert !mm.changed?
+        assert mm.changed.size == 0
+        assert mm.changes.size == 0
+
+        mm.name = "Jim"
+        assert !mm.changed?
+        assert mm.changed.size == 1
+        assert mm.changed[0] == "name"
+        assert mm.changes.size == 1
+        assert mm.changes["name"][0] == "Travis"
+        assert mm.changes["name"][1] == "Jim"
 
     end
 end

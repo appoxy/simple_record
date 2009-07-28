@@ -359,6 +359,7 @@ module SimpleRecord
                 super()
             end
             @errors=SimpleRecord_errors.new
+            @dirty={}
         end
 
 
@@ -851,6 +852,20 @@ This is done on getters now
 
         def self.table_name
             return @@domain_prefix + self.class.name.tableize
+        end
+
+        def changed
+            return @dirty.keys
+        end
+
+        def changed?
+            return @dirty.size > 0
+        end
+
+        def changes
+            ret = {}
+            @dirty.each_pair {|key,value| ret[key] = [value, self[key]]}
+            return ret
         end
 
     end
