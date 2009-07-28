@@ -118,4 +118,26 @@ class TestSimpleRecord < Test::Unit::TestCase
         #  end
         #  end
     end
+
+    def test_dirty
+          mm = MyModel.new
+        mm.name = "Travis"
+        mm.age = 32
+        mm.cool = true
+        mm.save
+        id = mm.id
+        puts 'id=' + id.to_s
+        # Get the object back
+        mm2 = MyModel.find(id)
+        puts 'got=' + mm2.name + ' and he/she is ' + mm2.age.to_s + ' years old and he/she is cool? ' + mm2.cool.to_s
+        assert mm2.id == mm.id
+        assert mm2.age == mm.age
+        assert mm2.cool == mm.cool
+
+        mm2.name = "Travis 2"
+        mm2.save(:dirty=>true)
+
+        # todo: how do we assert this?
+
+    end
 end

@@ -44,13 +44,12 @@ module SimpleRecord
     #                                                  :per_thread (one connection per thread)
     #                                                  :pool (uses a connection pool with a maximum number of connections - NOT IMPLEMENTED YET)
     #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
-    #      :nil_representation => 'mynil'}       # interpret Ruby nil as this string value; i.e. use this string in SDB to represent Ruby nils (default is the string 'nil')
     def self.establish_connection(aws_access_key=nil, aws_secret_key=nil, params={})
         RightAws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, params)
     end
 
     def self.close_connection()
-                RightAws::ActiveSdb.close_connection
+        RightAws::ActiveSdb.close_connection
     end
 
     class Base < RightAws::ActiveSdb::Base
@@ -130,11 +129,12 @@ module SimpleRecord
     }
         end
 
-         @@attributes = []
+        @@attributes = []
         def self.has_attributes(*args)
             args.each do |arg|
                 @@attributes << arg if @@attributes.index(arg).nil?
                 # define reader method
+                arg_s = arg.to_s # to get rid of all the to_s calls
                 send :define_method, arg do
                     ret = nil
                     if self[arg.to_s].class==Array
@@ -151,8 +151,9 @@ module SimpleRecord
                 end
 
                 # define writer method
-                method_name = (arg.to_s+"=")
+                method_name = (arg_s+"=")
                 send(:define_method, method_name) do |value|
+                    @dirty[arg_s] = self[arg_s] # Store old value (not sure if we need it?)
                     self[arg.to_s]=value#      end
                 end
             end
@@ -215,6 +216,7 @@ module SimpleRecord
         def self.belongs_to(association_id, options = {})
             @@belongs_to_map[association_id] = options
             arg = association_id
+            arg_s = arg.to_s
             arg_id = arg.to_s + '_id'
 
             # todo: should also handle foreign_key http://74.125.95.132/search?q=cache:KqLkxuXiBBQJ:wiki.rubyonrails.org/rails/show/belongs_to+rails+belongs_to&hl=en&ct=clnk&cd=1&gl=us
@@ -261,14 +263,6 @@ module SimpleRecord
                 return ret
             end
 
-            # Define reader ID method
-            send(:define_method, arg_id) do
-                if !@attributes[arg_id].nil? && @attributes[arg_id].size > 0 && @attributes[arg_id][0] != nil && @attributes[arg_id][0] != ''
-                    return @attributes[arg_id][0]
-                end
-                return nil
-            end
-
 
             # Define writer method
             send(:define_method, arg.to_s + "=") do |value|
@@ -278,8 +272,17 @@ module SimpleRecord
                 else
                     self[arg_id]=value.id
                 end
+                @dirty[arg_id] = self[arg_id] # Store old value (not sure if we need it?)
             end
 
+
+            # Define ID reader method for reading the associated objects id without getting the entire object
+            send(:define_method, arg_id) do
+                if !@attributes[arg_id].nil? && @attributes[arg_id].size > 0 && @attributes[arg_id][0] != nil && @attributes[arg_id][0] != ''
+                    return @attributes[arg_id][0]
+                end
+                return nil
+            end
 
             # Define writer method for setting the _id directly without the associated object
             send(:define_method, arg_id + "=") do |value|
@@ -318,10 +321,13 @@ module SimpleRecord
 
         end
 
-        has_attributes :created, :updated
+        has_dates :created, :updated
         before_create :set_created, :set_updated
         before_update :set_updated
-        are_dates :created, :updated
+
+        def initialize(attrs={})
+            super
+        end
 
         def set_created
 #    puts 'SETTING CREATED'
@@ -399,6 +405,10 @@ module SimpleRecord
 
         @create_domain_called = false
 
+        # Options:
+        #   - :except => Array of attributes to NOT save
+        #   - :dirty => true - Will only store attributes that were modified
+        #
         def save(*params)
             #    puts 'SAVING: ' + self.inspect
             is_create = self[:id].nil?
@@ -406,7 +416,7 @@ module SimpleRecord
             if ok
                 begin
                     #        puts 'is frozen? ' + self.frozen?.to_s + ' - ' + self.inspect
-                    to_delete = get_atts_to_delete
+                    to_delete = get_atts_to_delete # todo: this should use the @dirty hash now
                     if super(*params)
 #          puts 'SAVED super'
                         self.class.cache_results(self)
@@ -518,6 +528,7 @@ module SimpleRecord
         end
 
         def get_atts_to_delete
+            # todo: this should use the @dirty hash now
             to_delete = []
             @attributes.each do |key, value|
                 #      puts 'value=' + value.inspect
