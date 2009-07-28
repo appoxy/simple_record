@@ -149,6 +149,7 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm.cool = true
         mm.save
 
+        puts 'changed?=' + mm.changed?.to_s
         assert !mm.changed?
         assert mm.changed.size == 0
         assert mm.changes.size == 0

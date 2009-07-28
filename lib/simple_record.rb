@@ -167,7 +167,7 @@ module SimpleRecord
                 send(:define_method, arg_s + "_change") do
                     old_val = @dirty[arg_s]
                     return nil if old_val.nil?
-                    [old_val, self[arg_s]
+                    [old_val, self[arg_s]]
                 end
 
                  # define was method
@@ -355,7 +355,6 @@ module SimpleRecord
                 super()
             end
             @errors=SimpleRecord_errors.new
-            @dirty={}
         end
 
 
