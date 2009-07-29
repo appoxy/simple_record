@@ -52,7 +52,110 @@ module SimpleRecord
         RightAws::ActiveSdb.close_connection
     end
 
+    module Callbacks
+        #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
+        #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides
+        #basically, this is how we recreate the callback functions
+        @@callbacks=["before_validation", "before_validation_on_create", "before_validation_on_update",
+                     "after_validation", "after_validation_on_create", "after_validation_on_update",
+                     "before_save", "before_create", "before_update",
+                     "after_create", "after_update", "after_save",
+                     "after_destroy"]
+
+        def self.included(base)
+            puts 'Callbacks included in ' + base.inspect
+
+            @@callbacks.each do |callback|
+                puts 'doing callback=' + callback + ' for ' + base.inspect
+                #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
+                base.send(:define_method, callback) do |value|
+                    #make_dirty(arg_s, value)
+                    #self[arg.to_s]=value
+                    puts 'value=' + value
+                end
+            end
+
+            puts 'base methods=' + base.methods.inspect
+        end
+    end
+
+
     class Base < RightAws::ActiveSdb::Base
+
+        def self.extended(base)
+            puts 'SimpleRecord::Base is extended by ' + base.inspect
+        end
+
+        #include Callbacks
+
+        #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
+        #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides
+        #basically, this is how we recreate the callback functions
+        @@callbacks=["before_validation", "before_validation_on_create", "before_validation_on_update",
+                     "after_validation", "after_validation_on_create", "after_validation_on_update",
+                     "before_save", "before_create", "before_update",
+                     "after_create", "after_update", "after_save",
+                     "after_destroy"]
+
+        class << self
+            attr_accessor :callbacks
+            def initialize
+                puts 'initializing class ' + self.inspect
+            end
+
+            @@callbacks.each do |callback|
+                puts 'Doing callback ' + callback + ' for ' + self.inspect + " - " + inspect
+                #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
+                eval %{
+
+    def #{callback}(*args)
+        @callbacks ||= {}
+        puts 'setting callback #{callback} for ' + self.inspect
+        args.each do |arg|
+            puts '\targ=' + arg.to_s + ' ----- callbacks=' + callbacks.inspect + ' in ' + self.inspect
+            cnames = callbacks['#{callback}']
+            puts '\tcnames1=' + cnames.inspect + ' for class ' + self.inspect
+            cnames = [] if cnames.nil?
+            cnames << arg.to_s if cnames.index(arg.to_s).nil?
+            puts '\tcnames2=' + cnames.inspect
+            callbacks['#{callback}'] = cnames
+        end
+      end
+
+
+    }
+            end
+
+        end
+
+        @@callbacks.each do |callback|
+            puts 'Doing callback222 ' + callback + ' for ' + self.inspect + " - " + inspect
+            #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
+            eval %{
+
+        def run_#{callback}
+            puts 'CLASS CALLBACKS=' + self.class.callbacks.inspect
+            return true if self.class.callbacks.nil?
+            cnames = self.class.callbacks['#{callback}']
+            cnames = [] if cnames.nil?
+            #cnames += super.class.callbacks['#{callback}'] unless super.class.callbacks.nil?
+             puts 'cnames XXX = ' + cnames.inspect
+            return true if cnames.nil?
+            cnames.each { |name|
+                puts 'run_  #{name}'
+              unless eval(name)
+                return false
+              end
+          }
+          return true
+        end
+            }
+        end
+
+        #def self.callbacks
+        #    puts 'in callbacks ' + @callbacks.inspect + ' class=' + self.name
+        #    @callbacks
+        #end
 
         attr_accessor :errors
         @@domain_prefix = ''
@@ -102,32 +205,6 @@ module SimpleRecord
             domain_name_for_class
         end
 
-        #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
-        #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides
-        #basically, this is how we recreate the callback functions
-        @@callbacks=["before_save", "before_create", "after_create", "before_update", "after_update", "after_save", "after_destroy"]
-        @@callbacks.each do |callback|
-            #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
-            eval %{
-        @@#{callback}_names=[]
-
-        def self.#{callback}(*args)
-        args.each do |arg|
-          @@#{callback}_names << arg.to_s if @@#{callback}_names.index(arg.to_s).nil?
-        end
-#      asdf    @@#{callback}_names=args.map{|arg| arg.to_s}
-      end
-
-        def run_#{callback}
-          @@#{callback}_names.each { |name|
-          unless eval(name)
-            return false
-          end
-          }
-          return true
-        end
-    }
-        end
 
         # Since SimpleDB supports multiple attributes per value, the values are an array.
         # This method will return the value unwrapped if it's the only, otherwise it will return the array.
@@ -147,9 +224,9 @@ module SimpleRecord
 
         def make_dirty(arg, value)
             # todo: only set dirty if it changed
-            puts 'making dirty ' + @dirty.inspect
+            #puts 'making dirty ' + @dirty.inspect
             @dirty[arg] = get_attribute(arg) # Store old value (not sure if we need it?)
-            puts 'end making dirty ' + @dirty.inspect
+            #puts 'end making dirty ' + @dirty.inspect
         end
 
         @@attributes = []
@@ -357,6 +434,7 @@ module SimpleRecord
         end
 
         def initialize(*params)
+
             if params[0]
                 #we have to handle the virtuals. Right now, this assumes that all parameters are passed from inside an array
                 #this is the usually the case when the parameters are passed passed via POST and obtained from the params array
@@ -372,17 +450,22 @@ module SimpleRecord
             end
             @errors=SimpleRecord_errors.new
             @dirty = {}
+
+
         end
+        def clear_errors
+            @errors=SimpleRecord_errors.new
+        end
+
+        has_dates :created, :updated
+        before_create :set_created, :set_updated
+        before_update :set_updated
 
         def []=(attribute, values)
             @dirty[attribute] = get_attribute(attribute)
             super
         end
 
-
-        has_dates :created, :updated
-        before_create :set_created, :set_updated
-        before_update :set_updated
 
         def set_created
 #    puts 'SETTING CREATED'
@@ -449,7 +532,7 @@ module SimpleRecord
         #
         def save(options={})
             #    puts 'SAVING: ' + self.inspect
-            #options = params.first.is_a?(Hash) ? params.pop : {}
+            clear_errors
             is_create = self[:id].nil?
             ok = pre_save(options)
             if ok
@@ -463,7 +546,7 @@ module SimpleRecord
 #          puts 'SAVED super'
                         self.class.cache_results(self)
                         delete_niled(to_delete)
-                        if run_after_save && is_create ? run_after_create : run_after_update
+                        if is_create ? run_after_create : run_after_update && run_after_save
                             return true
                         else
                             #I thought about calling destroy here, but rails doesn't behave that way, so neither will I
@@ -531,6 +614,11 @@ module SimpleRecord
         end
 
         def pre_save(options)
+
+            is_create = self[:id].nil?
+            ok = run_before_validation && is_create ? run_before_validation_on_create : run_before_validation_on_update
+            return false unless ok
+
             if respond_to?('validate')
                 validate
 #      puts 'AFTER VALIDATIONS, ERRORS=' + errors.inspect
@@ -540,7 +628,9 @@ module SimpleRecord
                 end
             end
 
-            is_create = self[:id].nil?
+            ok = run_after_validation && is_create ? run_after_validation_on_create : run_after_validation_on_update
+            return false unless ok
+
             ok = respond_to?('before_save') ? before_save : true
             if ok
                 if is_create && respond_to?('before_create')

@@ -24,6 +24,11 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm.age = 32
         mm.cool = true
         mm.save
+
+        assert !mm.created.nil?
+        assert !mm.updated.nil?
+        assert !mm.id.nil?
+
         id = mm.id
         puts 'id=' + id.to_s
         # Get the object back
@@ -83,6 +88,19 @@ class TestSimpleRecord < Test::Unit::TestCase
     end
 
     def test_callbacks
+
+        
+        mm = MyModel.new
+        assert !mm.save
+        assert mm.errors.count == 1
+
+        # test queued callback before_create
+        mm.name = "Travis"
+        assert mm.save
+        assert mm.nickname == mm.name
+
+
+
         # these DO NOT work right now, all objects get all callbacks
         #	I tried like this, seem to be getting somewhere.
         #
