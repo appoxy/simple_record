@@ -129,6 +129,29 @@ module SimpleRecord
     }
         end
 
+        # Since SimpleDB supports multiple attributes per value, the values are an array.
+        # This method will return the value unwrapped if it's the only, otherwise it will return the array.
+        def get_attribute(arg)
+            arg = arg.to_s
+            if self[arg].class==Array
+                if self[arg].length==1
+                    ret = self[arg][0]
+                else
+                    ret = self[arg]
+                end
+            else
+                ret = self[arg]
+            end
+            ret
+        end
+
+        def make_dirty(arg, value)
+            # todo: only set dirty if it changed
+            puts 'making dirty ' + @dirty.inspect
+            @dirty[arg] = get_attribute(arg) # Store old value (not sure if we need it?)
+            puts 'end making dirty ' + @dirty.inspect
+        end
+
         @@attributes = []
         def self.has_attributes(*args)
             args.each do |arg|
@@ -137,15 +160,7 @@ module SimpleRecord
                 arg_s = arg.to_s # to get rid of all the to_s calls
                 send :define_method, arg do
                     ret = nil
-                    if self[arg.to_s].class==Array
-                        if self[arg.to_s].length==1
-                            ret = self[arg.to_s][0]
-                        else
-                            ret = self[arg.to_s]
-                        end
-                    else
-                        ret = self[arg.to_s]
-                    end
+                    ret = get_attribute(arg)
                     return nil if ret.nil?
                     return un_offset_if_int(arg, ret)
                 end
@@ -153,8 +168,8 @@ module SimpleRecord
                 # define writer method
                 method_name = (arg_s+"=")
                 send(:define_method, method_name) do |value|
-                    @dirty[arg_s] = self[arg_s] # Store old value (not sure if we need it?)
-                    self[arg.to_s]=value#      end
+                    make_dirty(arg_s, value)
+                    self[arg.to_s]=value
                 end
 
                 # Now for dirty methods: http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html
@@ -167,10 +182,10 @@ module SimpleRecord
                 send(:define_method, arg_s + "_change") do
                     old_val = @dirty[arg_s]
                     return nil if old_val.nil?
-                    [old_val, self[arg_s]]
+                    [old_val, get_attribute(arg_s)]
                 end
 
-                 # define was method
+                # define was method
                 send(:define_method, arg_s + "_was") do
                     old_val = @dirty[arg_s]
                     old_val
@@ -287,11 +302,12 @@ module SimpleRecord
             send(:define_method, arg.to_s + "=") do |value|
                 arg_id = arg.to_s + '_id'
                 if value.nil?
+                    make_dirty(arg_id, nil)
                     self[arg_id]=nil unless self[arg_id].nil? # if it went from something to nil, then we have to remember and remove attribute on save
                 else
+                    make_dirty(arg_id, value.id)
                     self[arg_id]=value.id
                 end
-                @dirty[arg_id] = self[arg_id] # Store old value (not sure if we need it?)
             end
 
 
@@ -355,6 +371,12 @@ module SimpleRecord
                 super()
             end
             @errors=SimpleRecord_errors.new
+            @dirty = {}
+        end
+
+        def []=(attribute, values)
+            @dirty[attribute] = get_attribute(attribute)
+            super
         end
 
 
@@ -425,15 +447,19 @@ module SimpleRecord
         #   - :except => Array of attributes to NOT save
         #   - :dirty => true - Will only store attributes that were modified
         #
-        def save(*params)
+        def save(options={})
             #    puts 'SAVING: ' + self.inspect
+            #options = params.first.is_a?(Hash) ? params.pop : {}
             is_create = self[:id].nil?
-            ok = pre_save(*params)
+            ok = pre_save(options)
             if ok
                 begin
                     #        puts 'is frozen? ' + self.frozen?.to_s + ' - ' + self.inspect
+                    if options[:dirty] # Only used in simple_record right now
+                        options[:dirty_atts] = @dirty
+                    end
                     to_delete = get_atts_to_delete # todo: this should use the @dirty hash now
-                    if super(*params)
+                    if super(options)
 #          puts 'SAVED super'
                         self.class.cache_results(self)
                         delete_niled(to_delete)
@@ -451,7 +477,7 @@ module SimpleRecord
                     if (domain_ok($!))
                         if !@create_domain_called
                             @create_domain_called = true
-                            save(*params)
+                            save(options)
                         else
                             raise $!
                         end
@@ -504,7 +530,7 @@ module SimpleRecord
             end
         end
 
-        def pre_save(*params)
+        def pre_save(options)
             if respond_to?('validate')
                 validate
 #      puts 'AFTER VALIDATIONS, ERRORS=' + errors.inspect
@@ -557,12 +583,12 @@ module SimpleRecord
 
         # Run pre_save on each object, then runs batch_put_attributes
         # Returns
-        def self.batch_save(objects)
+        def self.batch_save(objects, options={})
             results = []
             to_save = []
             if objects && objects.size > 0
                 objects.each do |o|
-                    ok = o.pre_save
+                    ok = o.pre_save(options)
                     raise "Pre save failed on object [" + o.inspect + "]" if !ok
                     results << ok
                     next if !ok
@@ -879,8 +905,14 @@ This is done on getters now
 
         def changes
             ret = {}
-            @dirty.each_pair {|key, value| ret[key] = [value, self[key]]}
+            puts 'in CHANGES=' + @dirty.inspect
+            @dirty.each_pair {|key, value| ret[key] = [value, get_attribute(key)]}
             return ret
+        end
+
+        def mark_as_old
+            super
+            @dirty = {}
         end
 
     end
