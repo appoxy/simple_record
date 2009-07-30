@@ -159,6 +159,14 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert mm.name_change[0] == "Travis"
         assert mm.name_change[1] == "Jim"
 
+    end
+
+    def test_attributes_correct
+
+        #MyModel.defined_attributes.each do |a|
+        #
+        #end
+        #MyChildModel.defined_attributes.inspect
 
     end
 end

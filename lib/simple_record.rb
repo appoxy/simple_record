@@ -98,7 +98,9 @@ module SimpleRecord
 
             endofeval
         end
-        puts 'base methods=' + self.methods.inspect
+        #puts 'base methods=' + self.methods.inspect
+
+
 
         def self.inherited(base)
             puts 'SimpleRecord::Base is inherited by ' + base.inspect
@@ -116,7 +118,11 @@ module SimpleRecord
                 def callbacks
                     @callbacks ||= {}
                     @callbacks
+                end
 
+               def self.defined_attributes
+                    @attributes ||= []
+                    @attributes
                 end
 
             endofeval
@@ -138,6 +144,7 @@ module SimpleRecord
                     return false
                   end
               }
+                #super.run_#{callback}
               return true
             end
 
@@ -209,6 +216,7 @@ module SimpleRecord
         end
 
 
+
         # Since SimpleDB supports multiple attributes per value, the values are an array.
         # This method will return the value unwrapped if it's the only, otherwise it will return the array.
         def get_attribute(arg)
@@ -232,10 +240,9 @@ module SimpleRecord
             #puts 'end making dirty ' + @dirty.inspect
         end
 
-        @@attributes = []
         def self.has_attributes(*args)
             args.each do |arg|
-                @@attributes << arg if @@attributes.index(arg).nil?
+                defined_attributes << arg if defined_attributes.index(arg).nil?
                 # define reader method
                 arg_s = arg.to_s # to get rid of all the to_s calls
                 send :define_method, arg do

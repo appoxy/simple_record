@@ -3,11 +3,8 @@ require 'my_model'
 
 class MyChildModel < SimpleRecord::Base
     belongs_to :my_model
-    has_attributes :name
+    has_attributes :name, :child_attr
 
-    def atts
-        @@attributes
-    end
 end
 
 
@@ -26,8 +23,8 @@ puts mcm.class == MyChildModel
 puts 'saved? ' + mm.save.to_s
 puts mm.errors.inspect
 
-puts "mm attributes=" + mm.atts.inspect
-puts "mcm attributes=" + mcm.atts.inspect
+puts "mm attributes=" + MyModel.defined_attributes.inspect
+puts "mcm attributes=" + MyChildModel.defined_attributes.inspect
 
 mcm2 = MyChildModel.new
-puts "mcm2 attributes=" + mcm2.atts.inspect
+puts "mcm2 attributes=" + MyChildModel.defined_attributes.inspect
