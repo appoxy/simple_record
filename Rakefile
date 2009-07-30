@@ -3,12 +3,6 @@
 require 'rubygems'
 require './lib/simple_record.rb'
 
-#Hoe.spec('simple_record') do |p|
-#  p.rubyforge_name = 'spacegems' # if different than lowercase project name
-#  p.developer('Travis Reeder', 'travis@crankapps.com')
-#    # , SimpleRecord::VERSION
-#end
-
 begin
     require 'jeweler'
     Jeweler::Tasks.new do |gemspec|
