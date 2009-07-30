@@ -65,25 +65,84 @@ module SimpleRecord
         def self.included(base)
             puts 'Callbacks included in ' + base.inspect
 
-            @@callbacks.each do |callback|
-                puts 'doing callback=' + callback + ' for ' + base.inspect
-                #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
-                base.send(:define_method, callback) do |value|
-                    #make_dirty(arg_s, value)
-                    #self[arg.to_s]=value
-                    puts 'value=' + value
-                end
-            end
-
-            puts 'base methods=' + base.methods.inspect
         end
     end
 
 
     class Base < RightAws::ActiveSdb::Base
 
-        def self.extended(base)
-            puts 'SimpleRecord::Base is extended by ' + base.inspect
+        include SimpleRecord::Callbacks
+
+
+        @@callbacks.each do |callback|
+            instance_eval <<-endofeval
+
+                puts 'doing callback=' + callback + ' for ' + self.inspect
+                #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
+
+                def #{callback}(*args)
+                    #puts 'callback called in ' + self.inspect + ' with ' + args.inspect
+
+                    #make_dirty(arg_s, value)
+                    #self[arg.to_s]=value
+                    #puts 'value in callback #{callback}=' + value.to_s
+                    args.each do |arg|
+                        cnames = callbacks['#{callback}']
+                        #puts '\tcnames1=' + cnames.inspect + ' for class ' + self.inspect
+                        cnames = [] if cnames.nil?
+                        cnames << arg.to_s if cnames.index(arg.to_s).nil?
+                        #puts '\tcnames2=' + cnames.inspect
+                        callbacks['#{callback}'] = cnames
+                    end
+                end
+
+            endofeval
+        end
+        puts 'base methods=' + self.methods.inspect
+
+        def self.inherited(base)
+            puts 'SimpleRecord::Base is inherited by ' + base.inspect
+            setup_callbacks(base)
+
+            base.has_dates :created, :updated
+            base.before_create :set_created, :set_updated
+            base.before_update :set_updated
+
+        end
+
+        def self.setup_callbacks(base)
+            instance_eval <<-endofeval
+
+                def callbacks
+                    @callbacks ||= {}
+                    @callbacks
+
+                end
+
+            endofeval
+
+            @@callbacks.each do |callback|
+                class_eval <<-endofeval
+
+             def run_#{callback}
+                #puts 'CLASS CALLBACKS for ' + self.inspect + ' = ' + self.class.callbacks.inspect
+                return true if self.class.callbacks.nil?
+                cnames = self.class.callbacks['#{callback}']
+                cnames = [] if cnames.nil?
+                #cnames += super.class.callbacks['#{callback}'] unless super.class.callbacks.nil?
+                # puts 'cnames XXX = ' + cnames.inspect
+                return true if cnames.nil?
+                cnames.each { |name|
+                    #puts 'run_  #{name}'
+                  unless eval(name)
+                    return false
+                  end
+              }
+              return true
+            end
+
+                endofeval
+            end
         end
 
         #include Callbacks
@@ -91,66 +150,10 @@ module SimpleRecord
         #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
         #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides
         #basically, this is how we recreate the callback functions
-        @@callbacks=["before_validation", "before_validation_on_create", "before_validation_on_update",
-                     "after_validation", "after_validation_on_create", "after_validation_on_update",
-                     "before_save", "before_create", "before_update",
-                     "after_create", "after_update", "after_save",
-                     "after_destroy"]
-
-        class << self
-            attr_accessor :callbacks
-            def initialize
-                puts 'initializing class ' + self.inspect
-            end
-
-            @@callbacks.each do |callback|
-                puts 'Doing callback ' + callback + ' for ' + self.inspect + " - " + inspect
-                #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
-                eval %{
-
-    def #{callback}(*args)
-        @callbacks ||= {}
-        puts 'setting callback #{callback} for ' + self.inspect
-        args.each do |arg|
-            puts '\targ=' + arg.to_s + ' ----- callbacks=' + callbacks.inspect + ' in ' + self.inspect
-            cnames = callbacks['#{callback}']
-            puts '\tcnames1=' + cnames.inspect + ' for class ' + self.inspect
-            cnames = [] if cnames.nil?
-            cnames << arg.to_s if cnames.index(arg.to_s).nil?
-            puts '\tcnames2=' + cnames.inspect
-            callbacks['#{callback}'] = cnames
-        end
-      end
 
 
-    }
-            end
+        #end
 
-        end
-
-        @@callbacks.each do |callback|
-            puts 'Doing callback222 ' + callback + ' for ' + self.inspect + " - " + inspect
-            #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
-            eval %{
-
-        def run_#{callback}
-            puts 'CLASS CALLBACKS=' + self.class.callbacks.inspect
-            return true if self.class.callbacks.nil?
-            cnames = self.class.callbacks['#{callback}']
-            cnames = [] if cnames.nil?
-            #cnames += super.class.callbacks['#{callback}'] unless super.class.callbacks.nil?
-             puts 'cnames XXX = ' + cnames.inspect
-            return true if cnames.nil?
-            cnames.each { |name|
-                puts 'run_  #{name}'
-              unless eval(name)
-                return false
-              end
-          }
-          return true
-        end
-            }
-        end
 
         #def self.callbacks
         #    puts 'in callbacks ' + @callbacks.inspect + ' class=' + self.name
@@ -453,13 +456,10 @@ module SimpleRecord
 
 
         end
+
         def clear_errors
             @errors=SimpleRecord_errors.new
         end
-
-        has_dates :created, :updated
-        before_create :set_created, :set_updated
-        before_update :set_updated
 
         def []=(attribute, values)
             @dirty[attribute] = get_attribute(attribute)

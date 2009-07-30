@@ -92,49 +92,20 @@ class TestSimpleRecord < Test::Unit::TestCase
         
         mm = MyModel.new
         assert !mm.save
-        assert mm.errors.count == 1
+        assert mm.errors.count == 1 # name is required
 
         # test queued callback before_create
         mm.name = "Travis"
         assert mm.save
+        # now nickname should be set on before_create
         assert mm.nickname == mm.name
 
+        mm2 = MyModel.find(mm.id)
+        assert mm2.nickname = mm.nickname
+        assert mm2.name = mm.name
+        
 
 
-        # these DO NOT work right now, all objects get all callbacks
-        #	I tried like this, seem to be getting somewhere.
-        #
-        #  class << self;
-        #  @@callbacks.each do |callback|
-        #    #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
-        #    puts 'setting callback ' + callback.to_s + ' on ' + self.inspect
-        #    eval %{
-        #
-        #        # add the methods to the class
-        #        def #{callback}(*args)
-        #        args.each do |arg|
-        #          cb_names = self.instance_variable_get(:@#{callback}_names)
-        #          cb_names = [] if cb_names.nil?
-        #          cb_names << arg.to_s if cb_names.index(arg.to_s).nil?
-        #          self.instance_variable_set(:@#{callback}_names, cb_names)
-        #        end
-        ##      asdf    @@#{callback}_names=args.map{|arg| arg.to_s}
-        #      end
-        #
-        #        # now we run the methods in the callback array for this class
-        #send :define_method, "run_#{callback}" do
-        ##        def run_#{callback}
-        #          cb_names = self.instance_variable_get(:@#{callback}_names)
-        #          cb_names.each { |name|
-        #          unless eval(name)
-        #            return false
-        #          end
-        #          }
-        #          return true
-        #        end
-        #    }
-        #  end
-        #  end
     end
 
     def test_dirty

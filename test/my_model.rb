@@ -21,4 +21,8 @@ class MyModel < SimpleRecord::Base
 
 
 
+    def atts
+        @@attributes
+    end
+
 end
