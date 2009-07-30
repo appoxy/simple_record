@@ -8,6 +8,8 @@ class MyChildModel < SimpleRecord::Base
 end
 
 
+=begin
+
 
 puts 'word'
 
@@ -28,3 +30,5 @@ puts "mcm attributes=" + MyChildModel.defined_attributes.inspect
 
 mcm2 = MyChildModel.new
 puts "mcm2 attributes=" + MyChildModel.defined_attributes.inspect
+
+=end

@@ -28,16 +28,23 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert !mm.created.nil?
         assert !mm.updated.nil?
         assert !mm.id.nil?
+        assert mm.age == 32
+        assert mm.cool = true
+        assert mm.name = "Travis"
 
         id = mm.id
         puts 'id=' + id.to_s
         # Get the object back
         mm2 = MyModel.find(id)
-        puts 'got=' + mm2.name + ' and he/she is ' + mm2.age.to_s + ' years old and he/she is cool? ' + mm2.cool.to_s
-        puts mm2.cool.class.name
+        #puts 'got=' + mm2.name + ' and he/she is ' + mm2.age.to_s + ' years old and he/she is cool? ' + mm2.cool.to_s
+        #puts mm2.cool.class.name
         assert mm2.id == mm.id
         assert mm2.age == mm.age
         assert mm2.cool == mm.cool
+        assert mm2.age == 32
+        assert mm2.cool = true
+        assert mm2.name = "Travis"
+        assert mm2.created.is_a? DateTime
     end
 
     def test_bad_query
@@ -89,7 +96,7 @@ class TestSimpleRecord < Test::Unit::TestCase
 
     def test_callbacks
 
-        
+
         mm = MyModel.new
         assert !mm.save
         assert mm.errors.count == 1 # name is required
@@ -103,7 +110,7 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm2 = MyModel.find(mm.id)
         assert mm2.nickname = mm.nickname
         assert mm2.name = mm.name
-        
+
 
 
     end

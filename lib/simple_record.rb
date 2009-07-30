@@ -63,21 +63,24 @@ module SimpleRecord
                      "after_destroy"]
 
         def self.included(base)
-            puts 'Callbacks included in ' + base.inspect
+            #puts 'Callbacks included in ' + base.inspect
 
         end
     end
-
 
     class Base < RightAws::ActiveSdb::Base
 
         include SimpleRecord::Callbacks
 
 
+        # todo: move into Callbacks module
+        #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
+        #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides
+        #basically, this is how we recreate the callback functions
         @@callbacks.each do |callback|
             instance_eval <<-endofeval
 
-                puts 'doing callback=' + callback + ' for ' + self.inspect
+                #puts 'doing callback=' + callback + ' for ' + self.inspect
                 #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
 
                 def #{callback}(*args)
@@ -121,7 +124,8 @@ module SimpleRecord
                 end
 
                def self.defined_attributes
-                    @attributes ||= []
+                    #puts 'class defined_attributes'
+                    @attributes ||= {}
                     @attributes
                 end
 
@@ -152,20 +156,24 @@ module SimpleRecord
             end
         end
 
-        #include Callbacks
-
-        #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
-        #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides
-        #basically, this is how we recreate the callback functions
 
 
-        #end
+        # Holds information about an attribute
+        class Attribute
+            attr_accessor :type, :options
+
+            def initialize(type)
+                @type = type
+            end
+
+        end
 
 
-        #def self.callbacks
-        #    puts 'in callbacks ' + @callbacks.inspect + ' class=' + self.name
-        #    @callbacks
-        #end
+        def defined_attributes_local
+            #puts 'local defined_attributes'
+            self.class.defined_attributes
+        end
+
 
         attr_accessor :errors
         @@domain_prefix = ''
@@ -242,7 +250,7 @@ module SimpleRecord
 
         def self.has_attributes(*args)
             args.each do |arg|
-                defined_attributes << arg if defined_attributes.index(arg).nil?
+                defined_attributes[arg] = SimpleRecord::Base::Attribute.new(:string) if defined_attributes[arg].nil?
                 # define reader method
                 arg_s = arg.to_s # to get rid of all the to_s calls
                 send :define_method, arg do
@@ -293,30 +301,22 @@ module SimpleRecord
             are_booleans(*args)
         end
 
-        @@ints = []
         def self.are_ints(*args)
             #    puts 'calling are_ints: ' + args.inspect
             args.each do |arg|
-                # todo: maybe @@ints and @@dates should be maps for quicker lookups
-                @@ints << arg if @@ints.index(arg).nil?
+                defined_attributes[arg].type = :int
             end
-#    @@ints = args
-            #    puts 'ints=' + @@ints.inspect
         end
 
-        @@dates = []
         def self.are_dates(*args)
             args.each do |arg|
-                @@dates << arg if @@dates.index(arg).nil?
+                defined_attributes[arg].type = :date
             end
-#    @@dates = args
-            #    puts 'dates=' + @@dates.inspect
         end
 
-        @@booleans = []
         def self.are_booleans(*args)
             args.each do |arg|
-                @@booleans << arg if @@booleans.index(arg).nil?
+                defined_attributes[arg].type = :boolean
             end
         end
 
@@ -329,13 +329,15 @@ module SimpleRecord
             end
         end
 
-        @@belongs_to_map = {}
         # One belongs_to association per call. Call multiple times if there are more than one.
         #
         # This method will also create an {association)_id method that will return the ID of the foreign object
         # without actually materializing it.
         def self.belongs_to(association_id, options = {})
-            @@belongs_to_map[association_id] = options
+            attribute = SimpleRecord::Base::Attribute.new(:belongs_to)
+            defined_attributes[association_id] = attribute
+            attribute.options = options
+            #@@belongs_to_map[association_id] = options
             arg = association_id
             arg_s = arg.to_s
             arg_id = arg.to_s + '_id'
@@ -347,7 +349,8 @@ module SimpleRecord
 
             # Define reader method
             send(:define_method, arg) do
-                options2 = @@belongs_to_map[arg]
+                attribute = defined_attributes[arg]
+                options2 = attribute.options # @@belongs_to_map[arg]
                 class_name = options2[:class_name] || arg.to_s[0...1].capitalize + arg.to_s[1...arg.to_s.length]
 
                 # Camelize classnames with underscores (ie my_model.rb --> MyModel)
@@ -366,7 +369,7 @@ module SimpleRecord
 #          puts 'belongs_to incache=' + ret.inspect
                     end
                     if ret.nil?
-                        to_eval = "#{class_name}.find(@attributes['#{arg_id}'][0], :auto_load=>true)"
+                        to_eval = "#{class_name}.find(@attributes['#{arg_id}'][0])"
 #      puts 'to eval=' + to_eval
                         begin
                             ret = eval(to_eval) # (defined? #{arg}_id)
@@ -582,40 +585,36 @@ module SimpleRecord
         end
 
         def pad_and_offset_ints_to_sdb()
-            if !@@ints.nil?
-                for i in @@ints
+
+            defined_attributes_local.each_pair do |name, att_meta|
 #          puts 'int encoding: ' + i.to_s
-                    if !self[i.to_s].nil?
+                if att_meta.type == :int && !self[name.to_s].nil?
 #            puts 'before: ' + self[i.to_s].inspect
-                        #            puts @attributes.inspect
-                        #            puts @attributes[i.to_s].inspect
-                        arr = @attributes[i.to_s]
-                        arr.collect!{ |x| self.class.pad_and_offset(x) }
-                        @attributes[i.to_s] = arr
+                    #            puts @attributes.inspect
+                    #            puts @attributes[i.to_s].inspect
+                    arr = @attributes[name.to_s]
+                    arr.collect!{ |x| self.class.pad_and_offset(x) }
+                    @attributes[name.to_s] = arr
 #            puts 'after: ' + @attributes[i.to_s].inspect
-                    else
-                        #            puts 'was nil'
-                    end
                 end
             end
         end
 
         def convert_dates_to_sdb()
-            if !@@dates.nil?
-                for i in @@dates
+
+            defined_attributes_local.each_pair do |name, att_meta|
 #          puts 'int encoding: ' + i.to_s
-                    if !self[i.to_s].nil?
+                if att_meta.type == :date && !self[name.to_s].nil?
 #            puts 'before: ' + self[i.to_s].inspect
-                        #            puts @attributes.inspect
-                        #            puts @attributes[i.to_s].inspect
-                        arr = @attributes[i.to_s]
-                        #puts 'padding date=' + i.to_s
-                        arr.collect!{ |x| self.class.pad_and_offset(x) }
-                        @attributes[i.to_s] = arr
+                    #            puts @attributes.inspect
+                    #            puts @attributes[i.to_s].inspect
+                    arr = @attributes[name.to_s]
+                    #puts 'padding date=' + i.to_s
+                    arr.collect!{ |x| self.class.pad_and_offset(x) }
+                    @attributes[name.to_s] = arr
 #            puts 'after: ' + @attributes[i.to_s].inspect
-                    else
-                        #            puts 'was nil'
-                    end
+                else
+                    #            puts 'was nil'
                 end
             end
         end
@@ -713,51 +712,14 @@ module SimpleRecord
         end
 
         def un_offset_if_int(arg, x)
-            if !@@ints.nil?
-                for i in @@ints
-#        puts 'unpadding: ' + i.to_s
-                    # unpad and unoffset
-                    if i == arg
-#          puts 'unoffsetting ' + x.to_s
-                        x = un_offset_int(x)
-                    end
-                end
-            end
-            if !@@dates.nil?
-                for d in @@dates
-#        puts 'converting created: ' + self['created'].inspect
-                    if d == arg
-                        x = to_date(x)
-                    end
-#          if !self[d].nil?
-#            self[d].collect!{ |d2|
-#              if d2.is_a?(String)
-#                DateTime.parse(d2)
-#              else
-#                d2
-#              end
-#            }
-#          end
-#        puts 'after=' + self['created'].inspect
-                end
-            end
-            if !@@booleans.nil?
-                for b in @@booleans
-#        puts 'converting created: ' + self['created'].inspect
-                    if b == arg
-                        x = to_bool(x)
-                    end
-#          if !self[d].nil?
-#            self[d].collect!{ |d2|
-#              if d2.is_a?(String)
-#                DateTime.parse(d2)
-#              else
-#                d2
-#              end
-#            }
-#          end
-#        puts 'after=' + self['created'].inspect
-                end
+            att_meta =  defined_attributes_local[arg]
+#          puts 'int encoding: ' + i.to_s
+            if att_meta.type == :int
+                x = un_offset_int(x)
+            elsif att_meta.type == :date
+                x = to_date(x)
+            elsif att_meta.type == :boolean
+                x = to_bool(x)
             end
             x
         end
@@ -809,12 +771,9 @@ module SimpleRecord
         end
 
         def unpad_self
-            if !@@ints.nil?
-                for i in @@ints
-#        puts 'unpadding: ' + i.to_s
-                    # unpad and unoffset
-
-                    unpad(i, @attributes)
+            defined_attributes_local.each_pair do |name, att_meta|
+                if att_meta.type == :int
+                    unpad(name, @attributes)
                 end
             end
         end
@@ -896,9 +855,9 @@ This is done on getters now
 
             # Pad and Offset number attributes
             options = params[1]
-#    puts 'options=' + options.inspect
+            #puts 'options=' + options.inspect
             convert_condition_params(options)
-            #   puts 'after collect=' + options.inspect
+            #puts 'after collect=' + options.inspect
 
             results = all ? [] : nil
             begin
@@ -1002,7 +961,7 @@ This is done on getters now
 
         def changes
             ret = {}
-            puts 'in CHANGES=' + @dirty.inspect
+            #puts 'in CHANGES=' + @dirty.inspect
             @dirty.each_pair {|key, value| ret[key] = [value, get_attribute(key)]}
             return ret
         end
@@ -1120,3 +1079,4 @@ This is done on getters now
 
     end
 end
+
