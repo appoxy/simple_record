@@ -5,7 +5,7 @@ module SimpleRecord
 
         def initialize(clz=nil, params=[], items=[], next_token=nil)
             @clz = clz
-            puts 'class=' + clz.inspect
+            #puts 'class=' + clz.inspect
             @params = params
             #puts 'params in ra=' + params.inspect
             @items = items
@@ -44,7 +44,7 @@ module SimpleRecord
             return if clz.nil?
 
             unless next_token.nil?
-                puts 'finding more items...'
+                #puts 'finding more items...'
                 #puts 'params in block=' + params.inspect
                 options[:next_token] = next_token
                 res = clz.find(*params)

@@ -351,7 +351,7 @@ module SimpleRecord
 
             # Define reader method
             send(:define_method, arg) do
-                attribute = defined_attributes[arg]
+                attribute = defined_attributes_local[arg]
                 options2 = attribute.options # @@belongs_to_map[arg]
                 class_name = options2[:class_name] || arg.to_s[0...1].capitalize + arg.to_s[1...arg.to_s.length]
 
@@ -843,7 +843,7 @@ This is done on getters now
         end
 
         def self.find(*params)
-            puts 'params=' + params.inspect
+            #puts 'params=' + params.inspect
             reload=true
             first=false
             all=false
