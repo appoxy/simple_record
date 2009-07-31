@@ -25,6 +25,8 @@
 
 require 'right_aws'
 require 'sdb/active_sdb'
+#require 'results_array'
+require File.expand_path(File.dirname(__FILE__) + "/results_array")
 
 module SimpleRecord
 
@@ -841,6 +843,7 @@ This is done on getters now
         end
 
         def self.find(*params)
+            puts 'params=' + params.inspect
             reload=true
             first=false
             all=false
@@ -854,15 +857,20 @@ This is done on getters now
 
 
             # Pad and Offset number attributes
-            options = params[1]
-            #puts 'options=' + options.inspect
+            options = {}
+            if params.size > 1
+                options = params[1]
+                #puts 'options=' + options.inspect
+                #puts 'after collect=' + options.inspect
+            end
             convert_condition_params(options)
-            #puts 'after collect=' + options.inspect
+            #puts 'params2=' + params.inspect
 
             results = all ? [] : nil
             begin
                 results=super(*params)
                 cache_results(results)
+                results = SimpleRecord::ResultsArray.new(self, params, results, next_token)
             rescue RightAws::AwsError, RightAws::ActiveSdb::ActiveSdbError
                 puts "RESCUED: " + $!.message
                 if ($!.message().index("NoSuchDomain") != nil)
@@ -909,15 +917,15 @@ This is done on getters now
         end
 
         def self.convert_condition_params(options)
-            if !options.nil? && options.size > 0
-                conditions = options[:conditions]
-                if !conditions.nil? && conditions.size > 1
-                    # all after first are values
-                    conditions.collect! { |x|
-                        self.pad_and_offset(x)
-                    }
-                end
+            return if options.nil?
+            conditions = options[:conditions]
+            if !conditions.nil? && conditions.size > 1
+                # all after first are values
+                conditions.collect! { |x|
+                    self.pad_and_offset(x)
+                }
             end
+
         end
 
         def self.cache_results(results)
