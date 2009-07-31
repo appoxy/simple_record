@@ -844,17 +844,12 @@ This is done on getters now
 
         def self.find(*params)
             #puts 'params=' + params.inspect
-            reload=true
-            first=false
-            all=false
-            select=false
+            q_type = :all
             select_attributes=[]
 
             if params.size > 0
-                all = params[0] == :all
-                first = params[0] == :first
+                q_type = params[0]
             end
-
 
             # Pad and Offset number attributes
             options = {}
@@ -862,15 +857,17 @@ This is done on getters now
                 options = params[1]
                 #puts 'options=' + options.inspect
                 #puts 'after collect=' + options.inspect
+                convert_condition_params(options)
             end
-            convert_condition_params(options)
             #puts 'params2=' + params.inspect
 
-            results = all ? [] : nil
+            results = q_type == :all ? [] : nil
             begin
                 results=super(*params)
-                cache_results(results)
-                results = SimpleRecord::ResultsArray.new(self, params, results, next_token)
+                if q_type != :count
+                    cache_results(results)
+                    results = SimpleRecord::ResultsArray.new(self, params, results, next_token)
+                end
             rescue RightAws::AwsError, RightAws::ActiveSdb::ActiveSdbError
                 puts "RESCUED: " + $!.message
                 if ($!.message().index("NoSuchDomain") != nil)

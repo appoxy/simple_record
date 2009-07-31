@@ -169,6 +169,11 @@ class TestSimpleRecord < Test::Unit::TestCase
 
     end
 
+    def test_count
+        count = MyModel.find(:count)
+        assert count > 0
+    end
+
     def test_attributes_correct
 
         #MyModel.defined_attributes.each do |a|
