@@ -7,7 +7,6 @@ module SimpleRecord
             @clz = clz
             #puts 'class=' + clz.inspect
             @params = params
-            #puts 'params in ra=' + params.inspect
             @items = items
             @next_token = next_token
             @i = 0
@@ -26,6 +25,7 @@ module SimpleRecord
             return @count if @count
             params_for_count = params.dup
             params_for_count[0] = :count
+            #puts 'params_for_count=' + params_for_count.inspect
             @count = clz.find(*params_for_count)
             # puts '@count=' + @count.to_s
             @count

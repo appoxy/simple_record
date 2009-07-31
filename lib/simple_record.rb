@@ -872,6 +872,7 @@ This is done on getters now
             results = q_type == :all ? [] : nil
             begin
                 results=super(*params)
+                #puts 'params3=' + params.inspect
                 SimpleRecord.stats.selects += 1
                 if q_type != :count
                     cache_results(results)
