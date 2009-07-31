@@ -866,7 +866,9 @@ This is done on getters now
                 results=super(*params)
                 if q_type != :count
                     cache_results(results)
-                    results = SimpleRecord::ResultsArray.new(self, params, results, next_token)
+                    if results.is_a?(Array)
+                        results = SimpleRecord::ResultsArray.new(self, params, results, next_token)
+                    end
                 end
             rescue RightAws::AwsError, RightAws::ActiveSdb::ActiveSdbError
                 puts "RESCUED: " + $!.message

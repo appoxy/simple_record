@@ -10,7 +10,7 @@ module SimpleRecord
             #puts 'params in ra=' + params.inspect
             @items = items
             @next_token = next_token
-            @i = 0            
+            @i = 0
         end
 
         def << (val)
@@ -19,6 +19,18 @@ module SimpleRecord
 
         def [](i)
             @items[i]
+        end
+
+        def size
+            return @count if @count
+            params_for_count = params.dup
+            params_for_count[0] = :count
+            @count = clz.find(*params)
+            @count
+        end
+
+        def length
+            return size
         end
 
 
@@ -31,7 +43,7 @@ module SimpleRecord
                 options = {}
                 params[1] = options
             end
-            
+
             @items.each do |v|
                 puts @i.to_s
                 yield v
