@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "1.0.26"
+  s.version = "1.0.27"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "RightScale"]
@@ -13,7 +13,8 @@ Gem::Specification.new do |s|
     "README.markdown"
   ]
   s.files = [
-    "lib/simple_record.rb"
+    "lib/results_array.rb",
+     "lib/simple_record.rb"
   ]
   s.has_rdoc = true
   s.homepage = %q{http://github.com/appoxy/simple_record/}
@@ -24,6 +25,7 @@ Gem::Specification.new do |s|
   s.test_files = [
     "test/my_child_model.rb",
      "test/my_model.rb",
+     "test/paging_array_test.rb",
      "test/temp_test.rb",
      "test/test_simple_record.rb"
   ]
