@@ -22,10 +22,12 @@ module SimpleRecord
         end
 
         def size
+            # puts 'SIZE count=' + @count.inspect
             return @count if @count
             params_for_count = params.dup
             params_for_count[0] = :count
-            @count = clz.find(*params)
+            @count = clz.find(*params_for_count)
+            # puts '@count=' + @count.to_s
             @count
         end
 

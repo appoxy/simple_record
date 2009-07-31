@@ -25,11 +25,17 @@
 
 require 'right_aws'
 require 'sdb/active_sdb'
-#require 'results_array'
+#require 'results_array' # why the heck isn't this picking up???
 require File.expand_path(File.dirname(__FILE__) + "/results_array")
+require File.expand_path(File.dirname(__FILE__) + "/stats")
 
 module SimpleRecord
 
+    @@stats = SimpleRecord::Stats.new
+
+    def self.stats
+        @@stats
+    end
 
     # Create a new handle to an Sdb account. All handles share the same per process or per thread
     # HTTP connection to Amazon Sdb. Each handle is for a specific account.
@@ -73,6 +79,8 @@ module SimpleRecord
     class Base < RightAws::ActiveSdb::Base
 
         include SimpleRecord::Callbacks
+
+
 
 
         # todo: move into Callbacks module
@@ -864,6 +872,7 @@ This is done on getters now
             results = q_type == :all ? [] : nil
             begin
                 results=super(*params)
+                SimpleRecord.stats.selects += 1
                 if q_type != :count
                     cache_results(results)
                     if results.is_a?(Array)
