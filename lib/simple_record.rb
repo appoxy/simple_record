@@ -790,28 +790,6 @@ module SimpleRecord
 
         def reload
             super()
-#    puts 'decoding...'
-
-=begin
-This is done on getters now
- if !@@dates.nil?
-        for d in @@dates
-#        puts 'converting created: ' + self['created'].inspect
-          if !self[d].nil?
-            self[d].collect!{ |d2|
-              if d2.is_a?(String)
-                DateTime.parse(d2)
-              else
-                d2
-              end
-            }
-          end
-#        puts 'after=' + self['created'].inspect
-        end
-      end
-=end
-
-#      unpad_self
         end
 
         def update_attributes(*params)
@@ -850,6 +828,7 @@ This is done on getters now
             end
         end
 
+        @@regex_no_id = /.*Couldn't find.*with ID.*/
         def self.find(*params)
             #puts 'params=' + params.inspect
             q_type = :all
@@ -893,36 +872,8 @@ This is done on getters now
             return results
         end
 
-        @@regex_no_id = /.*Couldn't find.*with ID.*/
         def self.select(*params)
-            first=false
-            all=false
-            select=false
-            select_attributes=[]
-
-            if params.size > 0
-                all = params[0] == :all
-                first = params[0] == :first
-            end
-
-            options = params[1]
-            convert_condition_params(options)
-
-            results = all ? [] : nil
-            begin
-                results=super(*params)
-                cache_results(results)
-            rescue RightAws::AwsError, RightAws::ActiveSdb::ActiveSdbError
-                if ($!.message().index("NoSuchDomain") != nil)
-                    # this is ok
-                elsif ($!.message() =~ @@regex_no_id)
-                    results = nil
-                else
-                    raise $!
-                end
-            end
-            return results
-
+            return find(*params)
         end
 
         def self.convert_condition_params(options)

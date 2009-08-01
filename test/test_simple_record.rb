@@ -190,6 +190,11 @@ class TestSimpleRecord < Test::Unit::TestCase
 
     end
 
+    def test_select
+        # just passes through to find
+        MyModel.select(:count)
+    end
+
     def test_attributes_correct
 
         #MyModel.defined_attributes.each do |a|
