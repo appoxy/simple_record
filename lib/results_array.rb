@@ -20,6 +20,10 @@ module SimpleRecord
             @items[i]
         end
 
+        def first
+            @items[0] if @items.size > 0
+        end
+
         def size
             # puts 'SIZE count=' + @count.inspect
             return @count if @count
@@ -63,6 +67,7 @@ module SimpleRecord
                 options[:next_token] = next_token
                 res = clz.find(*params)
                 @items = res.items
+                # todo: should append items here instead of replacing the array
                 @next_token = res.next_token
                 each(&blk)
             end
