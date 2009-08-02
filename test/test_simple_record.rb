@@ -215,4 +215,12 @@ class TestSimpleRecord < Test::Unit::TestCase
         #   puts 'x=' + x.id
         #end
     end
+
+    def test_results_array
+        mms = MyModel.find(:all) # select 2
+        assert !mms.first.nil?
+        assert !mms.last.nil?
+        assert !mms.empty?
+        assert mms.include?(mms[0])
+    end
 end

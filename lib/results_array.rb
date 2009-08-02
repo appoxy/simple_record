@@ -1,4 +1,7 @@
 module SimpleRecord
+
+    #
+    # We need to make this behave as if the full set were loaded into the array.
     class ResultsArray
 
         attr_reader :next_token, :clz, :params, :items, :i
@@ -17,11 +20,28 @@ module SimpleRecord
         end
 
         def [](i)
+            # todo: load items up to i if size > i
             @items[i]
         end
 
         def first
-            @items[0] if @items.size > 0
+            @items[0]
+        end
+
+        def last
+            @items[@items.length-1]
+        end
+
+        def empty?
+            @items.empty?
+        end
+
+        def include?(obj)
+            @items.include?(obj)
+        end
+
+         def include?(obj)
+            @items.include?(obj)
         end
 
         def size
@@ -38,7 +58,6 @@ module SimpleRecord
         def length
             return size
         end
-
 
         def each(&blk)
             limit = nil
