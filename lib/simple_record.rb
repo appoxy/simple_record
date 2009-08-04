@@ -116,7 +116,7 @@ module SimpleRecord
 
 
         def self.inherited(base)
-            puts 'SimpleRecord::Base is inherited by ' + base.inspect
+            #puts 'SimpleRecord::Base is inherited by ' + base.inspect
             setup_callbacks(base)
 
             base.has_dates :created, :updated

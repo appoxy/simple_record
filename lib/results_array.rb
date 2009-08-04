@@ -3,8 +3,10 @@ module SimpleRecord
     #
     # We need to make this behave as if the full set were loaded into the array.
     class ResultsArray
+        include Enumerable
 
         attr_reader :next_token, :clz, :params, :items, :i
+
 
         def initialize(clz=nil, params=[], items=[], next_token=nil)
             @clz = clz
@@ -24,6 +26,10 @@ module SimpleRecord
             @items[i]
         end
 
+         def [](i,j)
+            @items[i,j]
+        end
+
         def first
             @items[0]
         end
@@ -37,10 +43,6 @@ module SimpleRecord
         end
 
         def include?(obj)
-            @items.include?(obj)
-        end
-
-         def include?(obj)
             @items.include?(obj)
         end
 
@@ -70,7 +72,7 @@ module SimpleRecord
             end
 
             @items.each do |v|
-                puts @i.to_s
+                #puts @i.to_s
                 yield v
                 @i += 1
                 if !limit.nil? && @i >= limit
@@ -85,12 +87,15 @@ module SimpleRecord
                 #puts 'params in block=' + params.inspect
                 options[:next_token] = next_token
                 res = clz.find(*params)
-                @items = res.items
-                # todo: should append items here instead of replacing the array
+                items = res.items
+                items.each do |item|
+                    @items << item
+                end
                 @next_token = res.next_token
                 each(&blk)
             end
         end
+
     end
 end
 
