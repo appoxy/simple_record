@@ -172,7 +172,7 @@ class TestSimpleRecord < Test::Unit::TestCase
     def test_count
 
         SimpleRecord.stats.clear
-        
+
         count = MyModel.find(:count) # select 1
         assert count > 0
 
@@ -222,5 +222,10 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert !mms.last.nil?
         assert !mms.empty?
         assert mms.include?(mms[0])
+
+        assert mms[2,2].size == 2
+        assert mms[2..5].size == 4
+        assert mms[2...5].size == 3
+
     end
 end

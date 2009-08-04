@@ -21,13 +21,9 @@ module SimpleRecord
             @items << val
         end
 
-        def [](i)
+        def [](*i)
             # todo: load items up to i if size > i
-            @items[i]
-        end
-
-         def [](i,j)
-            @items[i,j]
+            @items[*i]
         end
 
         def first
@@ -87,7 +83,7 @@ module SimpleRecord
                 #puts 'params in block=' + params.inspect
                 options[:next_token] = next_token
                 res = clz.find(*params)
-                items = res.items
+                items = res.items # get the real items array from the ResultsArray
                 items.each do |item|
                     @items << item
                 end
