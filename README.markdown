@@ -11,18 +11,18 @@ http://activrecord2sdb.rubyforge.org/
 
 ## Getting Started
 
-Install gems
+1. Install gems
 
-    gem install appoxy-aws uuidtools appoxy-simple_record
+        gem install appoxy-aws uuidtools appoxy-simple_record
 
 2. Create a model
 
-    require 'simple_record'
-
-    class MyModel < SimpleRecord::Base
-       has_attributes :name
-       has_ints :age
-    end
+        require 'simple_record'
+    
+        class MyModel < SimpleRecord::Base
+           has_attributes :name
+           has_ints :age
+        end
 
 More about ModelAttributes below.
 
