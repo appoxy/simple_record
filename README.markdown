@@ -11,7 +11,7 @@ http://activrecord2sdb.rubyforge.org/
 
 ## Getting Started
 
-1. Install gems
+Install gems
 
     gem install appoxy-aws uuidtools appoxy-simple_record
 
@@ -74,9 +74,9 @@ For rails, be sure to add this to your Application controller if using per_threa
 
     after_filter :close_sdb_connection
 
-      def close_sdb_connection
+    def close_sdb_connection
         SimpleRecord.close_connection
-      end
+    end
 
 ## SimpleRecord on Rails
 
