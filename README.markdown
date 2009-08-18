@@ -28,23 +28,71 @@ More about ModelAttributes below.
 
 3. Setup environment
 
-    AWS_ACCESS_KEY_ID='XXXX'
-    AWS_SECRET_ACCESS_KEY='YYYY'
-    SimpleRecord.establish_connection(AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY)
+        AWS_ACCESS_KEY_ID='XXXX'
+        AWS_SECRET_ACCESS_KEY='YYYY'
+        SimpleRecord.establish_connection(AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY)
 
 4. Go to town
 
-    # Store a model object to SimpleDB
-    mm = MyModel.new
-    mm.name = "Travis"
-    mm.age = 32
-    mm.save
-    id = mm.id
+        # Store a model object to SimpleDB
+        mm = MyModel.new
+        mm.name = "Travis"
+        mm.age = 32
+        mm.save
+        id = mm.id
 
-    # Get an object from SimpleDB
-    mm2 = MyModel.find(id)
-    puts 'got=' + mm2.name + ' and he/she is ' + mm.age.to_s + ' years old'
-    # Or more advanced queries? mms = MyModel?.find(:all, ["age=?", 32], :order=>"name", :limit=>10)
+        # Get an object from SimpleDB
+        mm2 = MyModel.find(id)
+        puts 'got=' + mm2.name + ' and he/she is ' + mm.age.to_s + ' years old'
+        # Or more advanced queries? mms = MyModel?.find(:all, ["age=?", 32], :order=>"name", :limit=>10)
+
+
+## Attributes and modifiers for models
+
+NOTE: All objects will automatically have :id, :created, :updated attributes.
+
+### has_attributes
+
+Add string attributes.
+
+    class MyModel
+      has_attributes :name
+    end
+
+### has_ints, has_dates and has_booleans
+
+Lets simple_record know that certain attributes defined in has_attributes should be treated as integers, dates or booleans. This is required because SimpleDB only has strings so SimpleRecord needs to know how to convert, pad, offset, etc.
+
+    class MyModel
+      has_attributes :name
+      has_ints :age, :height
+      has_dates :birthday
+      has_booleans :is_nerd
+    end
+
+### belongs_to
+
+Creates a many-to-one relationship. Can only have one per belongs_to call.
+
+    class MyModel
+        belongs_to :school
+        has_attributes :name
+        has_ints :age, :height
+        has_dates :birthday
+        has_booleans :is_nerd
+    end
+
+Which requires another class called 'School' or you can specify the class explicitly with:
+
+    belongs_to :school, :class_name => "Institution"
+
+### set_table_name or set_domain_name
+
+If you want to use a custom domain for a model object, you can specify it with set_table_name (or set_domain_name).
+
+    class SomeModel
+        set_table_name :different_model
+    end
 
 
 ## Configuration
