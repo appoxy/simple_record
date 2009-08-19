@@ -1,8 +1,4 @@
-# simple_record
-
-http://code.google.com/p/simple-record/
-
-## DESCRIPTION:
+# SimpleRecord - ActiveRecord for SimpleDB
 
 An ActiveRecord interface for SimpleDB.  Can be used as a drop in replacement for ActiveRecord in rails.
 
@@ -136,9 +132,9 @@ Use per_thread connection mode and close the connection after each request.
 
     after_filter :close_sdb_connection
 
-      def close_sdb_connection
+    def close_sdb_connection
         SimpleRecord.close_connection
-      end
+    end
 
 ### Disable ActiveRecord so you don't have to setup another database
 
@@ -154,6 +150,7 @@ This is most helpful on windows so Rails doesn't need sqlite or mysql gems/drive
 
 ### Automagic Stuff
 
+
 #### Automatic common fields
 
 Every object will automatically get the following attributes so you don't need to define them:
@@ -161,6 +158,7 @@ Every object will automatically get the following attributes so you don't need t
   * id - UUID string
   * created - set when first save
   * updated - set every time you save/update
+
 
 #### belongs_to foreign keys/IDs are accessible without touching the database
 

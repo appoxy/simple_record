@@ -186,8 +186,11 @@ module SimpleRecord
 
 
         attr_accessor :errors
-        @@domain_prefix = ''
-        @domain_name_for_class = nil
+
+        @domain_prefix = ''
+        class << self; attr_accessor :domain_prefix; end
+
+        #@domain_name_for_class = nil
 
         @@cache_store = nil
         # Set the cache to use
@@ -200,7 +203,8 @@ module SimpleRecord
 
         # If you want a domain prefix for all your models, set it here.
         def self.set_domain_prefix(prefix)
-            @@domain_prefix = prefix
+            #puts 'set_domain_prefix=' + prefix
+            self.domain_prefix = prefix
         end
 
         # Same as set_table_name
@@ -211,25 +215,29 @@ module SimpleRecord
         # Sets the domain name for this class
         def self.set_domain_name(table_name)
             # puts 'setting domain name for class ' + self.inspect + '=' + table_name
-            @domain_name_for_class = table_name
+            #@domain_name_for_class = table_name
             super
         end
 
-        def self.get_domain_name
+=begin
+ def self.get_domain_name
             # puts 'returning domain_name=' + @domain_name_for_class.to_s
-            return @domain_name_for_class
+            #return @domain_name_for_class
+            return self.domain
         end
 
+=end
 
         def domain
             super # super.domain
         end
 
         def self.domain
-            return self.get_domain_name unless self.get_domain_name.nil?
+            #return self.get_domain_name unless self.get_domain_name.nil?
             d = super
-            domain_name_for_class = @@domain_prefix + d.to_s
-            self.set_domain_name(domain_name_for_class)
+            #puts 'in self.domain, d=' + d.to_s + ' domain_prefix=' + SimpleRecord::Base.domain_prefix.to_s
+            domain_name_for_class = SimpleRecord::Base.domain_prefix + d.to_s
+            #self.set_domain_name(domain_name_for_class)
             domain_name_for_class
         end
 
@@ -916,7 +924,7 @@ module SimpleRecord
         end
 
         def self.table_name
-            return @@domain_prefix + self.class.name.tableize
+            return domain
         end
 
         def changed
