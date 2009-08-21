@@ -51,7 +51,7 @@ NOTE: All objects will automatically have :id, :created, :updated attributes.
 
 Add string attributes.
 
-    class MyModel
+    class MyModel < SimpleRecord::Base
       has_attributes :name
     end
 
@@ -59,7 +59,7 @@ Add string attributes.
 
 Lets simple_record know that certain attributes defined in has_attributes should be treated as integers, dates or booleans. This is required because SimpleDB only has strings so SimpleRecord needs to know how to convert, pad, offset, etc.
 
-    class MyModel
+    class MyModel < SimpleRecord::Base
       has_attributes :name
       has_ints :age, :height
       has_dates :birthday
@@ -70,7 +70,7 @@ Lets simple_record know that certain attributes defined in has_attributes should
 
 Creates a many-to-one relationship. Can only have one per belongs_to call.
 
-    class MyModel
+    class MyModel < SimpleRecord::Base
         belongs_to :school
         has_attributes :name
         has_ints :age, :height
@@ -86,7 +86,7 @@ Which requires another class called 'School' or you can specify the class explic
 
 If you want to use a custom domain for a model object, you can specify it with set_table_name (or set_domain_name).
 
-    class SomeModel
+    class SomeModel < SimpleRecord::Base
         set_table_name :different_model
     end
 
