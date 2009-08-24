@@ -178,7 +178,7 @@ class TestSimpleRecord < Test::Unit::TestCase
 
         mms = MyModel.find(:all) # select 2
         assert mms.size > 0 # select 3
-        assert mms.size == count # skipped
+        assert mms.size == count, "size != count! size=" + mms.size.to_s + " count=" + count.to_s
         assert SimpleRecord.stats.selects == 3, "should have been 3 select, but was actually #{SimpleRecord.stats.selects}" # count should not have been called twice
 
         count = MyModel.find(:count, :conditions=>["name=?", "Travis"])

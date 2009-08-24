@@ -261,7 +261,7 @@ module SimpleRecord
 
         def make_dirty(arg, value)
             # todo: only set dirty if it changed
-            #puts 'making dirty ' + @dirty.inspect
+            #puts 'making dirty arg=' + arg.to_s + ' --- ' + @dirty.inspect
             @dirty[arg] = get_attribute(arg) # Store old value (not sure if we need it?)
             #puts 'end making dirty ' + @dirty.inspect
         end
@@ -271,7 +271,7 @@ module SimpleRecord
                 defined_attributes[arg] = SimpleRecord::Base::Attribute.new(:string) if defined_attributes[arg].nil?
                 # define reader method
                 arg_s = arg.to_s # to get rid of all the to_s calls
-                send :define_method, arg do
+                send(:define_method, arg) do
                     ret = nil
                     ret = get_attribute(arg)
                     return nil if ret.nil?
@@ -279,16 +279,15 @@ module SimpleRecord
                 end
 
                 # define writer method
-                method_name = (arg_s+"=")
-                send(:define_method, method_name) do |value|
+                send(:define_method, arg_s+"=") do |value|
                     make_dirty(arg_s, value)
-                    self[arg.to_s]=value
+                    self[arg_s]=value
                 end
 
                 # Now for dirty methods: http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html
                 # define changed? method
                 send(:define_method, arg_s + "_changed?") do
-                    !@dirty[arg_s].nil?
+                    @dirty.has_key?(arg_s)
                 end
 
                 # define change method
@@ -490,7 +489,7 @@ module SimpleRecord
         end
 
         def []=(attribute, values)
-            @dirty[attribute] = get_attribute(attribute)
+            make_dirty(attribute, values)
             super
         end
 
