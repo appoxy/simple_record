@@ -92,6 +92,14 @@ module SimpleRecord
             end
         end
 
+        def delete(item)
+            @items.delete(item)
+        end
+
+        def delete_at(index)
+            @items.delete_at(index)
+        end
+
     end
 end
 
