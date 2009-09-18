@@ -11,7 +11,7 @@ begin
         gemspec.email = "travis@appoxy.com"
         gemspec.homepage = "http://github.com/appoxy/simple_record/"
         gemspec.description = "Drop in replacement for ActiveRecord to Amazon SimpleDB instead."
-        gemspec.authors = ["Travis Reeder", "RightScale"]
+        gemspec.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
         gemspec.files = FileList['lib/**/*.rb']
     end
 rescue LoadError

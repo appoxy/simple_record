@@ -1007,6 +1007,14 @@ module SimpleRecord
             return load << ob
         end
 
+        def count
+            return load.count
+        end
+
+        def size
+            return count
+        end
+
         def each(*params, &block)
             return load.each(*params){|record| block.call(record)}
         end
