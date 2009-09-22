@@ -196,6 +196,7 @@ class TestSimpleRecord < Test::Unit::TestCase
     end
 
     def test_attributes_correct
+        # child should contain child class attributes + parent class attributes
 
         #MyModel.defined_attributes.each do |a|
         #
@@ -207,13 +208,22 @@ class TestSimpleRecord < Test::Unit::TestCase
 
     # ensures that it uses next token and what not
     def test_big_result
-        #110.times do |i|
-        #    MyModel
-        #end
-        #rs = MyModel.find(:all, :limit=>300)
-        #rs.each do |x|
-        #   puts 'x=' + x.id
-        #end
+        mms = MyModel.find(:all)
+        mms.each do |x|
+            x.delete
+        end
+        num_made = 110
+        num_made.times do |i|
+            mm = MyModel.create(:name=>"Travis", :age=>32, :cool=>true)
+        end
+        rs = MyModel.find(:all) # should get 100 at a time
+        assert rs.size == num_made
+        i = 0
+        rs.each do |x|
+            #puts 'x=' + x.id
+            i+=1
+        end
+        assert i == num_made
     end
 
     def test_results_array
@@ -223,9 +233,23 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert !mms.empty?
         assert mms.include?(mms[0])
 
-        assert mms[2,2].size == 2
+        assert mms[2, 2].size == 2
         assert mms[2..5].size == 4
         assert mms[2...5].size == 3
+
+    end
+
+    def test_objects_in_constructor
+        mm = MyModel.new(:name=>"model1")
+        mm.save
+        mcm = MyChildModel.new(:name=>"johnny", :my_model=>mm)
+        mcm.save
+
+        assert !mcm.my_model.nil?
+
+        mcm = MyChildModel.find(mcm.id)
+        assert !mcm.my_model.nil?
+
 
     end
 end

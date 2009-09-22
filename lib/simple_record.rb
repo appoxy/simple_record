@@ -81,6 +81,10 @@ module SimpleRecord
         include SimpleRecord::Callbacks
 
 
+        def initialize(attrs={})
+            super
+            # Need to deal with objects passed in. iterate through belongs_to perhaps and if in attrs, set the objects id rather than the object itself
+        end
 
 
         # todo: move into Callbacks module
@@ -181,7 +185,8 @@ module SimpleRecord
 
         def defined_attributes_local
             #puts 'local defined_attributes'
-            self.class.defined_attributes
+            ret = self.class.defined_attributes
+            ret.merge!(self.class.superclass.defined_attributes) if self.class.superclass.respond_to?(:defined_attributes)
         end
 
 
@@ -305,6 +310,9 @@ module SimpleRecord
             end
         end
 
+        def self.has_strings(*args)
+            has_attributes(*args)
+        end
         def self.has_ints(*args)
             has_attributes(*args)
             are_ints(*args)
