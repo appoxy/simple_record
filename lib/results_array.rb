@@ -13,6 +13,7 @@ module SimpleRecord
             #puts 'class=' + clz.inspect
             @params = params
             @items = items
+            @currentset_items = items
             @next_token = next_token
             @i = 0
         end
@@ -67,7 +68,7 @@ module SimpleRecord
                 params[1] = options
             end
 
-            @items.each do |v|
+            @currentset_items.each do |v|
                 #puts @i.to_s
                 yield v
                 @i += 1
@@ -81,10 +82,12 @@ module SimpleRecord
             unless next_token.nil?
                 #puts 'finding more items...'
                 #puts 'params in block=' + params.inspect
+                #puts "i from results_array = " + @i.to_s
+
                 options[:next_token] = next_token
                 res = clz.find(*params)
-                items = res.items # get the real items array from the ResultsArray
-                items.each do |item|
+                @currentset_items = res.items # get the real items array from the ResultsArray
+                @currentset_items.each do |item|
                     @items << item
                 end
                 @next_token = res.next_token
@@ -102,4 +105,3 @@ module SimpleRecord
 
     end
 end
-
