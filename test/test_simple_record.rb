@@ -276,5 +276,25 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert !mcm.my_model.nil?
 
     end
-    
+
+    def test_validations
+        mm = MyModel.new()
+        assert mm.invalid?
+        assert mm.errors.size == 1
+        mm.name = "abcd"
+        assert mm.valid?
+        assert mm.errors.size == 0
+
+        mm.save_count = 2
+        assert mm.invalid?
+
+        mm.save_count = nil
+
+        assert mm.save, mm.errors.inspect
+
+        assert mm.valid?, mm.errors.inspect
+        assert mm.save_count == 1
+
+    end
+
 end

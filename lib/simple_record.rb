@@ -147,16 +147,16 @@ module SimpleRecord
                 class_eval <<-endofeval
 
              def run_#{callback}
-                #puts 'CLASS CALLBACKS for ' + self.inspect + ' = ' + self.class.callbacks.inspect
+#                puts 'CLASS CALLBACKS for ' + self.inspect + ' = ' + self.class.callbacks.inspect
                 return true if self.class.callbacks.nil?
                 cnames = self.class.callbacks['#{callback}']
                 cnames = [] if cnames.nil?
                 #cnames += super.class.callbacks['#{callback}'] unless super.class.callbacks.nil?
-                # puts 'cnames XXX = ' + cnames.inspect
+#                 puts 'cnames for #{callback} = ' + cnames.inspect
                 return true if cnames.nil?
                 cnames.each { |name|
                     #puts 'run_  #{name}'
-                  unless eval(name)
+                  if eval(name) == false # nil should be an ok return, only looking for false
                     return false
                   end
               }
@@ -562,6 +562,44 @@ module SimpleRecord
             return false
         end
 
+        def valid?
+            errors.clear
+
+#            run_callbacks(:validate)
+            validate
+
+            if new_record?
+#                run_callbacks(:validate_on_create)
+                validate_on_create
+            else
+#                run_callbacks(:validate_on_update)
+                validate_on_update
+            end
+
+            errors.empty?
+        end
+
+        def new_record?
+            # todo: new_record in activesdb should align with how we're defining a new record here, ie: if id is nil
+            super
+        end
+
+        def invalid?
+            !valid?
+        end
+
+        def validate
+            true
+        end
+
+        def validate_on_create
+            true
+        end
+
+        def validate_on_update
+            true
+        end
+
         @create_domain_called = false
 
         # Options:
@@ -580,14 +618,15 @@ module SimpleRecord
                         options[:dirty_atts] = @dirty
                     end
                     to_delete = get_atts_to_delete # todo: this should use the @dirty hash now
+#                    puts 'saving'
                     if super(options)
 #          puts 'SAVED super'
                         self.class.cache_results(self)
                         delete_niled(to_delete)
-                        if is_create ? run_after_create : run_after_update && run_after_save
+                        if (is_create ? run_after_create : run_after_update) && run_after_save
+#                            puts 'all good?'
                             return true
                         else
-                            #I thought about calling destroy here, but rails doesn't behave that way, so neither will I
                             return false
                         end
                     else
@@ -650,19 +689,18 @@ module SimpleRecord
         def pre_save(options)
 
             is_create = self[:id].nil?
-            ok = run_before_validation && is_create ? run_before_validation_on_create : run_before_validation_on_update
+            ok = run_before_validation && (is_create ? run_before_validation_on_create : run_before_validation_on_update)
             return false unless ok
 
-            if respond_to?('validate')
-                validate
+            validate
+            is_create ? validate_on_create : validate_on_update
 #      puts 'AFTER VALIDATIONS, ERRORS=' + errors.inspect
-                if (!@errors.nil? && @errors.length > 0 )
+            if (!@errors.nil? && @errors.length > 0 )
 #        puts 'THERE ARE ERRORS, returning false'
-                    return false
-                end
+                return false
             end
 
-            ok = run_after_validation && is_create ? run_after_validation_on_create : run_after_validation_on_update
+            ok = run_after_validation && (is_create ? run_after_validation_on_create : run_after_validation_on_update)
             return false unless ok
 
             ok = respond_to?('before_save') ? before_save : true
@@ -674,7 +712,7 @@ module SimpleRecord
                 end
             end
             if ok
-                ok = run_before_save && is_create ? run_before_create : run_before_update
+                ok = run_before_save && (is_create ? run_before_create : run_before_update)
             end
             if ok
 #      puts 'ABOUT TO SAVE: ' + self.inspect
@@ -1001,6 +1039,14 @@ module SimpleRecord
 
         def full_messages
             return @errors
+        end
+
+        def clear
+            @errors.clear
+        end
+
+        def empty?
+            @errors.empty?
         end
     end
 
