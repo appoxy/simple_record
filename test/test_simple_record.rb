@@ -204,11 +204,10 @@ class TestSimpleRecord < Test::Unit::TestCase
 
     end
 
-
     # ensures that it uses next token and what not
     def test_big_result
         mms = MyModel.find(:all)
-        puts 'mms.size=' + mms.size
+        puts 'mms.size=' + mms.size.to_s
         i = 0
         mms.each do |x|
             puts 'deleting=' + i.to_s
@@ -276,6 +275,6 @@ class TestSimpleRecord < Test::Unit::TestCase
         mcm = MyChildModel.find(mcm.id)
         assert !mcm.my_model.nil?
 
-
     end
+    
 end
