@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
 
 class MyModel < SimpleRecord::Base
 
-    has_attributes :name, :nickname
+    has_strings :name, :nickname
     has_ints :age
     has_booleans :cool
     has_dates :birthday

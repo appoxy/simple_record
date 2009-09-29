@@ -113,7 +113,6 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert mm2.name = mm.name
 
 
-
     end
 
     def test_dirty
@@ -209,12 +208,16 @@ class TestSimpleRecord < Test::Unit::TestCase
     # ensures that it uses next token and what not
     def test_big_result
         mms = MyModel.find(:all)
+        puts 'mms.size=' + mms.size
+        i = 0
         mms.each do |x|
+            puts 'deleting=' + i.to_s
             x.delete
+            i+=1
         end
         num_made = 110
         num_made.times do |i|
-            mm = MyModel.create(:name=>"Travis", :age=>32, :cool=>true)
+            mm = MyModel.create(:name=>"Travis", :age=>i, :cool=>true)
         end
         rs = MyModel.find(:all) # should get 100 at a time
         assert rs.size == num_made
@@ -236,6 +239,29 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert mms[2, 2].size == 2
         assert mms[2..5].size == 4
         assert mms[2...5].size == 3
+
+    end
+
+    def test_random_index
+        create_my_models(120)
+        mms = MyModel.find(:all)
+        o = mms[85]
+        puts 'o=' + o.inspect
+        assert !o.nil?
+        o = mms[111]
+        puts 'o=' + o.inspect
+        assert !o.nil?
+    end
+
+    # Use to populate db
+    def create_my_models(count)
+        batch = []
+        count.times do |i|
+            mm = MyModel.new(:name=>"model_" + i.to_s)
+            batch << mm
+        end
+        MyModel.batch_save batch
+
 
     end
 

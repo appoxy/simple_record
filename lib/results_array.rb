@@ -12,6 +12,10 @@ module SimpleRecord
             @clz = clz
             #puts 'class=' + clz.inspect
             @params = params
+            if @params.size <= 1
+                options = {}
+                @params[1] = options
+            end
             @items = items
             @currentset_items = items
             @next_token = next_token
@@ -23,8 +27,35 @@ module SimpleRecord
         end
 
         def [](*i)
-            # todo: load items up to i if size > i
+            puts 'i.inspect=' + i.inspect
+            puts i.size.to_s
+            i.each do |x|
+                puts 'x=' + x.inspect + " -- " + x.class.name
+            end
+            if i.size == 1
+                # either fixnum or range
+                x = i[0]
+                if x.is_a?(Fixnum)
+                    load_to(x)
+                else
+                    # range
+                    end_val = x.exclude_end? ? x.end-1 : x.end
+                    load_to(end_val)
+                end
+            elsif i.size == 2
+                # two fixnums
+                end_val = i[0] + i[1]
+                load_to(end_val)
+            end
             @items[*i]
+        end
+
+        # Will load items from SimpleDB up to i.
+        def load_to(i)
+            return if @items.size >= i
+            while @items.size < i && !@next_token.nil?
+                load_next_token_set
+            end
         end
 
         def first
@@ -59,40 +90,39 @@ module SimpleRecord
         end
 
         def each(&blk)
-            limit = nil
-            if params.size > 1
-                options = params[1]
-                limit = options[:limit]
-            else
-                options = {}
-                params[1] = options
-            end
+            options = @params[1]
+            limit = options[:limit]
 
             @currentset_items.each do |v|
-                #puts @i.to_s
+#                puts @i.to_s
                 yield v
                 @i += 1
                 if !limit.nil? && @i >= limit
                     return
                 end
             end
-            # no more items, but is there a next token?
-            return if clz.nil?
+            return if @clz.nil?
 
-            unless next_token.nil?
+            # no more items, but is there a next token?
+            unless @next_token.nil?
                 #puts 'finding more items...'
                 #puts 'params in block=' + params.inspect
                 #puts "i from results_array = " + @i.to_s
 
-                options[:next_token] = next_token
-                res = clz.find(*params)
-                @currentset_items = res.items # get the real items array from the ResultsArray
-                @currentset_items.each do |item|
-                    @items << item
-                end
-                @next_token = res.next_token
+                load_next_token_set
                 each(&blk)
             end
+        end
+
+        def load_next_token_set
+            options = @params[1]
+            options[:next_token] = @next_token
+            res = @clz.find(*@params)
+            @currentset_items = res.items # get the real items array from the ResultsArray
+            @currentset_items.each do |item|
+                @items << item
+            end
+            @next_token = res.next_token
         end
 
         def delete(item)

@@ -22,7 +22,6 @@
 # puts 'got=' + mm2.name + ' and he/she is ' + mm.age.to_s + ' years old'
 
 
-
 require 'right_aws'
 require 'sdb/active_sdb'
 #require 'results_array' # why the heck isn't this picking up???
@@ -118,7 +117,6 @@ module SimpleRecord
         #puts 'base methods=' + self.methods.inspect
 
 
-
         def self.inherited(base)
             #puts 'SimpleRecord::Base is inherited by ' + base.inspect
             setup_callbacks(base)
@@ -171,7 +169,6 @@ module SimpleRecord
         end
 
 
-
         # Holds information about an attribute
         class Attribute
             attr_accessor :type, :options
@@ -193,7 +190,9 @@ module SimpleRecord
         attr_accessor :errors
 
         @domain_prefix = ''
-        class << self; attr_accessor :domain_prefix; end
+        class << self;
+            attr_accessor :domain_prefix;
+        end
 
         #@domain_name_for_class = nil
 
@@ -202,6 +201,7 @@ module SimpleRecord
         def self.cache_store=(cache)
             @@cache_store = cache
         end
+
         def self.cache_store
             return @@cache_store
         end
@@ -245,7 +245,6 @@ module SimpleRecord
             #self.set_domain_name(domain_name_for_class)
             domain_name_for_class
         end
-
 
 
         # Since SimpleDB supports multiple attributes per value, the values are an array.
@@ -313,14 +312,17 @@ module SimpleRecord
         def self.has_strings(*args)
             has_attributes(*args)
         end
+
         def self.has_ints(*args)
             has_attributes(*args)
             are_ints(*args)
         end
+
         def self.has_dates(*args)
             has_attributes(*args)
             are_dates(*args)
         end
+
         def self.has_booleans(*args)
             has_attributes(*args)
             are_booleans(*args)
@@ -346,6 +348,7 @@ module SimpleRecord
         end
 
         @@virtuals=[]
+
         def self.has_virtuals(*args)
             @@virtuals = args
             args.each do |arg|
@@ -712,12 +715,16 @@ module SimpleRecord
                     ok = o.pre_save(options)
                     raise "Pre save failed on object [" + o.inspect + "]" if !ok
                     results << ok
-                    next if !ok
+                    next if !ok # todo: this shouldn't be here should it?  raises above
                     o.pre_save2
                     to_save << RightAws::SdbInterface::Item.new(o.id, o.attributes, true)
+                    if to_save.size == 25 # Max amount SDB will accept
+                        connection.batch_put_attributes(domain, to_save)
+                        to_save.clear
+                    end
                 end
             end
-            connection.batch_put_attributes(domain, to_save)
+            connection.batch_put_attributes(domain, to_save) if to_save.size > 0
             results
         end
 
@@ -737,7 +744,7 @@ module SimpleRecord
         end
 
         def un_offset_if_int(arg, x)
-            att_meta =  defined_attributes_local[arg]
+            att_meta = defined_attributes_local[arg]
 #          puts 'int encoding: ' + i.to_s
             if att_meta.type == :int
                 x = un_offset_int(x)
@@ -844,6 +851,15 @@ module SimpleRecord
         end
 
         @@regex_no_id = /.*Couldn't find.*with ID.*/
+
+        #
+        # Usage:
+        # Find by ID:
+        #   MyModel.find(ID)
+        #
+        # Query:
+        #   MyModel.find(:all, ["name = ?", name], :order=>"created desc", :limit=>10)
+        #
         def self.find(*params)
             #puts 'params=' + params.inspect
             q_type = :all
@@ -922,6 +938,7 @@ module SimpleRecord
         end
 
         @@debug=""
+
         def self.debug
             @@debug
         end
