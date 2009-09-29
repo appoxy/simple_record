@@ -2,8 +2,13 @@
 
 An ActiveRecord interface for SimpleDB.  Can be used as a drop in replacement for ActiveRecord in rails.
 
-Special thanks to Garrett Cox for creating Activerecord2sdb which SimpleRecord is based on: 
-http://activrecord2sdb.rubyforge.org/
+## Discussion Group
+
+[http://groups.google.com/group/simple-record]
+
+## Issue Tracking
+
+[http://appoxy.lighthouseapp.com/projects/38366-simplerecord/overview]
 
 ## Getting Started
 
@@ -182,3 +187,7 @@ or
 
     o.something_id = x
 
+## Kudos
+
+Special thanks to Garrett Cox for creating Activerecord2sdb which SimpleRecord is based on:
+http://activrecord2sdb.rubyforge.org/
