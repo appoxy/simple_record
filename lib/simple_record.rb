@@ -1094,6 +1094,10 @@ module SimpleRecord
             find(:all, *params)
         end
 
+        def empty?
+            return load.empty?
+        end
+
         def build(*params)
             params[0][@referencename]=@referencevalue
             eval(@subname).new(*params)
