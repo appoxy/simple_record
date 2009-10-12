@@ -14,14 +14,14 @@ An ActiveRecord interface for SimpleDB.  Can be used as a drop in replacement fo
 
 1. Install gems
 
-        ONE TIME: Be sure to add the new gemcutter source:
+ONE TIME: Be sure to add the new gemcutter source:
 
-        - gem install gemcutter
-        - gem tumble
+    gem install gemcutter
+    gem tumble
 
-        THEN (if you already have http://gemcutter.org in your sources and it MUST be above rubyforge.org):
+THEN (you should have http://gemcutter.org in your sources and it MUST be above gems.rubyforge.org):
 
-        gem install aws uuidtools http_connection simple_record
+    gem install simple_record
 
 2. Create a model
 

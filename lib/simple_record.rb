@@ -81,8 +81,18 @@ module SimpleRecord
 
 
         def initialize(attrs={})
+            # todo: Need to deal with objects passed in. iterate through belongs_to perhaps and if in attrs, set the objects id rather than the object itself
+
+            #we have to handle the virtuals.
+            @@virtuals.each do |virtual|
+                #we first copy the information for the virtual to an instance variable of the same name
+                eval("@#{virtual}=attrs['#{virtual}']")
+                #and then remove the parameter before it is passed to initialize, so that it is NOT sent to SimpleDB
+                eval("attrs.delete('#{virtual}')")
+            end
             super
-            # Need to deal with objects passed in. iterate through belongs_to perhaps and if in attrs, set the objects id rather than the object itself
+            @errors=SimpleRecord_errors.new
+            @dirty = {}
         end
 
 
@@ -471,27 +481,6 @@ module SimpleRecord
         end
 
         def self.has_one(*args)
-
-        end
-
-        def initialize(*params)
-
-            if params[0]
-                #we have to handle the virtuals. Right now, this assumes that all parameters are passed from inside an array
-                #this is the usually the case when the parameters are passed passed via POST and obtained from the params array
-                @@virtuals.each do |virtual|
-                    #we first copy the information for the virtual to an instance variable of the same name
-                    eval("@#{virtual}=params[0]['#{virtual}']")
-                    #and then remove the parameter before it is passed to initialize, so that it is NOT sent to SimpleDB
-                    eval("params[0].delete('#{virtual}')")
-                end
-                super(*params)
-            else
-                super()
-            end
-            @errors=SimpleRecord_errors.new
-            @dirty = {}
-
 
         end
 
