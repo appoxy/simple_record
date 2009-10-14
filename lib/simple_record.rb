@@ -503,7 +503,7 @@ module SimpleRecord
         end
 
         def set_updated
-#    puts 'SETTING UPDATED'
+            #puts 'SETTING UPDATED'
             #    @updated = DateTime.now
             self[:updated] = DateTime.now
 #    @tester = 'some test value updated'
@@ -596,7 +596,7 @@ module SimpleRecord
         #   - :dirty => true - Will only store attributes that were modified
         #
         def save(options={})
-            #    puts 'SAVING: ' + self.inspect
+            #puts 'SAVING: ' + self.inspect
             clear_errors
             is_create = self[:id].nil?
             ok = pre_save(options)
@@ -607,7 +607,9 @@ module SimpleRecord
                         options[:dirty_atts] = @dirty
                     end
                     to_delete = get_atts_to_delete # todo: this should use the @dirty hash now
-#                    puts 'saving'
+
+                    #puts "to_delete" + to_delete.inspect
+
                     if super(options)
 #          puts 'SAVED super'
                         self.class.cache_results(self)
@@ -724,8 +726,10 @@ module SimpleRecord
             # todo: this should use the @dirty hash now
             to_delete = []
             @attributes.each do |key, value|
-                #      puts 'value=' + value.inspect
-                if value.nil? || (value.is_a?(Array) && value.size == 0)
+                #puts 'key = ' + key.inspect + ', value = ' + value.inspect + ', value class = ' + value.class.to_s
+
+                # This checks if the value is nil, the array is empty (previous check, may not even be necessary), or the array has only 1 item and that item is nil (this is a new check)
+                if value.nil? || (value.is_a?(Array) && value.size == 0) || (value.is_a?(Array) && value.size == 1 && value[0] == nil)
                     to_delete << key
                 end
             end
