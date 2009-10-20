@@ -28,7 +28,7 @@ THEN (you should have http://gemcutter.org in your sources and it MUST be above 
         require 'simple_record'
     
         class MyModel < SimpleRecord::Base
-           has_attributes :name
+           has_strings :name
            has_ints :age
         end
 
@@ -64,7 +64,7 @@ NOTE: All objects will automatically have :id, :created, :updated attributes.
 Add string attributes.
 
     class MyModel < SimpleRecord::Base
-      has_attributes :name
+      has_strings :name
     end
 
 ### has_ints, has_dates and has_booleans
@@ -72,7 +72,7 @@ Add string attributes.
 Lets simple_record know that certain attributes defined in has_attributes should be treated as integers, dates or booleans. This is required because SimpleDB only has strings so SimpleRecord needs to know how to convert, pad, offset, etc.
 
     class MyModel < SimpleRecord::Base
-      has_attributes :name
+      has_strings :name
       has_ints :age, :height
       has_dates :birthday
       has_booleans :is_nerd
@@ -84,7 +84,7 @@ Creates a many-to-one relationship. Can only have one per belongs_to call.
 
     class MyModel < SimpleRecord::Base
         belongs_to :school
-        has_attributes :name
+        has_strings :name
         has_ints :age, :height
         has_dates :birthday
         has_booleans :is_nerd
