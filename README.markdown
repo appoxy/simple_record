@@ -113,12 +113,11 @@ To set a global prefix across all your models, use:
 
 ### Connection Modes
 
-There are 4 different connection modes:
+There are 3 different connection modes:
 
 * per_request (default) - opens and closes a new connection to simpledb for every simpledb request. Not the best performance, but it's safe and can handle many concurrent requests at the same time (unlike single mode).
 * single - one connection across the entire application, not recommended unless the app is used by a single person.
 * per_thread - a connection is used for every thread in the application. This is good, but the catch is that you have to ensure to close the connection.
-* pool - NOT IMPLEMENTED YET - opens a maximum number of connections and round robins them for any simpledb request.
 
 You set the mode when you call establish_connection:
 

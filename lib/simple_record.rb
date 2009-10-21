@@ -525,7 +525,7 @@ module SimpleRecord
         @@padding = 20
         @@date_format = "%Y-%m-%dT%H:%M:%S"; # Time to second precision
 
-        def self.pad_and_offset(x)
+        def self.pad_and_offset(x) # Change name to something more appropriate like ruby_to_sdb
             # todo: add Float, etc
             #    puts 'padding=' + x.class.name + " -- " + x.inspect
             if x.kind_of? Integer
@@ -618,7 +618,7 @@ module SimpleRecord
                         options[:dirty_atts] = @dirty
                     end
                     to_delete = get_atts_to_delete # todo: this should use the @dirty hash now
-#                    puts 'saving'
+#                    puts 'done to_delete ' + to_delete.inspect
                     if super(options)
 #          puts 'SAVED super'
                         self.class.cache_results(self)
@@ -735,9 +735,10 @@ module SimpleRecord
             # todo: this should use the @dirty hash now
             to_delete = []
             @attributes.each do |key, value|
-                #      puts 'value=' + value.inspect
-                if value.nil? || (value.is_a?(Array) && value.size == 0)
+#                puts 'key=' + key.inspect + ' value=' + value.inspect
+                if value.nil? || (value.is_a?(Array) && value.size == 0) || (value.is_a?(Array) && value.size == 1 && value[0] == nil)
                     to_delete << key
+                    @attributes.delete(key)
                 end
             end
             return to_delete
@@ -775,8 +776,9 @@ module SimpleRecord
         end
 
         def delete_niled(to_delete)
+#            puts 'to_delete=' + to_delete.inspect
             if to_delete.size > 0
-#      puts 'Deleting attributes=' + to_delete.inspect
+                puts 'Deleting attributes=' + to_delete.inspect
                 delete_attributes to_delete
             end
         end

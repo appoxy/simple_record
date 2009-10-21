@@ -11,7 +11,7 @@ class MyModel < SimpleRecord::Base
     #callbacks
     before_create :set_nickname
 
-    after_save :bump_save_count
+    before_save :bump_save_count
 
     def set_nickname
         self.nickname = name if self.nickname.blank?

@@ -8,14 +8,14 @@ require 'my_child_model'
 class TestSimpleRecord < Test::Unit::TestCase
 
     def setup
-        @config = YAML::load(File.open(File.expand_path("~/.amazon/simple_record_tests.yml")))
+        @config = YAML::load(File.open(File.expand_path("~/.test-configs/simple_record.yml")))
         #puts @config.inspect
-        SimpleRecord.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :port=>80, :protocol=>"http")
+        SimpleRecord.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :connection_mode=>:single)
         SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")
     end
 
     def teardown
-        SimpleRecord.close_connection()
+        SimpleRecord.close_connection
     end
 
 
@@ -46,6 +46,15 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert mm2.cool = true
         assert mm2.name = "Travis"
         assert mm2.created.is_a? DateTime
+
+        # test nilification
+        mm2.age = nil
+        mm2.save
+        puts mm2.errors.inspect
+        sleep 1
+        mm2 = MyModel.find(id)
+        puts mm2.inspect
+        assert mm2.age.nil?, "doh, age is " + mm2.age.inspect
     end
 
     def test_bad_query
@@ -133,7 +142,7 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm2.name = "Travis 2"
         mm2.save(:dirty=>true)
 
-        # todo: how do we assert this?
+        # todo: how do we assert this?  perhaps change a value directly in sdb and see that it doesn't get overwritten
 
     end
 
@@ -206,14 +215,7 @@ class TestSimpleRecord < Test::Unit::TestCase
 
     # ensures that it uses next token and what not
     def test_big_result
-        mms = MyModel.find(:all)
-        puts 'mms.size=' + mms.size.to_s
-        i = 0
-        mms.each do |x|
-            puts 'deleting=' + i.to_s
-            x.delete
-            i+=1
-        end
+        i = clear_out_my_models
         num_made = 110
         num_made.times do |i|
             mm = MyModel.create(:name=>"Travis", :age=>i, :cool=>true)
@@ -226,6 +228,17 @@ class TestSimpleRecord < Test::Unit::TestCase
             i+=1
         end
         assert i == num_made
+    end
+
+    def clear_out_my_models
+        mms = MyModel.find(:all)
+        puts 'mms.size=' + mms.size.to_s
+        i = 0
+        mms.each do |x|
+            puts 'deleting=' + i.to_s
+            x.delete
+            i+=1
+        end
     end
 
     def test_results_array
@@ -296,5 +309,39 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert mm.save_count == 1
 
     end
+
+    def test_null
+        puts Time.now.to_i.to_s
+        clear_out_my_models
+
+        mm = MyModel.new(:name=>"birthay is null")
+        mm.save
+        mm2 = MyModel.new(:name=>"birthday is not null")
+        mm2.birthday = Time.now
+        mm2.save
+        sleep 2
+        mms = MyModel.find(:all, :conditions=>["birthday is null"])
+        mms.each do |m|
+            puts m.inspect
+        end
+        assert mms.size == 1
+        assert mms[0].id = mm.id
+         mms = MyModel.find(:all, :conditions=>["birthday is not null"])
+        mms.each do |m|
+            puts m.inspect
+        end
+        assert mms.size == 1
+        assert mms[0].id = mm2.id
+
+    end
+
+    # Test to add support for IN
+    def test_in_clause
+        mms = MyModel.find(:all)
+
+        mms2 = MyModel.find(:all, :conditions=>["id in ?"])
+
+    end
+
 
 end
