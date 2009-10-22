@@ -81,8 +81,18 @@ module SimpleRecord
 
 
         def initialize(attrs={})
+            # todo: Need to deal with objects passed in. iterate through belongs_to perhaps and if in attrs, set the objects id rather than the object itself
+
+            #we have to handle the virtuals.
+            @@virtuals.each do |virtual|
+                #we first copy the information for the virtual to an instance variable of the same name
+                eval("@#{virtual}=attrs['#{virtual}']")
+                #and then remove the parameter before it is passed to initialize, so that it is NOT sent to SimpleDB
+                eval("attrs.delete('#{virtual}')")
+            end
             super
-            # Need to deal with objects passed in. iterate through belongs_to perhaps and if in attrs, set the objects id rather than the object itself
+            @errors=SimpleRecord_errors.new
+            @dirty = {}
         end
 
 
@@ -474,27 +484,6 @@ module SimpleRecord
 
         end
 
-        def initialize(*params)
-
-            if params[0]
-                #we have to handle the virtuals. Right now, this assumes that all parameters are passed from inside an array
-                #this is the usually the case when the parameters are passed passed via POST and obtained from the params array
-                @@virtuals.each do |virtual|
-                    #we first copy the information for the virtual to an instance variable of the same name
-                    eval("@#{virtual}=params[0]['#{virtual}']")
-                    #and then remove the parameter before it is passed to initialize, so that it is NOT sent to SimpleDB
-                    eval("params[0].delete('#{virtual}')")
-                end
-                super(*params)
-            else
-                super()
-            end
-            @errors=SimpleRecord_errors.new
-            @dirty = {}
-
-
-        end
-
         def clear_errors
             @errors=SimpleRecord_errors.new
         end
@@ -514,7 +503,7 @@ module SimpleRecord
         end
 
         def set_updated
-#    puts 'SETTING UPDATED'
+            #puts 'SETTING UPDATED'
             #    @updated = DateTime.now
             self[:updated] = DateTime.now
 #    @tester = 'some test value updated'
@@ -651,6 +640,14 @@ module SimpleRecord
             end
         end
 
+        def save_with_validation!(options={})
+            if valid?
+                save
+            else
+                raise RecordInvalid.new(self)
+            end
+        end
+
         def pad_and_offset_ints_to_sdb()
 
             defined_attributes_local.each_pair do |name, att_meta|
@@ -692,7 +689,8 @@ module SimpleRecord
             ok = run_before_validation && (is_create ? run_before_validation_on_create : run_before_validation_on_update)
             return false unless ok
 
-            validate
+            validate()
+
             is_create ? validate_on_create : validate_on_update
 #      puts 'AFTER VALIDATIONS, ERRORS=' + errors.inspect
             if (!@errors.nil? && @errors.length > 0 )
@@ -778,7 +776,7 @@ module SimpleRecord
         def delete_niled(to_delete)
 #            puts 'to_delete=' + to_delete.inspect
             if to_delete.size > 0
-                puts 'Deleting attributes=' + to_delete.inspect
+#      puts 'Deleting attributes=' + to_delete.inspect
                 delete_attributes to_delete
             end
         end
@@ -1096,6 +1094,10 @@ module SimpleRecord
             find(:all, *params)
         end
 
+        def empty?
+            return load.empty?
+        end
+
         def build(*params)
             params[0][@referencename]=@referencevalue
             eval(@subname).new(*params)
@@ -1133,6 +1135,18 @@ module SimpleRecord
             return eval(@subname).find(*query)
         end
 
+    end
+
+    class SimpleRecordError < StandardError
+
+    end
+
+    class RecordInvalid < SimpleRecordError
+        attr_accessor :record
+
+        def initialize(record)
+            @record = record
+        end
     end
 end
 

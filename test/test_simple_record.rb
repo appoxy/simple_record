@@ -9,7 +9,12 @@ class TestSimpleRecord < Test::Unit::TestCase
 
     def setup
         @config = YAML::load(File.open(File.expand_path("~/.test-configs/simple_record.yml")))
-        #puts @config.inspect
+        #puts 'inspecting config = ' + @config.inspect       
+        
+        # Establish AWS connection directly
+        @@sdb = RightAws::SdbInterface.new(@config['amazon']['access_key'], @config['amazon']['secret_key'], {:connection_mode => :per_request, :protocol => "http", :port => 80})
+        
+        
         SimpleRecord.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :connection_mode=>:single)
         SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")
     end
@@ -307,7 +312,27 @@ class TestSimpleRecord < Test::Unit::TestCase
 
         assert mm.valid?, mm.errors.inspect
         assert mm.save_count == 1
+    end
 
+
+    def test_nil_attr_deletion
+        mm = MyModel.new
+        mm.name = "Chad"
+        mm.age = 30
+        mm.cool = false
+        mm.save
+
+        # Should have 1 age attribute
+        assert @@sdb.get_attributes('simplerecord_tests_mymodel', mm.id, 'age')[:attributes].size == 1
+
+        mm.age = nil
+        mm.save
+
+        # Should be NIL
+        assert mm.age == nil
+
+        # Should have NO age attributes
+        assert @@sdb.get_attributes('simplerecord_tests_mymodel', mm.id, 'age')[:attributes].size == 0
     end
 
     def test_null
@@ -340,6 +365,25 @@ class TestSimpleRecord < Test::Unit::TestCase
         mms = MyModel.find(:all)
 
         mms2 = MyModel.find(:all, :conditions=>["id in ?"])
+
+    end
+
+    def test_base_attributes
+        mm = MyModel.new()
+        mm.name = "test name"
+        mm.base_string = "in base class"
+        mm.save_with_validation!
+
+        mm2 = MyModel.find(mm.id)
+        assert mm2.base_string == mm.base_string
+
+        mm2.base_string = "changed base string"
+        mm2.save_with_validation!
+
+        mm3 = MyModel.find(mm2.id)
+        assert mm3.base_string == mm2.base_string
+        puts mm3.inspect
+
 
     end
 

@@ -1,6 +1,7 @@
 require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
+require 'my_base_model'
 
-class MyModel < SimpleRecord::Base
+class MyModel < MyBaseModel
 
     has_strings :name, :nickname
     has_ints :age, :save_count
