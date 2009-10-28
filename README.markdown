@@ -193,6 +193,12 @@ or
 
     o.something_id = x
 
+#### Batch Save
+
+To do a batch save using SimpleDB's batch saving feature to improve performance, simply create your objects, add them to an array, then call:
+
+    MyClass.batch_save(object_list)
+
 ## Kudos
 
 Special thanks to Garrett Cox for creating Activerecord2sdb which SimpleRecord is based on:
