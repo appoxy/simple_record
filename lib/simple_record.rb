@@ -530,7 +530,9 @@ module SimpleRecord
                 # Amazon suggests: 2008-02-10T16:52:01.000-05:00
                 #                  "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                 #
-                if x.is_a? DateTime
+                 if x.is_a? Date
+                    x_str = x.strftime(@@date_format)
+                elsif x.is_a? DateTime
                     x_str = x.new_offset(0).strftime(@@date_format)
                 else
                     x_str = x.getutc.strftime(@@date_format)
