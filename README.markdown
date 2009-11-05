@@ -184,7 +184,7 @@ Then in addition to being able to access the something object with:
 or setting it with:
 
     o.something = someo
-
+    
 You can also access the ID for something directly with:
 
     o.something_id

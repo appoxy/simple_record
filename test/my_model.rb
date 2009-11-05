@@ -6,7 +6,7 @@ class MyModel < MyBaseModel
     has_strings :name, :nickname
     has_ints :age, :save_count
     has_booleans :cool
-    has_dates :birthday
+    has_dates :birthday, :date1, :date2, :date3
 
 
     #callbacks

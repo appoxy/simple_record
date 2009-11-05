@@ -22,7 +22,7 @@
 # puts 'got=' + mm2.name + ' and he/she is ' + mm.age.to_s + ' years old'
 
 
-require 'right_aws'
+require 'aws'
 require 'sdb/active_sdb'
 #require 'results_array' # why the heck isn't this picking up???
 require File.expand_path(File.dirname(__FILE__) + "/results_array")
@@ -75,7 +75,7 @@ module SimpleRecord
         end
     end
 
-    class Base < RightAws::ActiveSdb::Base
+    class Base < Aws::ActiveSdb::Base
 
         include SimpleRecord::Callbacks
 
@@ -530,14 +530,14 @@ module SimpleRecord
                 # Amazon suggests: 2008-02-10T16:52:01.000-05:00
                 #                  "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
                 #
-                 if x.is_a? Date
-                    x_str = x.strftime(@@date_format)
-                elsif x.is_a? DateTime
-                    x_str = x.new_offset(0).strftime(@@date_format)
-                else
+                if x.is_a? DateTime
                     x_str = x.getutc.strftime(@@date_format)
+                elsif x.is_a? Time
+                    x_str = x.getutc.strftime(@@date_format)
+                elsif x.is_a? Date
+                    x_str = x.strftime(@@date_format)
+
                 end
-                #  puts 'utc=' + x_str
                 return x_str
             else
                 return x
@@ -917,7 +917,7 @@ module SimpleRecord
                 #puts 'after collect=' + options.inspect
                 convert_condition_params(options)
             end
-            #puts 'params2=' + params.inspect
+#            puts 'params2=' + params.inspect
 
             results = q_type == :all ? [] : nil
             begin

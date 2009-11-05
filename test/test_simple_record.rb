@@ -4,17 +4,18 @@ require "yaml"
 require 'right_aws'
 require 'my_model'
 require 'my_child_model'
+require 'active_support'
 
 class TestSimpleRecord < Test::Unit::TestCase
 
     def setup
         @config = YAML::load(File.open(File.expand_path("~/.test-configs/simple_record.yml")))
         #puts 'inspecting config = ' + @config.inspect       
-        
+
         # Establish AWS connection directly
         @@sdb = RightAws::SdbInterface.new(@config['amazon']['access_key'], @config['amazon']['secret_key'], {:connection_mode => :per_request, :protocol => "http", :port => 80})
-        
-        
+
+
         SimpleRecord.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :connection_mode=>:single)
         SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")
     end
@@ -351,7 +352,7 @@ class TestSimpleRecord < Test::Unit::TestCase
         end
         assert mms.size == 1
         assert mms[0].id = mm.id
-         mms = MyModel.find(:all, :conditions=>["birthday is not null"])
+        mms = MyModel.find(:all, :conditions=>["birthday is not null"])
         mms.each do |m|
             puts m.inspect
         end
@@ -385,6 +386,30 @@ class TestSimpleRecord < Test::Unit::TestCase
         puts mm3.inspect
 
 
+    end
+
+    def test_dates
+        mm = MyModel.new()
+        mm.name = "test name"
+        mm.date1 = Date.today
+        mm.date2 = Time.now
+        mm.date3 = DateTime.now
+        mm.save
+
+        sleep 1
+
+        mm = MyModel.find(:first, :conditions=>["date1 >= ?", 1.days.ago.to_date])
+        puts 'mm=' + mm.inspect
+        assert mm
+
+        mm = MyModel.find(:first, :conditions=>["date2 >= ?", 1.minutes.ago])
+        puts 'mm=' + mm.inspect
+        assert mm
+
+        mm = MyModel.find(:first, :conditions=>["date3 >= ?", 1.minutes.ago])
+        puts 'mm=' + mm.inspect
+        assert mm
+        
     end
 
 
