@@ -6,7 +6,8 @@ require 'my_model'
 require 'my_child_model'
 require 'active_support'
 
-# This is a test line.
+# Tests for SimpleRecord
+#
 
 class TestSimpleRecord < Test::Unit::TestCase
 
