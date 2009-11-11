@@ -27,6 +27,7 @@ require 'sdb/active_sdb'
 #require 'results_array' # why the heck isn't this picking up???
 require File.expand_path(File.dirname(__FILE__) + "/results_array")
 require File.expand_path(File.dirname(__FILE__) + "/stats")
+require File.expand_path(File.dirname(__FILE__) + "/callbacks")
 
 module SimpleRecord
 
@@ -57,22 +58,6 @@ module SimpleRecord
 
     def self.close_connection()
         RightAws::ActiveSdb.close_connection
-    end
-
-    module Callbacks
-        #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
-        #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides
-        #basically, this is how we recreate the callback functions
-        @@callbacks=["before_validation", "before_validation_on_create", "before_validation_on_update",
-                     "after_validation", "after_validation_on_create", "after_validation_on_update",
-                     "before_save", "before_create", "before_update",
-                     "after_create", "after_update", "after_save",
-                     "after_destroy"]
-
-        def self.included(base)
-            #puts 'Callbacks included in ' + base.inspect
-
-        end
     end
 
     class Base < Aws::ActiveSdb::Base
@@ -782,6 +767,12 @@ module SimpleRecord
         #
         def self.delete(id)
             connection.delete_attributes(domain, id)
+        end
+
+        def delete
+            before_delete
+            super
+            after_delete
         end
 
         def delete_niled(to_delete)
