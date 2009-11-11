@@ -600,16 +600,25 @@ module SimpleRecord
         def save(options={})
             #    puts 'SAVING: ' + self.inspect
             clear_errors
+            # todo: decide whether this should go before pre_save or after pre_save? pre_save dirties "updated" and perhaps other items due to callbacks
+            if options[:dirty] # Only used in simple_record right now
+                puts '@dirty=' + @dirty.inspect
+                return true if @dirty.size == 0 # Nothing to save so skip it
+                options[:dirty_atts] = @dirty
+            end
             is_create = self[:id].nil?
             ok = pre_save(options)
             if ok
                 begin
                     #        puts 'is frozen? ' + self.frozen?.to_s + ' - ' + self.inspect
-                    if options[:dirty] # Only used in simple_record right now
-                        options[:dirty_atts] = @dirty
-                    end
+#                    if options[:dirty] # Only used in simple_record right now
+#                        puts '@dirty=' + @dirty.inspect
+#                        return true if @dirty.size == 0 # Nothing to save so skip it
+#                        options[:dirty_atts] = @dirty
+#                    end
                     to_delete = get_atts_to_delete # todo: this should use the @dirty hash now
 #                    puts 'done to_delete ' + to_delete.inspect
+                    SimpleRecord.stats.puts += 1
                     if super(options)
 #          puts 'SAVED super'
                         self.class.cache_results(self)
@@ -897,8 +906,8 @@ module SimpleRecord
         # Find by ID:
         #   MyModel.find(ID)
         #
-        # Query:
-        #   MyModel.find(:all, ["name = ?", name], :order=>"created desc", :limit=>10)
+        # Query example:
+        #   MyModel.find(:all, :conditions=>["name = ?", name], :order=>"created desc", :limit=>10)
         #
         def self.find(*params)
             #puts 'params=' + params.inspect

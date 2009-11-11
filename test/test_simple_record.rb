@@ -148,8 +148,15 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm2.name = "Travis 2"
         mm2.save(:dirty=>true)
 
-        # todo: how do we assert this?  perhaps change a value directly in sdb and see that it doesn't get overwritten
+        # todo: how do we assert this?  perhaps change a value directly in sdb and see that it doesn't get overwritten.
+        # or check stats and ensure only 1 attribute was put
 
+        # Test to ensure that if an item is not dirty, sdb doesn't get hit
+        puts SimpleRecord.stats.puts.to_s
+        SimpleRecord.stats.clear
+        mm2.save(:dirty=>true)
+        puts SimpleRecord.stats.puts.to_s
+        assert SimpleRecord.stats.puts == 0
     end
 
     # http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html#M002136
