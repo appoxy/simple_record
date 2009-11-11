@@ -817,7 +817,7 @@ module SimpleRecord
 
         def to_bool(x)
             if x.is_a?(String)
-                x == "true"
+                x == "true" || x == "1"
             else
                 x
             end
