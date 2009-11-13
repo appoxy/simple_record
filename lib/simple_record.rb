@@ -53,11 +53,11 @@ module SimpleRecord
     #                                                  :pool (uses a connection pool with a maximum number of connections - NOT IMPLEMENTED YET)
     #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
     def self.establish_connection(aws_access_key=nil, aws_secret_key=nil, params={})
-        RightAws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, params)
+        Aws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, params)
     end
 
     def self.close_connection()
-        RightAws::ActiveSdb.close_connection
+        Aws::ActiveSdb.close_connection
     end
 
     class Base < Aws::ActiveSdb::Base
