@@ -930,7 +930,7 @@ module SimpleRecord
                         results = SimpleRecord::ResultsArray.new(self, params, results, next_token)
                     end
                 end
-            rescue RightAws::AwsError, RightAws::ActiveSdb::ActiveSdbError
+            rescue Aws::AwsError, Aws::ActiveSdb::ActiveSdbError
                 puts "RESCUED: " + $!.message
                 if ($!.message().index("NoSuchDomain") != nil)
                     # this is ok
