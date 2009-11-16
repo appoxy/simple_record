@@ -10,8 +10,9 @@
 #
 # AWS_ACCESS_KEY_ID='XXXXX'
 # AWS_SECRET_ACCESS_KEY='YYYYY'
-# RightAws::ActiveSdb.establish_connection(AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY)
-# # Save an object
+# SimpleRecord.establish_connection(AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY)
+#
+## Save an object
 # mm = MyModel.new
 # mm.name = "Travis"
 # mm.age = 32
@@ -39,7 +40,7 @@ module SimpleRecord
 
     # Create a new handle to an Sdb account. All handles share the same per process or per thread
     # HTTP connection to Amazon Sdb. Each handle is for a specific account.
-    # The +params+ are passed through as-is to RightAws::SdbInterface.new
+    # The +params+ are passed through as-is to Aws::SdbInterface.new
     # Params:
     #    { :server       => 'sdb.amazonaws.com'  # Amazon service host: 'sdb.amazonaws.com'(default)
     #      :port         => 443                  # Amazon service port: 80(default) or 443
@@ -396,7 +397,7 @@ module SimpleRecord
 #      puts 'to eval=' + to_eval
                         begin
                             ret = eval(to_eval) # (defined? #{arg}_id)
-                        rescue RightAws::ActiveSdb::ActiveSdbError
+                        rescue Aws::ActiveSdb::ActiveSdbError
                             if $!.message.include? "Couldn't find"
                                 ret = nil
                             else
@@ -617,7 +618,7 @@ module SimpleRecord
                     else
                         return false
                     end
-                rescue RightAws::AwsError
+                rescue Aws::AwsError
                     # puts "RESCUED in save: " + $!
                     if (domain_ok($!))
                         if !@create_domain_called
@@ -750,7 +751,7 @@ module SimpleRecord
                     results << ok
                     next if !ok # todo: this shouldn't be here should it?  raises above
                     o.pre_save2
-                    to_save << RightAws::SdbInterface::Item.new(o.id, o.attributes, true)
+                    to_save << Aws::SdbInterface::Item.new(o.id, o.attributes, true)
                     if to_save.size == 25 # Max amount SDB will accept
                         connection.batch_put_attributes(domain, to_save)
                         to_save.clear
@@ -763,7 +764,7 @@ module SimpleRecord
 
         #
         # Usage: ClassName.delete id
-        # todo: move to RightAWS
+        # todo: move to Aws
         #
         def self.delete(id)
             connection.delete_attributes(domain, id)
