@@ -12,3 +12,5 @@ puts SimpleRecord::Base.pad_and_offset(x)
 x = 1
 puts SimpleRecord::Base.pad_and_offset(x)
 
+x = "09223372036854775838"
+puts SimpleRecord::Base.un_offset_int(x)

@@ -275,7 +275,7 @@ module SimpleRecord
                     ret = nil
                     ret = get_attribute(arg)
                     return nil if ret.nil?
-                    return un_offset_if_int(arg, ret)
+                    return Base.un_offset_if_int(arg, ret)
                 end
 
                 # define writer method
@@ -588,7 +588,7 @@ module SimpleRecord
             clear_errors
             # todo: decide whether this should go before pre_save or after pre_save? pre_save dirties "updated" and perhaps other items due to callbacks
             if options[:dirty] # Only used in simple_record right now
-                puts '@dirty=' + @dirty.inspect
+#                puts '@dirty=' + @dirty.inspect
                 return true if @dirty.size == 0 # Nothing to save so skip it
                 options[:dirty_atts] = @dirty
             end
@@ -788,7 +788,7 @@ module SimpleRecord
             att_meta = defined_attributes_local[arg]
 #          puts 'int encoding: ' + i.to_s
             if att_meta.type == :int
-                x = un_offset_int(x)
+                x = Base.un_offset_int(x)
             elsif att_meta.type == :date
                 x = to_date(x)
             elsif att_meta.type == :boolean
@@ -816,10 +816,10 @@ module SimpleRecord
         end
 
 
-        def un_offset_int(x)
+        def self.un_offset_int(x)
             if x.is_a?(String)
                 x2 = x.to_i
-#            puts 'to_i=' + x2.to_s
+            puts 'to_i=' + x2.to_s
                 x2 -= @@offset
 #            puts 'after subtracting offset='+ x2.to_s
                 x2
