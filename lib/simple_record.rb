@@ -275,7 +275,7 @@ module SimpleRecord
                     ret = nil
                     ret = get_attribute(arg)
                     return nil if ret.nil?
-                    return Base.un_offset_if_int(arg, ret)
+                    return un_offset_if_int(arg, ret)
                 end
 
                 # define writer method
@@ -764,16 +764,38 @@ module SimpleRecord
 
         #
         # Usage: ClassName.delete id
-        # todo: move to Aws
         #
         def self.delete(id)
             connection.delete_attributes(domain, id)
         end
 
+        def self.delete_all(*params)
+            # could make this quicker by just getting item_names and deleting attributes rather than creating objects
+            obs = self.find(params)
+            i = 0
+            obs.each do |a|
+                a.delete
+                i+=1
+            end
+            return i
+        end
+
+        def self.destroy_all(*params)
+            obs = self.find(params)
+            i = 0
+            obs.each do |a|
+                a.destroy
+                i+=1
+            end
+            return i
+        end
+
         def delete
-            before_delete
             super
-            after_delete
+        end
+
+        def destroy(*params)
+            return run_before_destroy && super(*params) && run_after_destroy
         end
 
         def delete_niled(to_delete)
@@ -819,7 +841,7 @@ module SimpleRecord
         def self.un_offset_int(x)
             if x.is_a?(String)
                 x2 = x.to_i
-            puts 'to_i=' + x2.to_s
+#            puts 'to_i=' + x2.to_s
                 x2 -= @@offset
 #            puts 'after subtracting offset='+ x2.to_s
                 x2
@@ -857,18 +879,6 @@ module SimpleRecord
 
         def update_attributes(*params)
             return save_attributes(*params)
-        end
-
-        def destroy(*params)
-            if super(*params)
-                if run_after_destroy
-                    return true
-                else
-                    return false
-                end
-            else
-                return false
-            end
         end
 
         def self.quote_regexp(a, re)
