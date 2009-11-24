@@ -790,12 +790,12 @@ module SimpleRecord
             return i
         end
 
-        def delete
+        def delete()
             super
         end
 
-        def destroy(*params)
-            return run_before_destroy && super(*params) && run_after_destroy
+        def destroy
+            return run_before_destroy && delete && run_after_destroy
         end
 
         def delete_niled(to_delete)
