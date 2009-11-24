@@ -103,6 +103,33 @@ If you want to use a custom domain for a model object, you can specify it with s
     end
 
 
+## Querying
+
+Querying is similar to ActiveRecord for the most part.
+
+To find all objects that match conditions returned in an Array:
+
+    Company.find(:all, :conditions => ["created_at > ?", 10.days.ago], :order=>"name", :limit=>50)
+
+To find a single object:
+
+    Company.find(:first, :conditions => ["name = ? AND division = ? AND created_at > ?", "Appoxy", "West", 10.days.ago ])
+
+To count objects:
+
+    Company.find(:count, :conditions => ["name = ? AND division = ? AND created_at > ?", "Appoxy", "West", 10.days.ago ])
+
+You can also the dynamic method style, for instance the line below is the same as the Company.find(:first....) line above:
+
+    Company.find_by_name_and_division("Appoxy", "West")
+
+To find all:
+
+    Company.find_all_by_name_and_division("Appoxy", "West")
+
+There are so many different combinations of the above for querying that I can't put them all here,
+but this should get you started.
+
 ## Configuration
 
 ### Domain Prefix
