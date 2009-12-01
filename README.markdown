@@ -130,6 +130,9 @@ To find all:
 There are so many different combinations of the above for querying that I can't put them all here,
 but this should get you started.
 
+You can get more ideas from here: http://api.rubyonrails.org/classes/ActiveRecord/Base.html. Not everything is supported
+but a lot is.
+
 ## Configuration
 
 ### Domain Prefix
