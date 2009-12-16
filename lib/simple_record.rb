@@ -25,11 +25,14 @@
 
 require 'aws'
 require 'sdb/active_sdb'
-require "base64"
-#require 'results_array' # why the heck isn't this picking up???
-require File.expand_path(File.dirname(__FILE__) + "/results_array")
-require File.expand_path(File.dirname(__FILE__) + "/stats")
-require File.expand_path(File.dirname(__FILE__) + "/callbacks")
+require 'base64'
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/encryptor")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/callbacks")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/errors")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/password")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/results_array")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/stats")
+
 
 module SimpleRecord
 
@@ -268,17 +271,16 @@ module SimpleRecord
             # Check if this arg is already converted
             arg_s = arg.to_s
             instance_var = ("@" + arg_s)
-#            @ssn = "FUCK"
-            puts "defined?(#{instance_var.to_sym}) " + (defined?(instance_var.to_sym)).inspect
+#            puts "defined?(#{instance_var.to_sym}) " + (defined?(instance_var.to_sym)).inspect
 #            if defined?(instance_var.to_sym) # this returns "method" for some reason??
-                puts "attribute #{instance_var} is defined"
-                ret = instance_variable_get(instance_var)
-                puts 'ret=' + ret.to_s
-                return ret if !ret.nil?
+#            puts "attribute #{instance_var} is defined"
+            ret = instance_variable_get(instance_var)
+#            puts 'ret=' + ret.to_s
+            return ret if !ret.nil?
 #            end
             ret = get_attribute_sdb(arg)
             ret = sdb_to_ruby(arg, ret)
-            puts "Setting instance var #{instance_var}"
+#            puts "Setting instance var #{instance_var}"
             instance_variable_set(instance_var, ret)
             return ret
         end
@@ -300,6 +302,7 @@ module SimpleRecord
                 end
                 attr = SimpleRecord::Base::Attribute.new(:string, arg_options)
                 defined_attributes[arg] = attr if defined_attributes[arg].nil?
+
                 # define reader method
                 arg_s = arg.to_s # to get rid of all the to_s calls
                 send(:define_method, arg) do
@@ -311,8 +314,11 @@ module SimpleRecord
                 send(:define_method, arg_s+"=") do |value|
                     make_dirty(arg_s, value)
                     instance_var = "@" + arg_s
+#                    puts 'ARG=' + arg.to_s
+                    sdb_val = ruby_to_sdb(arg, value)
+                    self[arg_s] = sdb_val
+                    value = wrap_if_required(arg, value, sdb_val)
                     instance_variable_set(instance_var, value)
-                    self[arg_s] = ruby_to_sdb(arg, value)
                 end
 
                 # Now for dirty methods: http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html
@@ -674,18 +680,13 @@ module SimpleRecord
 
         def pad_and_offset_ints_to_sdb()
 
-            defined_attributes_local.each_pair do |name, att_meta|
-#          puts 'int encoding: ' + i.to_s
-                if att_meta.type == :int && !self[name.to_s].nil?
-#            puts 'before: ' + self[i.to_s].inspect
-                    #            puts @attributes.inspect
-                    #            puts @attributes[i.to_s].inspect
-                    arr = @attributes[name.to_s]
-                    arr.collect!{ |x| self.class.pad_and_offset(x) }
-                    @attributes[name.to_s] = arr
-#            puts 'after: ' + @attributes[i.to_s].inspect
-                end
-            end
+#            defined_attributes_local.each_pair do |name, att_meta|
+#                if att_meta.type == :int && !self[name.to_s].nil?
+#                    arr = @attributes[name.to_s]
+#                    arr.collect!{ |x| self.class.pad_and_offset(x) }
+#                    @attributes[name.to_s] = arr
+#                end
+#            end
         end
 
         def convert_dates_to_sdb()
@@ -696,67 +697,30 @@ module SimpleRecord
 #            end
         end
 
-        def convert_all_atts_to_sdb ()
+        def self.pass_hash(value)
+            hashed = Password::create_hash(value)
+            encoded_value = Base64.encode64(hashed)
+            encoded_value
+        end
 
-            return # not using this anymore
-
-            # Should just do all translations and options in this one method/loop
-            pad_and_offset_ints_to_sdb()
-            convert_dates_to_sdb()
-
-            defined_attributes_local.each_pair do |name, att_meta|
-
-                instance_var = "@" + arg_s
-                instance_variable_get(instance_var.to_sym)
-                self[arg_s] = ruby_to_sdb(arg, value)
-
-                if att_meta.type == :int && !self[name.to_s].nil?
-#            puts 'before: ' + self[i.to_s].inspect
-                    #            puts @attributes.inspect
-                    #            puts @attributes[i.to_s].inspect
-                    arr = @attributes[name.to_s]
-                    arr.collect!{ |x| self.class.pad_and_offset(x) }
-                    @attributes[name.to_s] = arr
-#            puts 'after: ' + @attributes[i.to_s].inspect
-                end
-
-                if att_meta.type == :date && !self[name.to_s].nil?
-#            puts 'before: ' + self[i.to_s].inspect
-                    #            puts @attributes.inspect
-                    #            puts @attributes[i.to_s].inspect
-                    arr = @attributes[name.to_s]
-                    #puts 'padding date=' + i.to_s
-                    arr.collect!{ |x| self.class.pad_and_offset(x) }
-                    @attributes[name.to_s] = arr
-#            puts 'after: ' + @attributes[i.to_s].inspect
-                else
-                    #            puts 'was nil'
-                end
-
-                if !att_meta.options.nil?
-                    if att_meta.options[:encrypted]
-                        arr = @attributes[name.to_s]
-                        arr.collect!{ |x| self.class.encrypt(x, att_meta.options[:encryption_key]) }
-                        @attributes[name.to_s] = arr
-                    end
-                end
-
-            end
+        def self.pass_hash_check(value, value_to_compare)
+            unencoded_value = Base64.decode64(value)
+            return Password::check(value_to_compare, unencoded_value)
         end
 
         def self.get_encryption_key()
             key = SimpleRecord.options[:encryption_key]
-            if key.nil?
-                puts 'WARNING: Encrypting attributes with your AWS Access Key. You should use your own :encryption_key so it doesn\'t change'
-                key = connection.aws_access_key_id # default to aws access key. NOT recommended in case you start using a new key
-            end
+#            if key.nil?
+#                puts 'WARNING: Encrypting attributes with your AWS Access Key. You should use your own :encryption_key so it doesn\'t change'
+#                key = connection.aws_access_key_id # default to aws access key. NOT recommended in case you start using a new key
+#            end
             return key
         end
 
         def self.encrypt(value, key=nil)
             key = key || get_encryption_key()
-            secret_key = Digest::SHA512.hexdigest(key)
-            encrypted_value = Huberry::Encryptor.encrypt(:value => value, :key => secret_key)
+            raise SimpleRecordError, "Encryption key must be defined on the attribute." if key.nil?
+            encrypted_value = SimpleRecord::Encryptor.encrypt(:value => value, :key => key)
             encoded_value = Base64.encode64(encrypted_value)
             encoded_value
         end
@@ -764,9 +728,9 @@ module SimpleRecord
 
         def self.decrypt(value, key=nil)
             unencoded_value = Base64.decode64(value)
+            raise SimpleRecordError, "Encryption key must be defined on the attribute." if key.nil?
             key = key || get_encryption_key()
-            secret_key = Digest::SHA512.hexdigest(key)
-            decrypted_value = Huberry::Encryptor.decrypt(:value => unencoded_value, :key => secret_key)
+            decrypted_value = SimpleRecord::Encryptor.decrypt(:value => unencoded_value, :key => key)
             decrypted_value
         end
 
@@ -801,7 +765,7 @@ module SimpleRecord
             end
             if ok
                 # Now translate all fields into SimpleDB friendly strings
-                convert_all_atts_to_sdb()
+#                convert_all_atts_to_sdb()
             end
             ok
         end
@@ -895,24 +859,40 @@ module SimpleRecord
         end
 
         # Convert value from SimpleDB String version to real ruby value.
-        def sdb_to_ruby(arg, x)
+        def sdb_to_ruby(arg, value)
             puts 'sdb_to_ruby arg=' + arg.inspect + ' - ' + arg.class.name
             att_meta = defined_attributes_local[arg]
 
             if !att_meta.options.nil?
                 if att_meta.options[:encrypted]
-                    x = self.class.decrypt(x)
+                    value = self.class.decrypt(value, att_meta.options[:encrypted])
+                end
+                if att_meta.options[:hashed]
+                    return PasswordHashed.new(value)
                 end
             end
 
             if att_meta.type == :int
-                x = Base.un_offset_int(x)
+                value = Base.un_offset_int(value)
             elsif att_meta.type == :date
-                x = to_date(x)
+                value = to_date(value)
             elsif att_meta.type == :boolean
-                x = to_bool(x)
+                value = to_bool(value)
             end
-            x
+            value
+        end
+
+        def wrap_if_required(arg, value, sdb_val)
+            return nil if value.nil?
+
+            att_meta = defined_attributes_local[arg]
+            if att_meta.options
+                if att_meta.options[:hashed]
+                    puts 'wrapping ' + arg.to_s
+                    return PasswordHashed.new(sdb_val)
+                end
+            end
+            value
         end
 
         def ruby_to_sdb(arg, value)
@@ -923,20 +903,22 @@ module SimpleRecord
 
             if att_meta.type == :int
                 ret = self.class.pad_and_offset(value)
-
             elsif att_meta.type == :date
                 ret = self.class.pad_and_offset(value)
             else
                 ret = value.to_s
             end
 
-            if !att_meta.options.nil?
+            if att_meta.options
                 if att_meta.options[:encrypted]
-                    ret = self.class.encrypt(ret)
+                    ret = self.class.encrypt(ret, att_meta.options[:encrypted])
+                end
+                if att_meta.options[:hashed]
+                    ret = self.class.pass_hash(ret)
                 end
             end
 
-            return ret
+            return ret.to_s
 
         end
 
@@ -1263,16 +1245,28 @@ module SimpleRecord
 
     end
 
-    class SimpleRecordError < StandardError
+    class PasswordHashed
 
-    end
+        def initialize(value)
+            @value = value
+        end
 
-    class RecordInvalid < SimpleRecordError
-        attr_accessor :record
+        def hashed_value
+            @value
+        end
 
-        def initialize(record)
-            @record = record
+        # This allows you to compare an unhashed string to the hashed one.
+        def ==(val)
+            if val.is_a?(PasswordHashed)
+                return val.hashed_value == self.hashed_value
+            end
+            return SimpleRecord::Base.pass_hash_check(@value, val)
+        end
+
+        def to_s
+            @value
         end
     end
+
 end
 

@@ -435,12 +435,14 @@ class TestSimpleRecord < Test::Unit::TestCase
         ob.password = password
         puts "ob before save=" + ob.inspect
         assert ssn == ob.ssn, "#{ssn} != #{ob.ssn} apparently!?"
-        assert password == ob.password
+        puts "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
+        assert password != ob.password # we know this doesn't work right
+        assert ob.password == password, "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
         ob.save
 
         puts "ob after save=" + ob.inspect
         assert ssn == ob.ssn
-        assert password == ob.password
+        assert ob.password == password, "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
 
         sleep 2
 
@@ -449,10 +451,10 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert ob2.name = ob.name
         assert ob2.ssn = ob.ssn
         assert ob2.ssn == ssn
-        assert ob2.password != password
+        assert ob2.password == password
+        assert ob2.attributes["password"] != password
         assert ob2.password == ob.password
 
-        
 
 
     end

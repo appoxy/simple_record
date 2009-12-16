@@ -1,3 +1,4 @@
+
 module SimpleRecord::Callbacks
     #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
     #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides

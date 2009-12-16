@@ -1,11 +1,12 @@
 require 'digest/sha2'
 
+# Thanks to: http://www.zacharyfox.com/blog/ruby-on-rails/password-hashing
 module SimpleRecord
 # This module contains functions for hashing and storing passwords
     module Password
 
         # Generates a new salt and rehashes the password
-        def Password.update(password)
+        def Password.create_hash(password)
             salt = self.salt
             hash = self.hash(password, salt)
             self.store(hash, salt)
