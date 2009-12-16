@@ -1,7 +1,7 @@
 require 'test/unit'
 require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
 require "yaml"
-require 'right_aws'
+require 'aws'
 require 'my_model'
 require 'my_child_model'
 require 'active_support'
@@ -16,8 +16,7 @@ class TestSimpleRecord < Test::Unit::TestCase
         #puts 'inspecting config = ' + @config.inspect       
 
         # Establish AWS connection directly
-        @@sdb = RightAws::SdbInterface.new(@config['amazon']['access_key'], @config['amazon']['secret_key'], {:connection_mode => :per_request, :protocol => "http", :port => 80})
-
+        @@sdb = Aws::SdbInterface.new(@config['amazon']['access_key'], @config['amazon']['secret_key'], {:connection_mode => :per_request, :protocol => "http", :port => 80})
 
         SimpleRecord.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :connection_mode=>:single)
         SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")
@@ -74,7 +73,7 @@ class TestSimpleRecord < Test::Unit::TestCase
     end
 
     def test_bad_query
-        assert_raise RightAws::AwsError do
+        assert_raise Aws::AwsError do
             mm2 = MyModel.find(:all, :conditions=>["name =4?", "1"])
         end
     end
@@ -303,13 +302,14 @@ class TestSimpleRecord < Test::Unit::TestCase
     def test_objects_in_constructor
         mm = MyModel.new(:name=>"model1")
         mm.save
+        # my_model should be treated differently since it's a belong_to
         mcm = MyChildModel.new(:name=>"johnny", :my_model=>mm)
         mcm.save
 
-        assert !mcm.my_model.nil?
+        assert mcm.my_model != nil
 
         mcm = MyChildModel.find(mcm.id)
-        assert !mcm.my_model.nil?
+        assert mcm.my_model != nil
 
     end
 
@@ -340,8 +340,11 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm.cool = false
         mm.save
 
+        sleep 2
+
         # Should have 1 age attribute
-        assert @@sdb.get_attributes('simplerecord_tests_mymodel', mm.id, 'age')[:attributes].size == 1
+        sdb_atts = @@sdb.get_attributes('simplerecord_tests_mymodel', mm.id, 'age')
+        assert sdb_atts[:attributes].size == 1, "hmmm, not size 1: " + sdb_atts[:attributes].size.to_s
 
         mm.age = nil
         mm.save
@@ -429,5 +432,38 @@ class TestSimpleRecord < Test::Unit::TestCase
         
     end
 
+    def test_attr_encrypted
+        require 'model_with_enc'
+        ssn = "123456789"
+        password = "my_password"
+        ob = ModelWithEnc.new
+        ob.name = "my name"
+        ob.ssn = ssn
+        ob.password = password
+        puts "ob before save=" + ob.inspect
+        assert ssn == ob.ssn, "#{ssn} != #{ob.ssn} apparently!?"
+        puts "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
+        assert password != ob.password # we know this doesn't work right
+        assert ob.password == password, "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
+        ob.save
+
+        puts "ob after save=" + ob.inspect
+        assert ssn == ob.ssn
+        assert ob.password == password, "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
+
+        sleep 2
+
+        ob2 = ModelWithEnc.find(ob.id)
+        puts 'ob2=' + ob2.inspect
+        assert ob2.name = ob.name
+        assert ob2.ssn = ob.ssn
+        assert ob2.ssn == ssn
+        assert ob2.password == password
+        assert ob2.attributes["password"] != password
+        assert ob2.password == ob.password
+
+
+
+    end
 
 end
