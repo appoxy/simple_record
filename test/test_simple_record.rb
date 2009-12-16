@@ -66,6 +66,13 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert mm2.age.nil?, "doh, age is " + mm2.age.inspect
     end
 
+
+    def test_create
+        mm = MyModel.create(:name=>"Travis", :age=>32, :cool=>true)
+        puts 'mm=' + mm.inspect
+        assert !mm.id.nil?
+    end
+
     def test_bad_query
         assert_raise RightAws::AwsError do
             mm2 = MyModel.find(:all, :conditions=>["name =4?", "1"])
