@@ -76,6 +76,7 @@ module SimpleRecord
 
         def size
             # puts 'SIZE count=' + @count.inspect
+            # todo: if no next token, should use the array.size so we don't call count
             return @count if @count
             params_for_count = params.dup
             params_for_count[0] = :count

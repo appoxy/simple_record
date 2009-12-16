@@ -428,28 +428,33 @@ class TestSimpleRecord < Test::Unit::TestCase
     def test_attr_encrypted
         require 'model_with_enc'
         ssn = "123456789"
+        password = "my_password"
         ob = ModelWithEnc.new
         ob.name = "my name"
         ob.ssn = ssn
-        puts 'ob.ssn=' + ob.ssn.to_s
+        ob.password = password
         puts "ob before save=" + ob.inspect
         assert ssn == ob.ssn, "#{ssn} != #{ob.ssn} apparently!?"
+        assert password == ob.password
         ob.save
 
         puts "ob after save=" + ob.inspect
         assert ssn == ob.ssn
+        assert password == ob.password
 
         sleep 2
 
         ob2 = ModelWithEnc.find(ob.id)
         puts 'ob2=' + ob2.inspect
-        assert ob2.name = "my name"
         assert ob2.name = ob.name
         assert ob2.ssn = ob.ssn
         assert ob2.ssn == ssn
-
+        assert ob2.password != password
+        assert ob2.password == ob.password
 
         
+
+
     end
 
 end

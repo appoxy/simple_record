@@ -736,7 +736,7 @@ module SimpleRecord
                 if !att_meta.options.nil?
                     if att_meta.options[:encrypted]
                         arr = @attributes[name.to_s]
-                        arr.collect!{ |x| self.class.encrypt(x) }
+                        arr.collect!{ |x| self.class.encrypt(x, att_meta.options[:encryption_key]) }
                         @attributes[name.to_s] = arr
                     end
                 end
@@ -744,8 +744,8 @@ module SimpleRecord
             end
         end
 
-        def self.get_encryption_key(key)
-            key = SimpleRecord.options[:encryption_key] if key.nil?
+        def self.get_encryption_key()
+            key = SimpleRecord.options[:encryption_key]
             if key.nil?
                 puts 'WARNING: Encrypting attributes with your AWS Access Key. You should use your own :encryption_key so it doesn\'t change'
                 key = connection.aws_access_key_id # default to aws access key. NOT recommended in case you start using a new key
@@ -754,8 +754,8 @@ module SimpleRecord
         end
 
         def self.encrypt(value, key=nil)
-            key = get_encryption_key(key)
-            secret_key = Digest::SHA256.hexdigest(key)
+            key = key || get_encryption_key()
+            secret_key = Digest::SHA512.hexdigest(key)
             encrypted_value = Huberry::Encryptor.encrypt(:value => value, :key => secret_key)
             encoded_value = Base64.encode64(encrypted_value)
             encoded_value
@@ -764,8 +764,8 @@ module SimpleRecord
 
         def self.decrypt(value, key=nil)
             unencoded_value = Base64.decode64(value)
-            key = get_encryption_key(key)
-            secret_key = Digest::SHA256.hexdigest(key)
+            key = key || get_encryption_key()
+            secret_key = Digest::SHA512.hexdigest(key)
             decrypted_value = Huberry::Encryptor.decrypt(:value => unencoded_value, :key => secret_key)
             decrypted_value
         end
