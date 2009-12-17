@@ -287,9 +287,13 @@ module SimpleRecord
 
         def make_dirty(arg, value)
             # todo: only set dirty if it changed
-            #puts 'making dirty arg=' + arg.to_s + ' --- ' + @dirty.inspect
-            @dirty[arg] = get_attribute_sdb(arg) # Store old value (not sure if we need it?)
-            #puts 'end making dirty ' + @dirty.inspect
+            if @dirty.include?(arg)
+                old = @dirty[arg]
+                @dirty.delete(arg)  if value == old
+            else 
+                old = get_attribute(arg)
+                @dirty[arg] = get_attribute(arg) if value != old
+            end
         end
 
         def self.has_attributes(*args)
@@ -319,6 +323,7 @@ module SimpleRecord
                     self[arg_s] = sdb_val
                     value = wrap_if_required(arg, value, sdb_val)
                     instance_variable_set(instance_var, value)
+                    self[arg_s]=value
                 end
 
                 # Now for dirty methods: http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html
