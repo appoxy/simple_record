@@ -261,9 +261,13 @@ module SimpleRecord
 
         def make_dirty(arg, value)
             # todo: only set dirty if it changed
-            #puts 'making dirty arg=' + arg.to_s + ' --- ' + @dirty.inspect
-            @dirty[arg] = get_attribute(arg) # Store old value (not sure if we need it?)
-            #puts 'end making dirty ' + @dirty.inspect
+            if @dirty.include?(arg)
+                old = @dirty[arg]
+                @dirty.delete(arg)  if value == old
+            else 
+                old = get_attribute(arg)
+                @dirty[arg] = get_attribute(arg) if value != old
+            end
         end
 
         def self.has_attributes(*args)
@@ -280,7 +284,6 @@ module SimpleRecord
 
                 # define writer method
                 send(:define_method, arg_s+"=") do |value|
-                    make_dirty(arg_s, value)
                     self[arg_s]=value
                 end
 
