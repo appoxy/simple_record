@@ -114,6 +114,8 @@ class TestSimpleRecord < Test::Unit::TestCase
         child.my_model = mm
         child.save
 
+        sleep 1
+
         child = MyChildModel.find(child.id)
         puts child.my_model_id
         assert child.my_model_id == mm.id
@@ -147,8 +149,10 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm.save
         id = mm.id
         puts 'id=' + id.to_s
+        sleep 1
         # Get the object back
         mm2 = MyModel.find(id)
+        puts 'mm2=' + mm2.inspect
         puts 'got=' + mm2.name + ' and he/she is ' + mm2.age.to_s + ' years old and he/she is cool? ' + mm2.cool.to_s
         assert mm2.id == mm.id
         assert mm2.age == mm.age
@@ -218,11 +222,6 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert mms.size > 0
         assert mms.size == count
 
-    end
-
-    def test_select
-        # just passes through to find
-        MyModel.select(:count)
     end
 
     def test_attributes_correct
@@ -309,6 +308,7 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert mcm.my_model != nil
 
         mcm = MyChildModel.find(mcm.id)
+        puts 'mcm=' + mcm.inspect
         assert mcm.my_model != nil
 
     end
@@ -340,10 +340,11 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm.cool = false
         mm.save
 
-        sleep 2
+        sleep 1
 
         # Should have 1 age attribute
-        sdb_atts = @@sdb.get_attributes('simplerecord_tests_mymodel', mm.id, 'age')
+        sdb_atts = @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age')
+        puts 'sdb_atts=' + sdb_atts.inspect
         assert sdb_atts[:attributes].size == 1, "hmmm, not size 1: " + sdb_atts[:attributes].size.to_s
 
         mm.age = nil
@@ -353,7 +354,7 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert mm.age == nil
 
         # Should have NO age attributes
-        assert @@sdb.get_attributes('simplerecord_tests_mymodel', mm.id, 'age')[:attributes].size == 0
+        assert @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age')[:attributes].size == 0
     end
 
     def test_null
@@ -383,9 +384,9 @@ class TestSimpleRecord < Test::Unit::TestCase
 
     # Test to add support for IN
     def test_in_clause
-        mms = MyModel.find(:all)
+#        mms = MyModel.find(:all)
 
-        mms2 = MyModel.find(:all, :conditions=>["id in ?"])
+#        mms2 = MyModel.find(:all, :conditions=>["id in ?"])
 
     end
 
@@ -436,6 +437,7 @@ class TestSimpleRecord < Test::Unit::TestCase
         require 'model_with_enc'
         ssn = "123456789"
         password = "my_password"
+
         ob = ModelWithEnc.new
         ob.name = "my name"
         ob.ssn = ssn
@@ -447,6 +449,12 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert ob.password == password, "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
         ob.save
 
+        # try also with constructor, just to be safe
+        ob = ModelWithEnc.create(:ssn=>ssn, :name=>"my name", :password=>password)
+        assert ssn == ob.ssn, "#{ssn} != #{ob.ssn} apparently!?"
+        puts "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
+        assert password != ob.password # we know this doesn't work right
+        assert ob.password == password, "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
         puts "ob after save=" + ob.inspect
         assert ssn == ob.ssn
         assert ob.password == password, "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
@@ -455,14 +463,12 @@ class TestSimpleRecord < Test::Unit::TestCase
 
         ob2 = ModelWithEnc.find(ob.id)
         puts 'ob2=' + ob2.inspect
-        assert ob2.name = ob.name
-        assert ob2.ssn = ob.ssn
-        assert ob2.ssn == ssn
-        assert ob2.password == password
+        assert ob2.name == ob.name, "#{ob2.name} vs #{ob.name}"
+        assert ob2.ssn == ob.ssn, "#{ob2.ssn} vs #{ob.ssn}"
+        assert ob2.ssn == ssn, "#{ob2.ssn} vs #{ssn}"
+        assert ob2.password == password, "#{ob2.password} vs #{password}"
         assert ob2.attributes["password"] != password
-        assert ob2.password == ob.password
-
-
+        assert ob2.password == ob.password, "#{ob2.password} vs #{ob.password}"
 
     end
 

@@ -21,7 +21,8 @@
 # # Get the object back
 # mm2 = MyModel.select(id)
 # puts 'got=' + mm2.name + ' and he/she is ' + mm.age.to_s + ' years old'
-
+#
+# Forked off old ActiveRecord2sdb library.
 
 require 'aws'
 require 'sdb/active_sdb'
@@ -74,9 +75,18 @@ module SimpleRecord
 
         include SimpleRecord::Callbacks
 
-
         def initialize(attrs={})
             # todo: Need to deal with objects passed in. iterate through belongs_to perhaps and if in attrs, set the objects id rather than the object itself
+
+            initialize_base(attrs)
+
+            # Convert attributes to sdb values
+            attrs.each_pair do |name, value|
+                set(name, value)
+            end
+        end
+
+        def initialize_base(attrs={})
 
             #we have to handle the virtuals.
             @@virtuals.each do |virtual|
@@ -85,9 +95,20 @@ module SimpleRecord
                 #and then remove the parameter before it is passed to initialize, so that it is NOT sent to SimpleDB
                 eval("attrs.delete('#{virtual}')")
             end
-            super
+
             @errors=SimpleRecord_errors.new
             @dirty = {}
+
+            @attributes = {}
+            @new_record = true
+
+        end
+
+        def initialize_from_db(attrs={})
+            initialize_base(attrs)
+            attrs.each_pair do |k, v|
+                @attributes[k.to_s] = v
+            end
         end
 
 
@@ -126,6 +147,7 @@ module SimpleRecord
             #puts 'SimpleRecord::Base is inherited by ' + base.inspect
             setup_callbacks(base)
 
+#            base.has_strings :id
             base.has_dates :created, :updated
             base.before_create :set_created, :set_updated
             base.before_update :set_updated
@@ -253,14 +275,22 @@ module SimpleRecord
         end
 
         def get_attribute_sdb(arg)
-            if self[arg].class==Array
-                if self[arg].length==1
-                    ret = self[arg][0]
+#            arg = arg.to_s
+            puts "get_attribute_sdb(#{arg}) - #{arg.class.name}"
+            puts 'self[]=' + self.inspect
+            ret = strip_array(self[arg])
+            return ret
+        end
+
+        def strip_array(arg)
+            if arg.class==Array
+                if arg.length==1
+                    ret = arg[0]
                 else
-                    ret = self[arg]
+                    ret = arg
                 end
             else
-                ret = self[arg]
+                ret = arg
             end
             return ret
         end
@@ -286,13 +316,16 @@ module SimpleRecord
         end
 
         def make_dirty(arg, value)
-            # todo: only set dirty if it changed
+            arg = arg.to_s
+            puts "Marking #{arg} dirty with #{value}"
             if @dirty.include?(arg)
                 old = @dirty[arg]
-                @dirty.delete(arg)  if value == old
-            else 
+                puts "Was already dirty #{old}"
+                @dirty.delete(arg) if value == old
+            else
                 old = get_attribute(arg)
-                @dirty[arg] = get_attribute(arg) if value != old
+                puts "dirtifying #{old} to #{value}"
+                @dirty[arg] = old if value != old
             end
         end
 
@@ -316,14 +349,7 @@ module SimpleRecord
 
                 # define writer method
                 send(:define_method, arg_s+"=") do |value|
-                    make_dirty(arg_s, value)
-                    instance_var = "@" + arg_s
-#                    puts 'ARG=' + arg.to_s
-                    sdb_val = ruby_to_sdb(arg, value)
-                    self[arg_s] = sdb_val
-                    value = wrap_if_required(arg, value, sdb_val)
-                    instance_variable_set(instance_var, value)
-                    self[arg_s]=value
+                    set(arg, value)
                 end
 
                 # Now for dirty methods: http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html
@@ -335,7 +361,6 @@ module SimpleRecord
                 # define change method
                 send(:define_method, arg_s + "_change") do
                     old_val = @dirty[arg_s]
-                    return nil if old_val.nil?
                     [old_val, get_attribute(arg_s)]
                 end
 
@@ -454,14 +479,7 @@ module SimpleRecord
 
             # Define writer method
             send(:define_method, arg.to_s + "=") do |value|
-                arg_id = arg.to_s + '_id'
-                if value.nil?
-                    make_dirty(arg_id, nil)
-                    self[arg_id]=nil unless self[arg_id].nil? # if it went from something to nil, then we have to remember and remove attribute on save
-                else
-                    make_dirty(arg_id, value.id)
-                    self[arg_id]=value.id
-                end
+                set_belongs_to(arg, value)
             end
 
 
@@ -519,11 +537,15 @@ module SimpleRecord
             super
         end
 
+        def []( attribute)
+            super
+        end
+
 
         def set_created
 #    puts 'SETTING CREATED'
             #    @created = DateTime.now
-            self[:created] = DateTime.now
+            self[:created] = Time.now
 #    @tester = 'some test value'
             #    self[:tester] = 'some test value'
         end
@@ -531,7 +553,7 @@ module SimpleRecord
         def set_updated
             #puts 'SETTING UPDATED'
             #    @updated = DateTime.now
-            self[:updated] = DateTime.now
+            self[:updated] = Time.now
 #    @tester = 'some test value updated'
         end
 
@@ -621,10 +643,10 @@ module SimpleRecord
 
         # Options:
         #   - :except => Array of attributes to NOT save
-        #   - :dirty => true - Will only store attributes that were modified
+        #   - :dirty => true - Will only store attributes that were modified. To make it save regardless and have it update the :updated value, include this and set it to false.
         #
         def save(options={})
-            #    puts 'SAVING: ' + self.inspect
+            puts 'SAVING: ' + self.inspect
             clear_errors
             # todo: decide whether this should go before pre_save or after pre_save? pre_save dirties "updated" and perhaps other items due to callbacks
             if options[:dirty]
@@ -642,6 +664,7 @@ module SimpleRecord
                     end
                     to_delete = get_atts_to_delete # todo: this should use the @dirty hash now
 #                    puts 'done to_delete ' + to_delete.inspect
+                    puts 'options=' + options.inspect
                     SimpleRecord.stats.puts += 1
                     if super(options)
 #          puts 'SAVED super'
@@ -732,10 +755,13 @@ module SimpleRecord
 
 
         def self.decrypt(value, key=nil)
+            puts "decrypt orig value #{value} "
             unencoded_value = Base64.decode64(value)
             raise SimpleRecordError, "Encryption key must be defined on the attribute." if key.nil?
             key = key || get_encryption_key()
+            puts "decrypting #{unencoded_value} "
             decrypted_value = SimpleRecord::Encryptor.decrypt(:value => unencoded_value, :key => key)
+            puts "decrypted #{unencoded_value} to #{decrypted_value}"
             decrypted_value
         end
 
@@ -863,12 +889,41 @@ module SimpleRecord
             end
         end
 
-        # Convert value from SimpleDB String version to real ruby value.
-        def sdb_to_ruby(arg, value)
-            puts 'sdb_to_ruby arg=' + arg.inspect + ' - ' + arg.class.name
-            att_meta = defined_attributes_local[arg]
+        def set(name, value)
 
-            if !att_meta.options.nil?
+            att_meta = defined_attributes_local[name.to_sym]
+            if att_meta.type == :belongs_to
+                set_belongs_to(name, value)
+                return
+            end
+            value = strip_array(value)
+            make_dirty(name, value)
+            instance_var = "@" + name.to_s
+#                    puts 'ARG=' + arg.to_s
+            sdb_val = ruby_to_sdb(name, value)
+            @attributes[name.to_s] = sdb_val
+            value = wrap_if_required(name, value, sdb_val)
+            instance_variable_set(instance_var, value)
+        end
+
+        def set_belongs_to(name, value)
+            arg_id = name.to_s + '_id'
+            if value.nil?
+                make_dirty(arg_id, nil)
+                self[arg_id]=nil unless self[arg_id].nil? # todo: can we remove unless check since dirty should take care of things?
+            else
+                make_dirty(arg_id, value.id)
+                self[arg_id]=value.id
+            end
+        end
+
+        # Convert value from SimpleDB String version to real ruby value.
+        def sdb_to_ruby(name, value)
+            puts 'sdb_to_ruby arg=' + name.inspect + ' - ' + name.class.name + ' - value=' + value.to_s
+            return nil if value.nil?
+            att_meta = defined_attributes_local[name.to_sym]
+
+            if att_meta.options
                 if att_meta.options[:encrypted]
                     value = self.class.decrypt(value, att_meta.options[:encrypted])
                 end
@@ -887,24 +942,17 @@ module SimpleRecord
             value
         end
 
-        def wrap_if_required(arg, value, sdb_val)
-            return nil if value.nil?
 
-            att_meta = defined_attributes_local[arg]
-            if att_meta.options
-                if att_meta.options[:hashed]
-                    puts 'wrapping ' + arg.to_s
-                    return PasswordHashed.new(sdb_val)
-                end
-            end
-            value
-        end
-
-        def ruby_to_sdb(arg, value)
+        def ruby_to_sdb(name, value)
 
             return nil if value.nil?
 
-            att_meta = defined_attributes_local[arg]
+            name = name.to_s
+
+            puts "Converting #{name} to sdb value=#{value}"
+            puts "atts_local=" + defined_attributes_local.inspect
+
+            att_meta = defined_attributes_local[name.to_sym]
 
             if att_meta.type == :int
                 ret = self.class.pad_and_offset(value)
@@ -914,9 +962,12 @@ module SimpleRecord
                 ret = value.to_s
             end
 
+
             if att_meta.options
                 if att_meta.options[:encrypted]
+                    puts "ENCRYPTING #{name} value #{value}"
                     ret = self.class.encrypt(ret, att_meta.options[:encrypted])
+                    puts 'encrypted value=' + ret.to_s
                 end
                 if att_meta.options[:hashed]
                     ret = self.class.pass_hash(ret)
@@ -925,6 +976,20 @@ module SimpleRecord
 
             return ret.to_s
 
+        end
+
+        def wrap_if_required(arg, value, sdb_val)
+            return nil if value.nil?
+
+            arg_s = arg.to_s
+            att_meta = defined_attributes_local[arg]
+            if att_meta.options
+                if att_meta.options[:hashed]
+                    puts 'wrapping ' + arg_s
+                    return PasswordHashed.new(sdb_val)
+                end
+            end
+            value
         end
 
         def to_date(x)

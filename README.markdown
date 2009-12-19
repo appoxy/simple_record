@@ -2,6 +2,10 @@
 
 An ActiveRecord interface for SimpleDB.  Can be used as a drop in replacement for ActiveRecord in rails.
 
+## Full Documentation
+
+[http://sites.appoxy.com/simple_record/]
+
 ## Discussion Group
 
 [http://groups.google.com/group/simple-record]
@@ -12,14 +16,7 @@ An ActiveRecord interface for SimpleDB.  Can be used as a drop in replacement fo
 
 ## Getting Started
 
-1. Install gems
-
-ONE TIME: Be sure to add the new gemcutter source:
-
-    gem install gemcutter
-    gem tumble
-
-THEN (you should have http://gemcutter.org in your sources and it MUST be above gems.rubyforge.org):
+1. Install
 
     gem install simple_record
 
