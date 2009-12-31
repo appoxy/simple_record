@@ -984,7 +984,7 @@ module SimpleRecord
 
             arg_s = arg.to_s
             att_meta = defined_attributes_local[arg.to_sym]
-            if att_meta.options
+            if att_meta && att_meta.options
                 if att_meta.options[:hashed]
                     puts 'wrapping ' + arg_s
                     return PasswordHashed.new(sdb_val)
