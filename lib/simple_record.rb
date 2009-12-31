@@ -892,6 +892,7 @@ module SimpleRecord
         def set(name, value)
 
             att_meta = defined_attributes_local[name.to_sym]
+            return if att_meta.nil?
             if att_meta.type == :belongs_to
                 set_belongs_to(name, value)
                 return
@@ -982,7 +983,7 @@ module SimpleRecord
             return nil if value.nil?
 
             arg_s = arg.to_s
-            att_meta = defined_attributes_local[arg]
+            att_meta = defined_attributes_local[arg.to_sym]
             if att_meta.options
                 if att_meta.options[:hashed]
                     puts 'wrapping ' + arg_s

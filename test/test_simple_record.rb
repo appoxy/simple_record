@@ -430,7 +430,7 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm = MyModel.find(:first, :conditions=>["date3 >= ?", 1.minutes.ago])
         puts 'mm=' + mm.inspect
         assert mm
-        
+
     end
 
     def test_attr_encrypted
@@ -470,6 +470,25 @@ class TestSimpleRecord < Test::Unit::TestCase
         assert ob2.attributes["password"] != password
         assert ob2.password == ob.password, "#{ob2.password} vs #{ob.password}"
 
+    end
+
+    def test_non_persistent_attributes
+        mm = MyModel.new({:some_np_att=>"word"})
+        mm = MyModel.new({"some_other_np_att"=>"up"})
+
+    end
+
+    def test_atts_using_strings_and_symbols
+        mm = MyModel.new({:name=>"myname"})
+        mm2 = MyModel.new({"name"=>"myname"})
+        assert mm.name = mm2.name
+
+        mm.save
+        mm2.save
+
+        mm = MyModel.find(mm.id)
+        mm2 = MyModel.find(mm2.id)
+        assert mm.name = mm2.name
     end
 
 end
