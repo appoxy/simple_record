@@ -102,7 +102,6 @@ module SimpleRecord
         def wrap_if_required(arg, value, sdb_val)
             return nil if value.nil?
 
-            arg_s = arg.to_s
             att_meta = defined_attributes_local[arg.to_sym]
             if att_meta && att_meta.options
                 if att_meta.options[:hashed]

@@ -132,7 +132,7 @@ module SimpleRecord
 
             # Define reader method
             send(:define_method, arg) do
-                puts 'GETTING ' + arg.to_s
+#                puts 'GETTING ' + arg.to_s
                 attribute = defined_attributes_local[arg]
                 options2 = attribute.options # @@belongs_to_map[arg]
                 class_name = options2[:class_name] || arg.to_s[0...1].capitalize + arg.to_s[1...arg.to_s.length]
@@ -180,8 +180,16 @@ module SimpleRecord
 
             # Define ID reader method for reading the associated objects id without getting the entire object
             send(:define_method, arg_id) do
-                if !@attributes[arg_id].nil? && @attributes[arg_id].size > 0 && @attributes[arg_id][0] != nil && @attributes[arg_id][0] != ''
-                    return @attributes[arg_id][0]
+                val1 = @attributes[arg_id]
+                if val1
+                    if val1.is_a?(Array)
+                        if val1.size > 0 && val1[0].present?
+                            return val1[0]
+                        end
+
+                    else
+                        return val1
+                    end
                 end
                 return nil
             end
@@ -222,7 +230,6 @@ module SimpleRecord
         def has_one(*args)
 
         end
-
 
 
         def self.handle_virtuals(attrs)

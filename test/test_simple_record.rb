@@ -99,7 +99,11 @@ class TestSimpleRecord < TestBase
         child = MyChildModel.new
         child.name = "Child"
         child.my_model = mm
+        puts 'c1=' + child.inspect
+        puts 'mmid1=' + child.my_model_id.to_s
+        assert child.my_model_id == mm.id
         child.save
+        puts 'mmid2=' + child.my_model_id.to_s
 
         puts "child=" + child.inspect
         sleep 1

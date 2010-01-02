@@ -540,10 +540,12 @@ module SimpleRecord
             end
             attvalue = strip_array(attvalue)
             make_dirty(attname, attvalue)
-#                    puts 'ARG=' + arg.to_s
+            puts "ARG=#{attname.to_s} setting to #{attvalue}"
             sdb_val = ruby_to_sdb(name, attvalue)
+            puts "sdb_val=" + sdb_val.to_s
             @attributes[attname] = sdb_val
-            attvalue = wrap_if_required(name, value, sdb_val)
+            attvalue = wrap_if_required(name, attvalue, sdb_val)
+            puts 'attvalue2=' + attvalue.to_s
             @attributes_rb[attname] = attvalue
 
 #            instance_var = "@" + attname.to_s
