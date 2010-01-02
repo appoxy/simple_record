@@ -11,7 +11,7 @@ module SimpleRecord::Callbacks
     def self.included(base)
         #puts 'Callbacks included in ' + base.inspect
 
-        puts "setup callbacks #{base.inspect}"
+#        puts "setup callbacks #{base.inspect}"
         base.instance_eval <<-endofeval
 
             def callbacks
@@ -50,11 +50,11 @@ module SimpleRecord::Callbacks
             #basically, this is how we recreate the callback functions
             base.instance_eval <<-endofeval
 
-            puts 'defining callback=' + callback + ' for ' + self.inspect
+#            puts 'defining callback=' + callback + ' for ' + self.inspect
             #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
 
             def #{callback}(*args)
-                puts 'callback called in ' + self.inspect + ' with ' + args.inspect
+#                puts 'callback called in ' + self.inspect + ' with ' + args.inspect
 
                 #make_dirty(arg_s, value)
                 #self[arg.to_s]=value

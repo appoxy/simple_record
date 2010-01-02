@@ -119,11 +119,11 @@ module SimpleRecord
         # This method will also create an {association)_id method that will return the ID of the foreign object
         # without actually materializing it.
         def belongs_to(association_id, options = {})
-            attribute = Attribute.new(:belongs_to, options)
-            defined_attributes[association_id] = attribute
             arg = association_id
             arg_s = arg.to_s
             arg_id = arg.to_s + '_id'
+            attribute = Attribute.new(:belongs_to, options)
+            defined_attributes[arg] = attribute
 
             # todo: should also handle foreign_key http://74.125.95.132/search?q=cache:KqLkxuXiBBQJ:wiki.rubyonrails.org/rails/show/belongs_to+rails+belongs_to&hl=en&ct=clnk&cd=1&gl=us
             #    puts "arg_id=#{arg}_id"
@@ -132,6 +132,7 @@ module SimpleRecord
 
             # Define reader method
             send(:define_method, arg) do
+                puts 'GETTING ' + arg.to_s
                 attribute = defined_attributes_local[arg]
                 options2 = attribute.options # @@belongs_to_map[arg]
                 class_name = options2[:class_name] || arg.to_s[0...1].capitalize + arg.to_s[1...arg.to_s.length]
@@ -173,7 +174,7 @@ module SimpleRecord
 
             # Define writer method
             send(:define_method, arg.to_s + "=") do |value|
-                set_belongs_to(arg, value)
+                set(arg, value)
             end
 
 
@@ -221,6 +222,8 @@ module SimpleRecord
         def has_one(*args)
 
         end
+
+
 
         def self.handle_virtuals(attrs)
             @@virtuals.each do |virtual|

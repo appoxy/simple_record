@@ -12,8 +12,8 @@ module SimpleRecord
 
             name = name.to_s
 
-            puts "Converting #{name} to sdb value=#{value}"
-            puts "atts_local=" + defined_attributes_local.inspect
+#            puts "Converting #{name} to sdb value=#{value}"
+#            puts "atts_local=" + defined_attributes_local.inspect
 
             att_meta = defined_attributes_local[name.to_sym]
 
@@ -28,9 +28,9 @@ module SimpleRecord
 
             if att_meta.options
                 if att_meta.options[:encrypted]
-                    puts "ENCRYPTING #{name} value #{value}"
+#                    puts "ENCRYPTING #{name} value #{value}"
                     ret = Translations.encrypt(ret, att_meta.options[:encrypted])
-                    puts 'encrypted value=' + ret.to_s
+#                    puts 'encrypted value=' + ret.to_s
                 end
                 if att_meta.options[:hashed]
                     ret = Translations.pass_hash(ret)
@@ -44,7 +44,7 @@ module SimpleRecord
 
         # Convert value from SimpleDB String version to real ruby value.
         def sdb_to_ruby(name, value)
-            puts 'sdb_to_ruby arg=' + name.inspect + ' - ' + name.class.name + ' - value=' + value.to_s
+#            puts 'sdb_to_ruby arg=' + name.inspect + ' - ' + name.class.name + ' - value=' + value.to_s
             return nil if value.nil?
             att_meta = defined_attributes_local[name.to_sym]
 
@@ -106,7 +106,7 @@ module SimpleRecord
             att_meta = defined_attributes_local[arg.to_sym]
             if att_meta && att_meta.options
                 if att_meta.options[:hashed]
-                    puts 'wrapping ' + arg_s
+#                    puts 'wrapping ' + arg_s
                     return PasswordHashed.new(sdb_val)
                 end
             end
@@ -170,13 +170,13 @@ module SimpleRecord
 
 
         def self.decrypt(value, key=nil)
-            puts "decrypt orig value #{value} "
+#            puts "decrypt orig value #{value} "
             unencoded_value = Base64.decode64(value)
             raise SimpleRecordError, "Encryption key must be defined on the attribute." if key.nil?
             key = key || get_encryption_key()
-            puts "decrypting #{unencoded_value} "
+#            puts "decrypting #{unencoded_value} "
             decrypted_value = SimpleRecord::Encryptor.decrypt(:value => unencoded_value, :key => key)
-            puts "decrypted #{unencoded_value} to #{decrypted_value}"
+#             "decrypted #{unencoded_value} to #{decrypted_value}"
             decrypted_value
         end
 

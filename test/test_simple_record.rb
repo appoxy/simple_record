@@ -114,10 +114,14 @@ class TestSimpleRecord < Test::Unit::TestCase
         child.my_model = mm
         child.save
 
+        puts "child=" + child.inspect
         sleep 1
 
         child = MyChildModel.find(child.id)
-        puts child.my_model_id
+        puts "child find=" + child.inspect
+        puts "child.my_model_id = " + child.my_model_id.to_s
+        assert !child.my_model_id.nil?
+        assert !child.my_model.nil?
         assert child.my_model_id == mm.id
     end
 

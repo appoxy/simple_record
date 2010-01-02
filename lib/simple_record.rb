@@ -185,8 +185,8 @@ module SimpleRecord
 
         def get_attribute_sdb(arg)
 #            arg = arg.to_s
-            puts "get_attribute_sdb(#{arg}) - #{arg.class.name}"
-            puts 'self[]=' + self.inspect
+#            puts "get_attribute_sdb(#{arg}) - #{arg.class.name}"
+#            puts 'self[]=' + self.inspect
             ret = strip_array(self[arg])
             return ret
         end
@@ -204,36 +204,17 @@ module SimpleRecord
             return ret
         end
 
-        # Since SimpleDB supports multiple attributes per value, the values are an array.
-        # This method will return the value unwrapped if it's the only, otherwise it will return the array.
-        def get_attribute(arg)
-            # Check if this arg is already converted
-            arg_s = arg.to_s
-            instance_var = ("@" + arg_s)
-#            puts "defined?(#{instance_var.to_sym}) " + (defined?(instance_var.to_sym)).inspect
-#            if defined?(instance_var.to_sym) # this returns "method" for some reason??
-#            puts "attribute #{instance_var} is defined"
-            ret = instance_variable_get(instance_var)
-#            puts 'ret=' + ret.to_s
-            return ret if !ret.nil?
-#            end
-            ret = get_attribute_sdb(arg)
-            ret = sdb_to_ruby(arg, ret)
-#            puts "Setting instance var #{instance_var}"
-            instance_variable_set(instance_var, ret)
-            return ret
-        end
 
         def make_dirty(arg, value)
             arg = arg.to_s
-            puts "Marking #{arg} dirty with #{value}"
+#            puts "Marking #{arg} dirty with #{value}"
             if @dirty.include?(arg)
                 old = @dirty[arg]
-                puts "Was already dirty #{old}"
+#                puts "Was already dirty #{old}"
                 @dirty.delete(arg) if value == old
             else
                 old = get_attribute(arg)
-                puts "dirtifying #{old} to #{value}"
+#                puts "dirtifying #{old} to #{value}"
                 @dirty[arg] = old if value != old
             end
         end
@@ -326,7 +307,7 @@ module SimpleRecord
         #   - :dirty => true - Will only store attributes that were modified. To make it save regardless and have it update the :updated value, include this and set it to false.
         #
         def save(options={})
-            puts 'SAVING: ' + self.inspect
+#            puts 'SAVING: ' + self.inspect
             clear_errors
             # todo: decide whether this should go before pre_save or after pre_save? pre_save dirties "updated" and perhaps other items due to callbacks
             if options[:dirty]
@@ -344,7 +325,7 @@ module SimpleRecord
                     end
                     to_delete = get_atts_to_delete # todo: this should use the @dirty hash now
 #                    puts 'done to_delete ' + to_delete.inspect
-                    puts 'options=' + options.inspect
+#                    puts 'options=' + options.inspect
                     SimpleRecord.stats.puts += 1
                     if super(options)
 #          puts 'SAVED super'
@@ -513,12 +494,25 @@ module SimpleRecord
             return run_before_destroy && delete && run_after_destroy
         end
 
-        def delete_niled(to_delete)
-#            puts 'to_delete=' + to_delete.inspect
-            if to_delete.size > 0
-#      puts 'Deleting attributes=' + to_delete.inspect
-                delete_attributes to_delete
-            end
+
+        # Since SimpleDB supports multiple attributes per value, the values are an array.
+        # This method will return the value unwrapped if it's the only, otherwise it will return the array.
+        def get_attribute(arg)
+            # Check if this arg is already converted
+            arg_s = arg.to_s
+            instance_var = ("@" + arg_s)
+#            puts "defined?(#{instance_var.to_sym}) " + (defined?(instance_var.to_sym)).inspect
+#            if defined?(instance_var.to_sym) # this returns "method" for some reason??
+#            puts "attribute #{instance_var} is defined"
+            ret = instance_variable_get(instance_var)
+#            puts 'ret=' + ret.to_s
+            return ret if !ret.nil?
+#            end
+            ret = get_attribute_sdb(arg)
+            ret = sdb_to_ruby(arg, ret)
+#            puts "Setting instance var #{instance_var}"
+            instance_variable_set(instance_var, ret)
+            return ret
         end
 
         def set(name, value)
@@ -526,27 +520,27 @@ module SimpleRecord
             att_meta = defined_attributes_local[name.to_sym]
             return if att_meta.nil?
             if att_meta.type == :belongs_to
-                set_belongs_to(name, value)
-                return
+                attname = name.to_s + '_id'
+                attvalue = value.nil? ? nil : value.id
+            else
+                attname = name
+                attvalue = value
             end
-            value = strip_array(value)
-            make_dirty(name, value)
-            instance_var = "@" + name.to_s
+            value = strip_array(attvalue)
+            make_dirty(attname, attvalue)
+            instance_var = "@" + attname.to_s
 #                    puts 'ARG=' + arg.to_s
-            sdb_val = ruby_to_sdb(name, value)
-            @attributes[name.to_s] = sdb_val
+            sdb_val = ruby_to_sdb(name, attvalue)
+            @attributes[attname.to_s] = sdb_val
             value = wrap_if_required(name, value, sdb_val)
-            instance_variable_set(instance_var, value)
+            instance_variable_set(instance_var, attvalue)
         end
 
-        def set_belongs_to(name, value)
-            arg_id = name.to_s + '_id'
-            if value.nil?
-                make_dirty(arg_id, nil)
-                self[arg_id]=nil unless self[arg_id].nil? # todo: can we remove unless check since dirty should take care of things?
-            else
-                make_dirty(arg_id, value.id)
-                self[arg_id]=value.id
+        def delete_niled(to_delete)
+#            puts 'to_delete=' + to_delete.inspect
+            if to_delete.size > 0
+#      puts 'Deleting attributes=' + to_delete.inspect
+                delete_attributes to_delete
             end
         end
 
@@ -610,6 +604,7 @@ module SimpleRecord
             results = q_type == :all ? [] : nil
             begin
                 results=super(*params)
+#                puts "RESULT=" + results.inspect
                 #puts 'params3=' + params.inspect
                 SimpleRecord.stats.selects += 1
                 if q_type != :count
@@ -619,7 +614,7 @@ module SimpleRecord
                     end
                 end
             rescue Aws::AwsError, Aws::ActiveSdb::ActiveSdbError
-                puts "RESCUED: " + $!.message
+#                puts "RESCUED: " + $!.message
                 if ($!.message().index("NoSuchDomain") != nil)
                     # this is ok
                 elsif ($!.message() =~ @@regex_no_id)

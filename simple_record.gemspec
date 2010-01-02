@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "1.1.41"
+  s.version = "1.1.46"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
-  s.date = %q{2009-12-30}
+  s.date = %q{2010-01-02}
   s.description = %q{Drop in replacement for ActiveRecord to Amazon SimpleDB instead.}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -17,12 +17,14 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     "lib/simple_record.rb",
+     "lib/simple_record/attributes.rb",
      "lib/simple_record/callbacks.rb",
      "lib/simple_record/encryptor.rb",
      "lib/simple_record/errors.rb",
      "lib/simple_record/password.rb",
      "lib/simple_record/results_array.rb",
-     "lib/simple_record/stats.rb"
+     "lib/simple_record/stats.rb",
+     "lib/simple_record/translations.rb"
   ]
   s.homepage = %q{http://github.com/appoxy/simple_record/}
   s.rdoc_options = ["--charset=UTF-8"]
