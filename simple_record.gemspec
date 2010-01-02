@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "1.1.46"
+  s.version = "1.1.48"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
@@ -39,7 +39,10 @@ Gem::Specification.new do |s|
      "test/my_child_model.rb",
      "test/my_model.rb",
      "test/paging_array_test.rb",
+     "test/results_tests.rb",
      "test/temp_test.rb",
+     "test/test_base.rb",
+     "test/test_helpers.rb",
      "test/test_simple_record.rb"
   ]
 

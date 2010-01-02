@@ -420,8 +420,8 @@ module SimpleRecord
             ret = super(atts)
 #            puts '@atts=' + @attributes.inspect
             atts.each_pair do |k, v|
+                @attributes[k.to_s] = v
                 if k.is_a?(Symbol)
-                    @attributes[k.to_s] = v
                     @attributes.delete(k)
                 end
             end

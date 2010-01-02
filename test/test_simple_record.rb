@@ -458,9 +458,11 @@ class TestSimpleRecord < TestBase
         mm = MyModel.new({:name=>"myname"})
         mm.save
 
-        mm.update_attributes(:name=>"name2", :age=>21)
+        now = Time.now
+        mm.update_attributes(:name=>"name2", :age=>21, "date2"=>now)
         assert mm.name == "name2", "Name is #{mm.name}"
         assert mm.age == 21
+        assert mm.date2 == now
     end
 
 end
