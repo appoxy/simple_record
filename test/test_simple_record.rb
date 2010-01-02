@@ -1,5 +1,7 @@
 require 'test/unit'
-require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
+require File.join(File.dirname(__FILE__), "/../lib/simple_record")
+require File.join(File.dirname(__FILE__), "./test_helpers")
+require File.join(File.dirname(__FILE__), "./test_base")
 require "yaml"
 require 'aws'
 require 'my_model'
@@ -9,22 +11,7 @@ require 'active_support'
 # Tests for SimpleRecord
 #
 
-class TestSimpleRecord < Test::Unit::TestCase
-
-    def setup
-        @config = YAML::load(File.open(File.expand_path("~/.test-configs/simple_record.yml")))
-        #puts 'inspecting config = ' + @config.inspect       
-
-        # Establish AWS connection directly
-        @@sdb = Aws::SdbInterface.new(@config['amazon']['access_key'], @config['amazon']['secret_key'], {:connection_mode => :per_request, :protocol => "http", :port => 80})
-
-        SimpleRecord.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :connection_mode=>:single)
-        SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")
-    end
-
-    def teardown
-        SimpleRecord.close_connection
-    end
+class TestSimpleRecord < TestBase
 
 
     def test_save_get
@@ -238,34 +225,6 @@ class TestSimpleRecord < Test::Unit::TestCase
 
     end
 
-    # ensures that it uses next token and what not
-    def test_big_result
-        i = clear_out_my_models
-        num_made = 110
-        num_made.times do |i|
-            mm = MyModel.create(:name=>"Travis", :age=>i, :cool=>true)
-        end
-        rs = MyModel.find(:all) # should get 100 at a time
-        assert rs.size == num_made
-        i = 0
-        rs.each do |x|
-            #puts 'x=' + x.id
-            i+=1
-        end
-        assert i == num_made
-    end
-
-    def clear_out_my_models
-        mms = MyModel.find(:all)
-        puts 'mms.size=' + mms.size.to_s
-        i = 0
-        mms.each do |x|
-            puts 'deleting=' + i.to_s
-            x.delete
-            i+=1
-        end
-    end
-
     def test_results_array
         mms = MyModel.find(:all) # select 2
         assert !mms.first.nil?
@@ -363,7 +322,7 @@ class TestSimpleRecord < Test::Unit::TestCase
 
     def test_null
         puts Time.now.to_i.to_s
-        clear_out_my_models
+        TestHelpers.clear_out_my_models
 
         mm = MyModel.new(:name=>"birthay is null")
         mm.save
@@ -493,6 +452,15 @@ class TestSimpleRecord < Test::Unit::TestCase
         mm = MyModel.find(mm.id)
         mm2 = MyModel.find(mm2.id)
         assert mm.name = mm2.name
+    end
+
+    def test_update_attributes
+        mm = MyModel.new({:name=>"myname"})
+        mm.save
+
+        mm.update_attributes(:name=>"name2", :age=>21)
+        assert mm.name == "name2", "Name is #{mm.name}"
+        assert mm.age == 21
     end
 
 end

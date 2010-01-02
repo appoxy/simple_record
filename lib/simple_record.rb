@@ -100,7 +100,8 @@ module SimpleRecord
             @errors=SimpleRecord_errors.new
             @dirty = {}
 
-            @attributes = {}
+            @attributes = {} # sdb values
+            @attributes_rb = {} # ruby values
             @new_record = true
 
         end
@@ -414,8 +415,18 @@ module SimpleRecord
             ok
         end
 
-        def save_attributes(*params)
-            ret = super(*params)
+        def save_attributes(atts)
+#            puts 'atts=' + atts.inspect
+            ret = super(atts)
+#            puts '@atts=' + @attributes.inspect
+            atts.each_pair do |k, v|
+                if k.is_a?(Symbol)
+                    @attributes[k.to_s] = v
+                    @attributes.delete(k)
+                end
+            end
+#            puts '@atts2=' + @attributes.inspect
+            @attributes_rb.clear # clear out the ruby versions so they can reload on next get.
             if ret
                 self.class.cache_results(self)
             end
@@ -500,18 +511,19 @@ module SimpleRecord
         def get_attribute(arg)
             # Check if this arg is already converted
             arg_s = arg.to_s
-            instance_var = ("@" + arg_s)
+#            instance_var = ("@" + arg_s)
 #            puts "defined?(#{instance_var.to_sym}) " + (defined?(instance_var.to_sym)).inspect
 #            if defined?(instance_var.to_sym) # this returns "method" for some reason??
 #            puts "attribute #{instance_var} is defined"
-            ret = instance_variable_get(instance_var)
+            ret = @attributes_rb[arg_s] # instance_variable_get(instance_var)
 #            puts 'ret=' + ret.to_s
             return ret if !ret.nil?
 #            end
             ret = get_attribute_sdb(arg)
             ret = sdb_to_ruby(arg, ret)
-#            puts "Setting instance var #{instance_var}"
-            instance_variable_set(instance_var, ret)
+#            puts "Setting instance var #{arg_s} to #{ret}"
+#            instance_variable_set(instance_var, ret)
+            @attributes_rb[arg_s] = ret
             return ret
         end
 
@@ -523,17 +535,19 @@ module SimpleRecord
                 attname = name.to_s + '_id'
                 attvalue = value.nil? ? nil : value.id
             else
-                attname = name
+                attname = name.to_s
                 attvalue = value
             end
-            value = strip_array(attvalue)
+            attvalue = strip_array(attvalue)
             make_dirty(attname, attvalue)
-            instance_var = "@" + attname.to_s
 #                    puts 'ARG=' + arg.to_s
             sdb_val = ruby_to_sdb(name, attvalue)
-            @attributes[attname.to_s] = sdb_val
-            value = wrap_if_required(name, value, sdb_val)
-            instance_variable_set(instance_var, attvalue)
+            @attributes[attname] = sdb_val
+            attvalue = wrap_if_required(name, value, sdb_val)
+            @attributes_rb[attname] = attvalue
+
+#            instance_var = "@" + attname.to_s
+#            instance_variable_set(instance_var, attvalue)
         end
 
         def delete_niled(to_delete)
@@ -548,8 +562,8 @@ module SimpleRecord
             super()
         end
 
-        def update_attributes(*params)
-            return save_attributes(*params)
+        def update_attributes(atts)
+            return save_attributes(atts)
         end
 
         def self.quote_regexp(a, re)
@@ -696,44 +710,6 @@ module SimpleRecord
 
     end
 
-    class SimpleRecord_errors
-        def initialize(*params)
-            super(*params)
-            @errors=[]
-        end
-
-        def add_to_base(value)
-            @errors+=[value]
-        end
-
-        def add(attribute, value)
-            @errors+=["#{attribute.to_s} #{value}"]
-        end
-
-        def count
-            return length
-        end
-
-        def length
-            return @errors.length
-        end
-
-        def size
-            return length
-        end
-
-        def full_messages
-            return @errors
-        end
-
-        def clear
-            @errors.clear
-        end
-
-        def empty?
-            @errors.empty?
-        end
-    end
 
     class Activerecordtosdb_subrecord_array
         def initialize(subname, referencename, referencevalue)
