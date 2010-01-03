@@ -458,6 +458,19 @@ class TestSimpleRecord < TestBase
         assert mm.name = mm2.name
     end
 
+    def test_constructor_using_belongs_to_ids
+        mm = MyModel.new({:name=>"myname"})
+        mm.save
+
+        mm2 = MyChildModel.new({"name"=>"myname2", :my_model_id=>mm.id})
+        puts 'mm2=' + mm2.inspect
+        assert mm.id == mm2.my_model_id, "#{mm.id} != #{mm2.my_model_id}"
+        mm3 = mm2.my_model
+        puts 'mm3=' + mm3.inspect
+        assert mm.name == mm3.name
+
+    end
+
     def test_update_attributes
         mm = MyModel.new({:name=>"myname"})
         mm.save
@@ -467,6 +480,20 @@ class TestSimpleRecord < TestBase
         assert mm.name == "name2", "Name is #{mm.name}"
         assert mm.age == 21
         assert mm.date2 == now
+    end
+
+    def test_explicit_class_name
+        mm = MyModel.new({:name=>"myname"})
+        mm.save
+
+        mm2 = MyChildModel.new({"name"=>"myname2"})
+        mm2.x = mm
+        assert mm2.x.id == mm.id
+        mm2.save
+
+        mm3 = MyChildModel.find(mm2.id)
+        puts "mm3.x=" + mm3.x.inspect
+        assert mm3.x.id == mm.id
     end
 
 end

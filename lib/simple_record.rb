@@ -530,22 +530,37 @@ module SimpleRecord
         def set(name, value)
 
             att_meta = defined_attributes_local[name.to_sym]
-            return if att_meta.nil?
-            if att_meta.type == :belongs_to
-                attname = name.to_s + '_id'
-                attvalue = value.nil? ? nil : value.id
+            if att_meta.nil?
+                # check if it ends with id and see if att_meta is there
+                ends_with = name.to_s[-3, 3]
+                if ends_with == "_id"
+#                    puts 'ends with id'
+                    n2 = name.to_s[0, name.length-3]
+#                    puts 'n2=' + n2
+                    att_meta = defined_attributes_local[n2.to_sym]
+#                    puts 'defined_attributes_local=' + defined_attributes_local.inspect
+                    attname = name.to_s
+                    attvalue = value
+                    name = n2
+                end
+                return if att_meta.nil?
             else
-                attname = name.to_s
-                attvalue = value
+                if att_meta.type == :belongs_to
+                    attname = name.to_s + '_id'
+                    attvalue = value.nil? ? nil : value.id
+                else
+                    attname = name.to_s
+                    attvalue = value
+                end
             end
             attvalue = strip_array(attvalue)
             make_dirty(attname, attvalue)
-            puts "ARG=#{attname.to_s} setting to #{attvalue}"
+#            puts "ARG=#{attname.to_s} setting to #{attvalue}"
             sdb_val = ruby_to_sdb(name, attvalue)
-            puts "sdb_val=" + sdb_val.to_s
+#            puts "sdb_val=" + sdb_val.to_s
             @attributes[attname] = sdb_val
             attvalue = wrap_if_required(name, attvalue, sdb_val)
-            puts 'attvalue2=' + attvalue.to_s
+#            puts 'attvalue2=' + attvalue.to_s
             @attributes_rb[attname] = attvalue
 
 #            instance_var = "@" + attname.to_s

@@ -144,16 +144,17 @@ module SimpleRecord
                 #      puts 'val=' + @attributes[arg_id][0].inspect unless @attributes[arg_id].nil?
                 ret = nil
                 arg_id = arg.to_s + '_id'
-                if !@attributes[arg_id].nil? && @attributes[arg_id].size > 0 && @attributes[arg_id][0] != nil && @attributes[arg_id][0] != ''
+                arg_id_val = send("#{arg_id}")
+                if arg_id_val
                     if !cache_store.nil?
-                        arg_id_val = @attributes[arg_id][0]
+#                        arg_id_val = @attributes[arg_id][0]
                         cache_key = self.class.cache_key(class_name, arg_id_val)
 #          puts 'cache_key=' + cache_key
                         ret = cache_store.read(cache_key)
 #          puts 'belongs_to incache=' + ret.inspect
                     end
                     if ret.nil?
-                        to_eval = "#{class_name}.find(@attributes['#{arg_id}'][0])"
+                        to_eval = "#{class_name}.find('#{arg_id_val}')"
 #      puts 'to eval=' + to_eval
                         begin
                             ret = eval(to_eval) # (defined? #{arg}_id)

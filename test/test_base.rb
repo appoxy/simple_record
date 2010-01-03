@@ -14,7 +14,7 @@ class TestBase < Test::Unit::TestCase
         #puts 'inspecting config = ' + @config.inspect
 
         # Establish AWS connection directly
-        @@sdb = Aws::SdbInterface.new(@config['amazon']['access_key'], @config['amazon']['secret_key'], {:connection_mode => :per_request, :protocol => "http", :port => 80})
+        @@sdb = Aws::SdbInterface.new(@config['amazon']['access_key'], @config['amazon']['secret_key'], {:connection_mode => :per_request})
 
         SimpleRecord.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :connection_mode=>:single)
         SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")

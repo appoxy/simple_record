@@ -3,6 +3,7 @@ require 'my_model'
 
 class MyChildModel < SimpleRecord::Base
     belongs_to :my_model
+    belongs_to :x, :class_name=>"MyModel"
     has_attributes :name, :child_attr
 
 end
