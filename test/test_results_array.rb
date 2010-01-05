@@ -31,6 +31,13 @@ class TestResultsArray < TestBase
             i+=1
         end
         assert i == num_made
+        # running through all the results twice to ensure it works properly after lazy loading complete.
+        i = 0
+        rs.each do |x|
+            #puts 'x=' + x.id
+            i+=1
+        end
+        assert i == num_made
     end
     
     

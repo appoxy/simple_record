@@ -19,7 +19,6 @@ module SimpleRecord
             @items = items
             @currentset_items = items
             @next_token = next_token
-            @i = 0
         end
 
         def << (val)
@@ -91,14 +90,18 @@ module SimpleRecord
         end
 
         def each(&blk)
+            each2(0, &blk)
+        end
+
+        def each2(i, &blk)
             options = @params[1]
             limit = options[:limit]
 
-            @currentset_items.each do |v|
-#                puts @i.to_s
+            @items[i..@items.size].each do |v|
+                puts "i=" + i.to_s
                 yield v
-                @i += 1
-                if !limit.nil? && @i >= limit
+                i += 1
+                if !limit.nil? && i >= limit
                     return
                 end
             end
@@ -111,7 +114,7 @@ module SimpleRecord
                 #puts "i from results_array = " + @i.to_s
 
                 load_next_token_set
-                each(&blk)
+                each2(i, &blk)
             end
         end
 

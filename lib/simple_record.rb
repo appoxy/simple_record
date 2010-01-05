@@ -426,6 +426,7 @@ module SimpleRecord
                 end
             end
 #            puts '@atts2=' + @attributes.inspect
+            @attributes_rb = {} unless @attributes_rb # was getting errors after upgrade.
             @attributes_rb.clear # clear out the ruby versions so they can reload on next get.
             if ret
                 self.class.cache_results(self)
@@ -515,6 +516,7 @@ module SimpleRecord
 #            puts "defined?(#{instance_var.to_sym}) " + (defined?(instance_var.to_sym)).inspect
 #            if defined?(instance_var.to_sym) # this returns "method" for some reason??
 #            puts "attribute #{instance_var} is defined"
+            @attributes_rb = {} unless @attributes_rb # was getting errors after upgrade.
             ret = @attributes_rb[arg_s] # instance_variable_get(instance_var)
 #            puts 'ret=' + ret.to_s
             return ret if !ret.nil?
