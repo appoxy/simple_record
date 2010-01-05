@@ -88,7 +88,7 @@ module SimpleRecord
 
             # Convert attributes to sdb values
             attrs.each_pair do |name, value|
-                set(name, value)
+                set(name, value, false)
             end
         end
 
@@ -529,7 +529,7 @@ module SimpleRecord
             return ret
         end
 
-        def set(name, value)
+        def set(name, value, dirtify=true)
 
             att_meta = defined_attributes_local[name.to_sym]
             if att_meta.nil?
@@ -556,7 +556,7 @@ module SimpleRecord
                 end
             end
             attvalue = strip_array(attvalue)
-            make_dirty(attname, attvalue)
+            make_dirty(attname, attvalue) if dirtify
 #            puts "ARG=#{attname.to_s} setting to #{attvalue}"
             sdb_val = ruby_to_sdb(name, attvalue)
 #            puts "sdb_val=" + sdb_val.to_s
