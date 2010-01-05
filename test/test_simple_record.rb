@@ -165,6 +165,19 @@ class TestSimpleRecord < TestBase
         mm2.save(:dirty=>true)
         puts SimpleRecord.stats.puts.to_s
         assert SimpleRecord.stats.puts == 0
+
+        mmc = MyChildModel.new
+        mmc.my_model = mm
+        mmc.x = mm
+        mmc.save
+
+        mmc.my_model = nil
+        mmc.x = nil
+
+        mmc = MyChildModel.find(mmc.id)
+        mmc.my_model = nil
+        mmc.x = nil
+
     end
 
     # http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html#M002136

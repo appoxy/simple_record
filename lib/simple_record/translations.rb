@@ -44,7 +44,7 @@ module SimpleRecord
 
         # Convert value from SimpleDB String version to real ruby value.
         def sdb_to_ruby(name, value)
-#            puts 'sdb_to_ruby arg=' + name.inspect + ' - ' + name.class.name + ' - value=' + value.to_s
+            puts 'sdb_to_ruby arg=' + name.inspect + ' - ' + name.class.name + ' - value=' + value.to_s
             return nil if value.nil?
             att_meta = defined_attributes_local[name.to_sym]
 

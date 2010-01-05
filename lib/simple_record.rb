@@ -214,7 +214,7 @@ module SimpleRecord
 #                puts "Was already dirty #{old}"
                 @dirty.delete(arg) if value == old
             else
-                old = get_attribute(arg)
+                old = @attributes[arg] # get_attribute(arg)
 #                puts "dirtifying #{old} to #{value}"
                 @dirty[arg] = old if value != old
             end
