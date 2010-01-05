@@ -214,7 +214,7 @@ module SimpleRecord
 #                puts "Was already dirty #{old}"
                 @dirty.delete(arg) if value == old
             else
-                old = @attributes[arg] # get_attribute(arg)
+                old = get_attribute(arg)
 #                puts "dirtifying #{old} to #{value}"
                 @dirty[arg] = old if value != old
             end
@@ -556,7 +556,7 @@ module SimpleRecord
                 end
             end
             attvalue = strip_array(attvalue)
-            make_dirty(attname, attvalue) if dirtify
+            make_dirty(name, attvalue) if dirtify
 #            puts "ARG=#{attname.to_s} setting to #{attvalue}"
             sdb_val = ruby_to_sdb(name, attvalue)
 #            puts "sdb_val=" + sdb_val.to_s
