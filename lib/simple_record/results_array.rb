@@ -26,11 +26,11 @@ module SimpleRecord
         end
 
         def [](*i)
-            puts 'i.inspect=' + i.inspect
-            puts i.size.to_s
-            i.each do |x|
-                puts 'x=' + x.inspect + " -- " + x.class.name
-            end
+#            puts 'i.inspect=' + i.inspect
+#            puts i.size.to_s
+#            i.each do |x|
+#                puts 'x=' + x.inspect + " -- " + x.class.name
+#            end
             if i.size == 1
                 # either fixnum or range
                 x = i[0]
@@ -98,7 +98,7 @@ module SimpleRecord
             limit = options[:limit]
 
             @items[i..@items.size].each do |v|
-                puts "i=" + i.to_s
+#                puts "i=" + i.to_s
                 yield v
                 i += 1
                 if !limit.nil? && i >= limit
