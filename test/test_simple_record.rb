@@ -187,6 +187,7 @@ class TestSimpleRecord < TestBase
         assert mmc2.my_model == nil, "my_model not nil? #{mmc2.my_model.inspect}"
 
         mmc3 = MyChildModel.find(mmc.id)
+        puts "mmc3 1 =" + mmc3.inspect
         assert mmc3.my_model_id == nil, "my_model_id not nil? #{mmc3.my_model_id.inspect}"
         assert mmc3.my_model == nil
 
@@ -194,6 +195,7 @@ class TestSimpleRecord < TestBase
         assert mm3.save
 
         mmc3.my_model = mm3
+        assert mmc3.my_model_changed?
         assert mmc3.save(:dirty=>true)
 
         assert mmc3.my_model_id == mm3.id
@@ -204,6 +206,12 @@ class TestSimpleRecord < TestBase
         assert mmc3.my_model_id == mm3.id, "my_model_id=#{mmc3.my_model_id.inspect} mm3.id=#{mm3.id.inspect}"
         assert mmc3.my_model.id == mm3.id
 
+        mmc3 = MyChildModel.find(mmc3.id)
+        mmc3.my_model_id = mm2.id
+        assert mmc3.my_model_id == mm2.id
+        assert mmc3.changed?
+        assert mmc3.my_model_changed?
+        assert mmc3.my_model.id = mm2.id
 
     end
 

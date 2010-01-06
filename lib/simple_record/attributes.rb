@@ -46,23 +46,27 @@ module SimpleRecord
                     set(arg, value)
                 end
 
-                # Now for dirty methods: http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html
-                # define changed? method
-                send(:define_method, arg_s + "_changed?") do
-                    @dirty.has_key?(sdb_att_name(arg_s))
-                end
+                define_dirty_methods(arg_s)
+            end
+        end
 
-                # define change method
-                send(:define_method, arg_s + "_change") do
-                    old_val = @dirty[sdb_att_name(arg_s)]
-                    [old_val, get_attribute(arg_s)]
-                end
+        def define_dirty_methods(arg_s)
+            # Now for dirty methods: http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html
+            # define changed? method
+            send(:define_method, arg_s + "_changed?") do
+                @dirty.has_key?(sdb_att_name(arg_s))
+            end
 
-                # define was method
-                send(:define_method, arg_s + "_was") do
-                    old_val = @dirty[sdb_att_name(arg_s)]
-                    old_val
-                end
+            # define change method
+            send(:define_method, arg_s + "_change") do
+                old_val = @dirty[sdb_att_name(arg_s)]
+                [old_val, get_attribute(arg_s)]
+            end
+
+            # define was method
+            send(:define_method, arg_s + "_was") do
+                old_val = @dirty[sdb_att_name(arg_s)]
+                old_val
             end
         end
 
@@ -132,7 +136,7 @@ module SimpleRecord
 
             # Define reader method
             send(:define_method, arg) do
-               return get_attribute(arg)
+                return get_attribute(arg)
             end
 
 
@@ -144,27 +148,18 @@ module SimpleRecord
 
             # Define ID reader method for reading the associated objects id without getting the entire object
             send(:define_method, arg_id) do
-                val1 = @attributes[arg_id]
-                if val1
-                    if val1.is_a?(Array)
-                        if val1.size > 0 && val1[0].present?
-                            return val1[0]
-                        end
-
-                    else
-                        return val1
-                    end
-                end
-                return nil
+                 get_attribute_sdb(arg_s)
             end
 
             # Define writer method for setting the _id directly without the associated object
             send(:define_method, arg_id + "=") do |value|
-                if value.nil?
-                    self[arg_id] = nil unless self[arg_id].nil? # if it went from something to nil, then we have to remember and remove attribute on save
-                else
-                    self[arg_id] = value
-                end
+#                rb_att_name = arg_s # n2 = name.to_s[0, name.length-3]
+                set(arg_id, value)
+#                if value.nil?
+#                    self[arg_id] = nil unless self[arg_id].nil? # if it went from something to nil, then we have to remember and remove attribute on save
+#                else
+#                    self[arg_id] = value
+#                end
             end
 
             send(:define_method, "create_"+arg.to_s) do |*params|
@@ -173,6 +168,8 @@ module SimpleRecord
                 arg_id = arg.to_s + '_id'
                 self[arg_id]=newsubrecord.id
             end
+
+            define_dirty_methods(arg_s)
         end
 
         def has_many(*args)
