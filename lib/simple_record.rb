@@ -218,14 +218,14 @@ module SimpleRecord
             sdb_att_name = sdb_att_name(arg)
             arg = arg.to_s
 
-            puts "Marking #{arg} dirty with #{value}"
+#            puts "Marking #{arg} dirty with #{value}"
             if @dirty.include?(sdb_att_name)
                 old = @dirty[sdb_att_name]
 #                puts "Was already dirty #{old}"
                 @dirty.delete(sdb_att_name) if value == old
             else
                 old = get_attribute_sdb(arg)
-                puts "dirtifying old=#{old} to new=#{value}"
+#                puts "dirtifying old=#{old} to new=#{value}"
                 @dirty[sdb_att_name] = old if value != old
             end
         end
@@ -324,7 +324,7 @@ module SimpleRecord
             clear_errors
             # todo: decide whether this should go before pre_save or after pre_save? pre_save dirties "updated" and perhaps other items due to callbacks
             if options[:dirty]
-                puts '@dirtyA=' + @dirty.inspect
+#                puts '@dirtyA=' + @dirty.inspect
                 return true if @dirty.size == 0 # Nothing to save so skip it
             end
             is_create = self[:id].nil?
@@ -332,7 +332,7 @@ module SimpleRecord
             if ok
                 begin
                     if options[:dirty]
-                        puts '@dirty=' + @dirty.inspect
+#                        puts '@dirty=' + @dirty.inspect
                         return true if @dirty.size == 0 # This should probably never happen because after pre_save, created/updated dates are changed
                         options[:dirty_atts] = @dirty
                     end
@@ -522,7 +522,7 @@ module SimpleRecord
         # Since SimpleDB supports multiple attributes per value, the values are an array.
         # This method will return the value unwrapped if it's the only, otherwise it will return the array.
         def get_attribute(arg)
-            puts "GET #{arg}"
+#            puts "GET #{arg}"
             # Check if this arg is already converted
             arg_s = arg.to_s
 #            instance_var = ("@" + arg_s)
@@ -531,13 +531,13 @@ module SimpleRecord
 #            puts "attribute #{instance_var} is defined"
             @attributes_rb = {} unless @attributes_rb # was getting errors after upgrade.
             ret = @attributes_rb[arg_s] # instance_variable_get(instance_var)
-            puts 'ret from rb=' + ret.inspect
+#            puts 'ret from rb=' + ret.inspect
             return ret if !ret.nil?
 #            end
             ret = get_attribute_sdb(arg)
-            puts 'ret from atts=' + ret.inspect
+#            puts 'ret from atts=' + ret.inspect
             ret = sdb_to_ruby(arg, ret)
-            puts 'ret from atts to rb=' + ret.inspect
+#            puts 'ret from atts to rb=' + ret.inspect
 #            puts "Setting instance var #{arg_s} to #{ret}"
 #            instance_variable_set(instance_var, ret)
             @attributes_rb[arg_s] = ret
@@ -545,8 +545,8 @@ module SimpleRecord
         end
 
         def set(name, value, dirtify=true)
-            puts "SET #{name}=#{value.inspect}"
-            puts "self=" + self.inspect
+#            puts "SET #{name}=#{value.inspect}"
+#            puts "self=" + self.inspect
             att_meta = defined_attributes_local[name.to_sym]
             if att_meta.nil?
                 # check if it ends with id and see if att_meta is there
@@ -573,7 +573,7 @@ module SimpleRecord
             end
             attvalue = strip_array(attvalue)
             make_dirty(name, attvalue) if dirtify
-            puts "ARG=#{attname.to_s} setting to #{attvalue}"
+#            puts "ARG=#{attname.to_s} setting to #{attvalue}"
             sdb_val = ruby_to_sdb(name, attvalue)
 #            puts "sdb_val=" + sdb_val.to_s
             @attributes[attname] = sdb_val
