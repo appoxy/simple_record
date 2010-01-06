@@ -44,11 +44,11 @@ module SimpleRecord
 
         # Convert value from SimpleDB String version to real ruby value.
         def sdb_to_ruby(name, value)
-#            puts 'sdb_to_ruby arg=' + name.inspect + ' - ' + name.class.name + ' - value=' + value.to_s
+            puts 'sdb_to_ruby arg=' + name.inspect + ' - ' + name.class.name + ' - value=' + value.to_s
             return nil if value.nil?
             att_meta = defined_attributes_local[name.to_sym]
 
-            if att_meta.options
+             if att_meta.options
                 if att_meta.options[:encrypted]
                     value = Translations.decrypt(value, att_meta.options[:encrypted])
                 end
@@ -57,7 +57,41 @@ module SimpleRecord
                 end
             end
 
-            if att_meta.type == :int
+
+            if att_meta.type == :belongs_to
+                class_name = att_meta.options[:class_name] || name.to_s[0...1].capitalize + name.to_s[1...name.to_s.length]
+                # Camelize classnames with underscores (ie my_model.rb --> MyModel)
+                class_name = class_name.camelize
+                #      puts "attr=" + @attributes[arg_id].inspect
+                #      puts 'val=' + @attributes[arg_id][0].inspect unless @attributes[arg_id].nil?
+                ret = nil
+                arg_id = name.to_s + '_id'
+                arg_id_val = send("#{arg_id}")
+                if arg_id_val
+                    if !cache_store.nil?
+#                        arg_id_val = @attributes[arg_id][0]
+                        cache_key = self.class.cache_key(class_name, arg_id_val)
+#          puts 'cache_key=' + cache_key
+                        ret = cache_store.read(cache_key)
+#          puts 'belongs_to incache=' + ret.inspect
+                    end
+                    if ret.nil?
+                        to_eval = "#{class_name}.find('#{arg_id_val}')"
+#      puts 'to eval=' + to_eval
+                        begin
+                            ret = eval(to_eval) # (defined? #{arg}_id)
+                        rescue Aws::ActiveSdb::ActiveSdbError
+                            if $!.message.include? "Couldn't find"
+                                ret = nil
+                            else
+                                raise $!
+                            end
+                        end
+
+                    end
+                end
+                value = ret
+            elsif att_meta.type == :int
                 value = Translations.un_offset_int(value)
             elsif att_meta.type == :date
                 value = to_date(value)

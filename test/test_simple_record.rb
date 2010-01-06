@@ -148,7 +148,7 @@ class TestSimpleRecord < TestBase
         # Get the object back
         mm2 = MyModel.find(id)
         puts 'mm2=' + mm2.inspect
-        puts 'got=' + mm2.name + ' and he/she is ' + mm2.age.to_s + ' years old and he/she is cool? ' + mm2.cool.to_s
+        puts 'got=' + mm2.name.to_s + ' and he/she is ' + mm2.age.to_s + ' years old and he/she is cool? ' + mm2.cool.to_s
         assert mm2.id == mm.id
         assert mm2.age == mm.age
         assert mm2.cool == mm.cool
@@ -171,12 +171,39 @@ class TestSimpleRecord < TestBase
         mmc.x = mm
         mmc.save
 
-        mmc.my_model = nil
-        mmc.x = nil
+        mmc2 = MyChildModel.find(mmc.id)
+        assert mmc2.my_model_id == mmc.my_model_id, "mm2.my_model_id=#{mmc2.my_model_id} mmc.my_model_id=#{mmc.my_model_id}"
+        puts 'setting my_model to nil'
+        mmc2.my_model = nil
+        mmc2.x = nil
+        puts 'saving my_model to nil'
+        SimpleRecord.stats.clear
+        assert mmc2.save(:dirty=>true)
+        puts SimpleRecord.stats.puts.to_s
+        assert SimpleRecord.stats.puts == 1 # 1 put only for updated, should have a count of attributes saved in stats
+        assert SimpleRecord.stats.deletes == 1
+        assert mmc2.id == mmc.id
+        assert mmc2.my_model_id == nil
+        assert mmc2.my_model == nil, "my_model not nil? #{mmc2.my_model.inspect}"
 
-        mmc = MyChildModel.find(mmc.id)
-        mmc.my_model = nil
-        mmc.x = nil
+        mmc3 = MyChildModel.find(mmc.id)
+        assert mmc3.my_model_id == nil, "my_model_id not nil? #{mmc3.my_model_id.inspect}"
+        assert mmc3.my_model == nil
+
+        mm3 = MyModel.new(:name=>"test")
+        assert mm3.save
+
+        mmc3.my_model = mm3
+        assert mmc3.save(:dirty=>true)
+
+        assert mmc3.my_model_id == mm3.id
+        assert mmc3.my_model.id == mm3.id
+
+        mmc3 = MyChildModel.find(mmc3.id)
+        puts "mmc3=" + mmc3.inspect
+        assert mmc3.my_model_id == mm3.id, "my_model_id=#{mmc3.my_model_id.inspect} mm3.id=#{mm3.id.inspect}"
+        assert mmc3.my_model.id == mm3.id
+
 
     end
 

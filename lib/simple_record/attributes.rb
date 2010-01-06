@@ -49,18 +49,18 @@ module SimpleRecord
                 # Now for dirty methods: http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html
                 # define changed? method
                 send(:define_method, arg_s + "_changed?") do
-                    @dirty.has_key?(arg_s)
+                    @dirty.has_key?(sdb_att_name(arg_s))
                 end
 
                 # define change method
                 send(:define_method, arg_s + "_change") do
-                    old_val = @dirty[arg_s]
+                    old_val = @dirty[sdb_att_name(arg_s)]
                     [old_val, get_attribute(arg_s)]
                 end
 
                 # define was method
                 send(:define_method, arg_s + "_was") do
-                    old_val = @dirty[arg_s]
+                    old_val = @dirty[sdb_att_name(arg_s)]
                     old_val
                 end
             end
@@ -132,44 +132,7 @@ module SimpleRecord
 
             # Define reader method
             send(:define_method, arg) do
-#                puts 'GETTING ' + arg.to_s
-                attribute = defined_attributes_local[arg]
-                options2 = attribute.options # @@belongs_to_map[arg]
-                class_name = options2[:class_name] || arg.to_s[0...1].capitalize + arg.to_s[1...arg.to_s.length]
-
-                # Camelize classnames with underscores (ie my_model.rb --> MyModel)
-                class_name = class_name.camelize
-
-                #      puts "attr=" + @attributes[arg_id].inspect
-                #      puts 'val=' + @attributes[arg_id][0].inspect unless @attributes[arg_id].nil?
-                ret = nil
-                arg_id = arg.to_s + '_id'
-                arg_id_val = send("#{arg_id}")
-                if arg_id_val
-                    if !cache_store.nil?
-#                        arg_id_val = @attributes[arg_id][0]
-                        cache_key = self.class.cache_key(class_name, arg_id_val)
-#          puts 'cache_key=' + cache_key
-                        ret = cache_store.read(cache_key)
-#          puts 'belongs_to incache=' + ret.inspect
-                    end
-                    if ret.nil?
-                        to_eval = "#{class_name}.find('#{arg_id_val}')"
-#      puts 'to eval=' + to_eval
-                        begin
-                            ret = eval(to_eval) # (defined? #{arg}_id)
-                        rescue Aws::ActiveSdb::ActiveSdbError
-                            if $!.message.include? "Couldn't find"
-                                ret = nil
-                            else
-                                raise $!
-                            end
-                        end
-
-                    end
-                end
-#      puts 'ret=' + ret.inspect
-                return ret
+               return get_attribute(arg)
             end
 
 
