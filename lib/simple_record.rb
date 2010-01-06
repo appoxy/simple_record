@@ -237,7 +237,8 @@ module SimpleRecord
         def set_created
 #    puts 'SETTING CREATED'
             #    @created = DateTime.now
-            self[:created] = Time.now
+            set(:created, Time.now)
+#            self[:created] = Time.now
 #    @tester = 'some test value'
             #    self[:tester] = 'some test value'
         end
@@ -245,7 +246,8 @@ module SimpleRecord
         def set_updated
             #puts 'SETTING UPDATED'
             #    @updated = DateTime.now
-            self[:updated] = Time.now
+            set(:updated, Time.now)
+#            self[:updated] = Time.now
 #    @tester = 'some test value updated'
         end
 

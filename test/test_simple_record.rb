@@ -509,4 +509,19 @@ class TestSimpleRecord < TestBase
         assert mm3.x.id == mm.id
     end
 
+    def test_storage_format
+
+        mm = MyModel.new({:name=>"myname"})
+        mm.date1 = Time.now
+        mm.date2 = DateTime.now
+        mm.save
+
+        raw = @@sdb.get_attributes(MyModel.domain, mm.id)
+        puts "raw=" + raw.inspect
+        assert raw[:attributes]["updated"][0].size == "2010-01-06T16:04:23".size
+        assert raw[:attributes]["date1"][0].size == "2010-01-06T16:04:23".size
+        assert raw[:attributes]["date2"][0].size == "2010-01-06T16:04:23".size
+
+    end
+
 end
