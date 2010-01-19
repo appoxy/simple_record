@@ -321,6 +321,7 @@ module SimpleRecord
         #
         def save(options={})
 #            puts 'SAVING: ' + self.inspect
+            # todo: Clean out undefined values in @attributes (in case someone set the attributes hash with values that they hadn't defined)
             clear_errors
             # todo: decide whether this should go before pre_save or after pre_save? pre_save dirties "updated" and perhaps other items due to callbacks
             if options[:dirty]
@@ -743,6 +744,11 @@ module SimpleRecord
         def mark_as_old
             super
             @dirty = {}
+        end
+
+        def hash
+            # same as ActiveRecord
+            id.hash
         end
 
     end
