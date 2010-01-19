@@ -52,6 +52,17 @@ class TestSimpleRecord < TestBase
         assert mm2.age.nil?, "doh, age is " + mm2.age.inspect
     end
 
+    def test_funky_values
+        mm = MyModel.new(:name=>"Funky")
+        mm.s1 = "other/2009-11-10/04/84.eml" # reported here: http://groups.google.com/group/simple-record/browse_thread/thread/3659e82491d03a2c?hl=en
+        assert mm.save
+        assert mm.errors.size == 0
+
+        mm2 = MyModel.find(mm.id)
+        puts 'mm2=' + mm2.inspect
+
+    end
+
 
     def test_create
         mm = MyModel.create(:name=>"Travis", :age=>32, :cool=>true)
