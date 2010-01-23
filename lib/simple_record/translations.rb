@@ -26,14 +26,16 @@ module SimpleRecord
             end
 
 
-            if att_meta.options
-                if att_meta.options[:encrypted]
+            unless value.blank?
+                if att_meta.options
+                    if att_meta.options[:encrypted]
 #                    puts "ENCRYPTING #{name} value #{value}"
-                    ret = Translations.encrypt(ret, att_meta.options[:encrypted])
+                        ret = Translations.encrypt(ret, att_meta.options[:encrypted])
 #                    puts 'encrypted value=' + ret.to_s
-                end
-                if att_meta.options[:hashed]
-                    ret = Translations.pass_hash(ret)
+                    end
+                    if att_meta.options[:hashed]
+                        ret = Translations.pass_hash(ret)
+                    end
                 end
             end
 
@@ -48,7 +50,7 @@ module SimpleRecord
             return nil if value.nil?
             att_meta = defined_attributes_local[name.to_sym]
 
-             if att_meta.options
+            if att_meta.options
                 if att_meta.options[:encrypted]
                     value = Translations.decrypt(value, att_meta.options[:encrypted])
                 end

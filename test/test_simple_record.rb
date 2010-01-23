@@ -6,6 +6,7 @@ require "yaml"
 require 'aws'
 require 'my_model'
 require 'my_child_model'
+require 'model_with_enc'
 require 'active_support'
 
 # Tests for SimpleRecord
@@ -568,6 +569,14 @@ class TestSimpleRecord < TestBase
         assert raw[:attributes]["date1"][0].size == "2010-01-06T16:04:23".size
         assert raw[:attributes]["date2"][0].size == "2010-01-06T16:04:23".size
 
+    end
+
+    def test_empty_initialize
+        mm = MyModel.new
+
+        mme = ModelWithEnc.new
+        mme = ModelWithEnc.new(:ssn=>"", :password=>"") # this caused encryptor errors
+        mme = ModelWithEnc.new(:ssn=>nil, :password=>nil)
     end
 
 end
