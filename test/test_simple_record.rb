@@ -53,6 +53,40 @@ class TestSimpleRecord < TestBase
         assert mm2.age.nil?, "doh, age is " + mm2.age.inspect
     end
 
+
+
+    def test_updates
+        mm = MyModel.new
+        mm.name = "Travis"
+        mm.age = 32
+        mm.cool = true
+        mm.s1 = "Initial value"
+        mm.save
+        id = mm.id
+        sleep 1
+
+        mm = MyModel.find(id)
+        mm.name = "Travis2"
+        mm.age = 10
+        mm.cool = false
+        mm.s1 = "" # test blank string
+
+        puts 'mm=' + mm.inspect
+        mm.save
+        sleep 1
+
+        puts 'mm2=' + mm.inspect
+
+        assert mm.s1 == "", "mm.s1 is not empty string, it is " + mm.s1.inspect
+
+        mm = MyModel.find(id)
+        assert mm.name == "Travis2"
+        assert mm.age == 10
+        assert mm.cool == false
+        assert mm.s1 == "", "mm.s1 is not empty string, it is #{mm.s1.inspect}"
+
+    end
+
     def test_funky_values
         mm = MyModel.new(:name=>"Funky")
         mm.s1 = "other/2009-11-10/04/84.eml" # reported here: http://groups.google.com/group/simple-record/browse_thread/thread/3659e82491d03a2c?hl=en
@@ -183,6 +217,8 @@ class TestSimpleRecord < TestBase
         mmc.x = mm
         mmc.save
 
+        sleep 1
+
         mmc2 = MyChildModel.find(mmc.id)
         assert mmc2.my_model_id == mmc.my_model_id, "mm2.my_model_id=#{mmc2.my_model_id} mmc.my_model_id=#{mmc.my_model_id}"
         puts 'setting my_model to nil'
@@ -198,6 +234,8 @@ class TestSimpleRecord < TestBase
         assert mmc2.my_model_id == nil
         assert mmc2.my_model == nil, "my_model not nil? #{mmc2.my_model.inspect}"
 
+        sleep 1
+
         mmc3 = MyChildModel.find(mmc.id)
         puts "mmc3 1 =" + mmc3.inspect
         assert mmc3.my_model_id == nil, "my_model_id not nil? #{mmc3.my_model_id.inspect}"
@@ -209,10 +247,10 @@ class TestSimpleRecord < TestBase
         mmc3.my_model = mm3
         assert mmc3.my_model_changed?
         assert mmc3.save(:dirty=>true)
-
         assert mmc3.my_model_id == mm3.id
         assert mmc3.my_model.id == mm3.id
 
+        sleep 1
         mmc3 = MyChildModel.find(mmc3.id)
         puts "mmc3=" + mmc3.inspect
         assert mmc3.my_model_id == mm3.id, "my_model_id=#{mmc3.my_model_id.inspect} mm3.id=#{mm3.id.inspect}"
@@ -578,5 +616,6 @@ class TestSimpleRecord < TestBase
         mme = ModelWithEnc.new(:ssn=>"", :password=>"") # this caused encryptor errors
         mme = ModelWithEnc.new(:ssn=>nil, :password=>nil)
     end
+
 
 end

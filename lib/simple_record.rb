@@ -338,11 +338,10 @@ module SimpleRecord
                         options[:dirty_atts] = @dirty
                     end
                     to_delete = get_atts_to_delete # todo: this should use the @dirty hash now
-#                    puts 'done to_delete ' + to_delete.inspect
-#                    puts 'options=' + options.inspect
                     SimpleRecord.stats.puts += 1
+#                    puts 'SELF BEFORE super=' + self.inspect
                     if super(options)
-#          puts 'SAVED super'
+#                        puts 'SELF AFTER super=' + self.inspect
                         self.class.cache_results(self)
                         delete_niled(to_delete)
                         if (is_create ? run_after_create : run_after_update) && run_after_save
