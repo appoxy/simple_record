@@ -33,7 +33,7 @@ Gem::Specification.new do |s|
   s.summary = %q{Drop in replacement for ActiveRecord to Amazon SimpleDB instead.}
   s.test_files = [
     "test/conversions.rb",
-     "test/dirty_test.rb",
+     "test/test_dirty.rb",
      "test/model_with_enc.rb",
      "test/my_base_model.rb",
      "test/my_child_model.rb",

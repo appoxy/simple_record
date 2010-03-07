@@ -21,6 +21,7 @@ class TestSimpleRecord < TestBase
         mm.age = 32
         mm.cool = true
         mm.save
+        sleep 1
 
         assert !mm.created.nil?
         assert !mm.updated.nil?
@@ -124,6 +125,7 @@ class TestSimpleRecord < TestBase
         mm.cool = false
         items << mm
         MyModel.batch_save(items)
+        sleep 1
         items.each do |item|
             puts 'id=' + item.id
             new_item = MyModel.find(item.id)
@@ -172,6 +174,7 @@ class TestSimpleRecord < TestBase
         # test queued callback before_create
         mm.name = "Travis"
         assert mm.save
+        sleep 1
         # now nickname should be set on before_create
         assert mm.nickname == mm.name
 
@@ -243,6 +246,7 @@ class TestSimpleRecord < TestBase
 
         mm3 = MyModel.new(:name=>"test")
         assert mm3.save
+        sleep 1
 
         mmc3.my_model = mm3
         assert mmc3.my_model_changed?
@@ -369,6 +373,7 @@ class TestSimpleRecord < TestBase
         # my_model should be treated differently since it's a belong_to
         mcm = MyChildModel.new(:name=>"johnny", :my_model=>mm)
         mcm.save
+        sleep 1
 
         assert mcm.my_model != nil
 
@@ -414,6 +419,7 @@ class TestSimpleRecord < TestBase
 
         mm.age = nil
         mm.save
+        sleep 1
 
         # Should be NIL
         assert mm.age == nil
@@ -460,12 +466,14 @@ class TestSimpleRecord < TestBase
         mm.name = "test name"
         mm.base_string = "in base class"
         mm.save_with_validation!
+        sleep 1
 
         mm2 = MyModel.find(mm.id)
         assert mm2.base_string == mm.base_string
 
         mm2.base_string = "changed base string"
         mm2.save_with_validation!
+        sleep 1
 
         mm3 = MyModel.find(mm2.id)
         assert mm3.base_string == mm2.base_string
@@ -550,6 +558,7 @@ class TestSimpleRecord < TestBase
 
         mm.save
         mm2.save
+        sleep 1
 
         mm = MyModel.find(mm.id)
         mm2 = MyModel.find(mm2.id)
@@ -559,6 +568,7 @@ class TestSimpleRecord < TestBase
     def test_constructor_using_belongs_to_ids
         mm = MyModel.new({:name=>"myname"})
         mm.save
+        sleep 1
 
         mm2 = MyChildModel.new({"name"=>"myname2", :my_model_id=>mm.id})
         puts 'mm2=' + mm2.inspect
@@ -583,6 +593,7 @@ class TestSimpleRecord < TestBase
     def test_explicit_class_name
         mm = MyModel.new({:name=>"myname"})
         mm.save
+sleep 1
 
         mm2 = MyChildModel.new({"name"=>"myname2"})
         mm2.x = mm
@@ -600,6 +611,7 @@ class TestSimpleRecord < TestBase
         mm.date1 = Time.now
         mm.date2 = DateTime.now
         mm.save
+        sleep 1
 
         raw = @@sdb.get_attributes(MyModel.domain, mm.id)
         puts "raw=" + raw.inspect

@@ -135,9 +135,8 @@ module SimpleRecord
 
         attr_accessor :errors
 
-        @domain_prefix = ''
         class << self;
-            attr_accessor :domain_prefix;
+            attr_accessor :domain_prefix
         end
 
         #@domain_name_for_class = nil
@@ -172,14 +171,14 @@ module SimpleRecord
 
 
         def domain
-            super # super.domain
+            self.class.domain # super # super.domain
         end
 
         def self.domain
             #return self.get_domain_name unless self.get_domain_name.nil?
             d = super
-            #puts 'in self.domain, d=' + d.to_s + ' domain_prefix=' + SimpleRecord::Base.domain_prefix.to_s
-            domain_name_for_class = SimpleRecord::Base.domain_prefix + d.to_s
+            puts 'in self.domain, d=' + d.to_s + ' domain_prefix=' + SimpleRecord::Base.domain_prefix.to_s
+            domain_name_for_class = (SimpleRecord::Base.domain_prefix || "") + d.to_s
             #self.set_domain_name(domain_name_for_class)
             domain_name_for_class
         end
@@ -221,11 +220,11 @@ module SimpleRecord
 #            puts "Marking #{arg} dirty with #{value}"
             if @dirty.include?(sdb_att_name)
                 old = @dirty[sdb_att_name]
-#                puts "Was already dirty #{old}"
+#                puts "#{sdb_att_name} was already dirty #{old}"
                 @dirty.delete(sdb_att_name) if value == old
             else
-                old = get_attribute_sdb(arg)
-#                puts "dirtifying old=#{old} to new=#{value}"
+                old = get_attribute(arg)
+#                puts "dirtifying #{sdb_att_name} old=#{old.inspect} to new=#{value.inspect}"
                 @dirty[sdb_att_name] = old if value != old
             end
         end
@@ -621,6 +620,11 @@ module SimpleRecord
                 #no match, just return the string
                 return a
             end
+        end
+
+        def self.create(attributes={})
+#            puts "About to create in domain #{domain}"
+            super
         end
 
         @@regex_no_id = /.*Couldn't find.*with ID.*/

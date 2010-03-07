@@ -29,7 +29,7 @@ module SimpleRecord
                 if arg.is_a?(Hash)
                     # then attribute may have extra options
                     arg_options = arg
-                    arg = arg_options[:name]
+                    arg = arg_options[:name].to_sym
                 end
                 attr = Attribute.new(:string, arg_options)
                 defined_attributes[arg] = attr if defined_attributes[arg].nil?
