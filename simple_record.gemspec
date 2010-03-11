@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "1.1.67"
+  s.version = "1.1.69"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
-  s.date = %q{2010-01-23}
+  s.date = %q{2010-03-09}
   s.description = %q{Drop in replacement for ActiveRecord to Amazon SimpleDB instead.}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -29,11 +29,10 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/appoxy/simple_record/}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.5}
+  s.rubygems_version = %q{1.3.6}
   s.summary = %q{Drop in replacement for ActiveRecord to Amazon SimpleDB instead.}
   s.test_files = [
     "test/conversions.rb",
-     "test/test_dirty.rb",
      "test/model_with_enc.rb",
      "test/my_base_model.rb",
      "test/my_child_model.rb",
@@ -41,6 +40,8 @@ Gem::Specification.new do |s|
      "test/paging_array_test.rb",
      "test/temp_test.rb",
      "test/test_base.rb",
+     "test/test_dirty.rb",
+     "test/test_global_options.rb",
      "test/test_helpers.rb",
      "test/test_results_array.rb",
      "test/test_simple_record.rb"

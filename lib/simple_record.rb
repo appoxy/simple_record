@@ -39,6 +39,7 @@ require File.expand_path(File.dirname(__FILE__) + "/simple_record/translations")
 
 module SimpleRecord
 
+    @@options = {}
     @@stats = SimpleRecord::Stats.new
 
     def self.stats
@@ -61,8 +62,9 @@ module SimpleRecord
     #                                                  :pool (uses a connection pool with a maximum number of connections - NOT IMPLEMENTED YET)
     #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
     def self.establish_connection(aws_access_key=nil, aws_secret_key=nil, params={})
-        @@options = params
-        Aws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, params)
+        @@options.merge!(params)
+        puts 'SimpleRecord.establish_connection with ' + @@options.inspect
+        Aws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, @@options)
     end
 
     def self.close_connection()
@@ -72,6 +74,7 @@ module SimpleRecord
     def self.options
         @@options
     end
+
 
     class Base < Aws::ActiveSdb::Base
 
@@ -177,7 +180,7 @@ module SimpleRecord
         def self.domain
             #return self.get_domain_name unless self.get_domain_name.nil?
             d = super
-            puts 'in self.domain, d=' + d.to_s + ' domain_prefix=' + SimpleRecord::Base.domain_prefix.to_s
+#            puts 'in self.domain, d=' + d.to_s + ' domain_prefix=' + SimpleRecord::Base.domain_prefix.to_s
             domain_name_for_class = (SimpleRecord::Base.domain_prefix || "") + d.to_s
             #self.set_domain_name(domain_name_for_class)
             domain_name_for_class
