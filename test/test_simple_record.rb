@@ -55,7 +55,6 @@ class TestSimpleRecord < TestBase
     end
 
 
-
     def test_updates
         mm = MyModel.new
         mm.name = "Travis"
@@ -422,7 +421,7 @@ class TestSimpleRecord < TestBase
         sleep 1
 
         # Should be NIL
-        assert mm.age == nil
+        assert mm.age == nil, "age is #{mm.age}"
 
         # Should have NO age attributes
         assert @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age')[:attributes].size == 0
@@ -588,17 +587,24 @@ class TestSimpleRecord < TestBase
         assert mm.name == "name2", "Name is #{mm.name}"
         assert mm.age == 21
         assert mm.date2 == now
+        sleep 1
+
+        mm = MyModel.find(mm.id)
+        assert mm.name == "name2", "Name is #{mm.name}"
+        assert mm.age == 21, "Age is not 21, it is #{mm.age}"
+        assert mm.date2 == now, "Date is not correct, it is #{mm.date2}"
     end
 
     def test_explicit_class_name
         mm = MyModel.new({:name=>"myname"})
         mm.save
-sleep 1
+        sleep 1
 
         mm2 = MyChildModel.new({"name"=>"myname2"})
         mm2.x = mm
         assert mm2.x.id == mm.id
         mm2.save
+        sleep 1
 
         mm3 = MyChildModel.find(mm2.id)
         puts "mm3.x=" + mm3.x.inspect

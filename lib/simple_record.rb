@@ -63,7 +63,7 @@ module SimpleRecord
     #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
     def self.establish_connection(aws_access_key=nil, aws_secret_key=nil, params={})
         @@options.merge!(params)
-        puts 'SimpleRecord.establish_connection with ' + @@options.inspect
+        puts 'SimpleRecord.establish_connection with options: ' + @@options.inspect
         Aws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, @@options)
     end
 
@@ -570,7 +570,8 @@ module SimpleRecord
                     attvalue = value.nil? ? nil : value.id
                 else
                     attname = name.to_s
-                    attvalue = value
+                    attvalue = att_meta.init_value(value)
+                    #puts 'converted ' + value.inspect + ' to ' + attvalue.inspect
                 end
             end
             attvalue = strip_array(attvalue)

@@ -148,7 +148,7 @@ module SimpleRecord
 
             # Define ID reader method for reading the associated objects id without getting the entire object
             send(:define_method, arg_id) do
-                 get_attribute_sdb(arg_s)
+                get_attribute_sdb(arg_s)
             end
 
             # Define writer method for setting the _id directly without the associated object
@@ -209,6 +209,16 @@ module SimpleRecord
             def initialize(type, options=nil)
                 @type = type
                 @options = options
+            end
+
+            def init_value(value)
+                return value if value.nil?
+                ret = value
+                case self.type
+                    when :int
+                        ret = value.to_i
+                end
+                ret
             end
 
         end
