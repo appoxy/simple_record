@@ -570,7 +570,8 @@ module SimpleRecord
                     attvalue = value.nil? ? nil : value.id
                 else
                     attname = name.to_s
-                    attvalue = att_meta.init_value(value)
+#                    attvalue = att_meta.init_value(value)
+                  attvalue = value
                     #puts 'converted ' + value.inspect + ' to ' + attvalue.inspect
                 end
             end
