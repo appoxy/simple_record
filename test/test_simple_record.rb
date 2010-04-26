@@ -635,5 +635,48 @@ class TestSimpleRecord < TestBase
         mme = ModelWithEnc.new(:ssn=>nil, :password=>nil)
     end
 
+    def test_string_ints
+        mm = MyModel.new
+        mm.name = "whatever"
+        mm.age = "1"
+        puts mm.inspect
+
+        mm2 = MyModel.new
+        mm2.name = "whatever2"
+        mm2.age = 1
+        params = {:name=>"scooby", :age=>"123"}
+        mm3 = MyModel.new(params)
+
+
+        assert mm.age == 1, "mm.age=#{mm.age}"
+        assert mm2.age == 1
+        assert mm3.age == 123
+
+        mm.save!
+        mm2.save!
+        mm3.save!
+        sleep 1
+
+        assert mm.age == 1
+        assert mm2.age == 1
+        assert mm3.age == 123
+
+        mmf1 = MyModel.find(mm.id)
+        mmf2 = MyModel.find(mm2.id)
+        mmf3 = MyModel.find(mm3.id)
+
+        assert mmf1.age == 1
+        assert mmf2.age == 1
+        assert mmf3.age == 123
+
+        mmf1.update_attributes({:age=>"456"})
+
+        mmf1.age == 456
+
+
+
+
+
+    end
 
 end

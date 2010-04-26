@@ -18,9 +18,9 @@ module SimpleRecord
             att_meta = defined_attributes_local[name.to_sym]
 
             if att_meta.type == :int
-                ret = Translations.pad_and_offset(value)
+                ret = Translations.pad_and_offset(value, att_meta)
             elsif att_meta.type == :date
-                ret = Translations.pad_and_offset(value)
+                ret = Translations.pad_and_offset(value, att_meta)
             else
                 ret = value.to_s
             end
@@ -104,7 +104,7 @@ module SimpleRecord
         end
 
 
-        def self.pad_and_offset(x) # Change name to something more appropriate like ruby_to_sdb
+        def self.pad_and_offset(x, att_meta=nil) # Change name to something more appropriate like ruby_to_sdb
             # todo: add Float, etc
             #    puts 'padding=' + x.class.name + " -- " + x.inspect
             if x.kind_of? Integer

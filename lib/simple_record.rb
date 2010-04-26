@@ -27,9 +27,10 @@
 require 'aws'
 require 'sdb/active_sdb'
 require 'base64'
-require File.expand_path(File.dirname(__FILE__) + "/simple_record/encryptor")
-require File.expand_path(File.dirname(__FILE__) + "/simple_record/callbacks")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/attributes")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/callbacks")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/encryptor")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/exceptions")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/errors")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/password")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/results_array")
@@ -374,6 +375,10 @@ module SimpleRecord
             end
         end
 
+        def save!(options={})
+            save(options) || raise(RecordNotSaved)
+        end
+
         def save_with_validation!(options={})
             if valid?
                 save
@@ -429,24 +434,6 @@ module SimpleRecord
             ok
         end
 
-        def save_attributes(atts)
-#            puts 'atts=' + atts.inspect
-            ret = super(atts)
-#            puts '@atts=' + @attributes.inspect
-            atts.each_pair do |k, v|
-                @attributes[k.to_s] = v
-                if k.is_a?(Symbol)
-                    @attributes.delete(k)
-                end
-            end
-#            puts '@atts2=' + @attributes.inspect
-            @attributes_rb = {} unless @attributes_rb # was getting errors after upgrade.
-            @attributes_rb.clear # clear out the ruby versions so they can reload on next get.
-            if ret
-                self.class.cache_results(self)
-            end
-            ret
-        end
 
         def get_atts_to_delete
             # todo: this should use the @dirty hash now
@@ -570,8 +557,8 @@ module SimpleRecord
                     attvalue = value.nil? ? nil : value.id
                 else
                     attname = name.to_s
-#                    attvalue = att_meta.init_value(value)
-                  attvalue = value
+                    attvalue = att_meta.init_value(value)
+#                  attvalue = value
                     #puts 'converted ' + value.inspect + ' to ' + attvalue.inspect
                 end
             end
@@ -603,9 +590,17 @@ module SimpleRecord
             super()
         end
 
+
         def update_attributes(atts)
-            return save_attributes(atts)
+            set_attributes(atts)
+            save
         end
+
+        def update_attributes!(atts)
+            set_attributes(atts)
+            save!
+        end
+
 
         def self.quote_regexp(a, re)
             a =~ re
@@ -757,6 +752,13 @@ module SimpleRecord
         def hash
             # same as ActiveRecord
             id.hash
+        end
+
+        private
+        def set_attributes(atts)
+            atts.each_pair do |k, v|
+                set(k, v)
+            end
         end
 
     end
