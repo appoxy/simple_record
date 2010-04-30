@@ -2,6 +2,8 @@
 
 An ActiveRecord interface for SimpleDB.  Can be used as a drop in replacement for ActiveRecord in rails.
 
+Brought to you by: [![Appoxy](http://www.simpledeployr.com/images/global/appoxy-small.png)](http://www.appoxy.com)
+
 ## Full Documentation
 
 [http://sites.appoxy.com/simple_record/]
