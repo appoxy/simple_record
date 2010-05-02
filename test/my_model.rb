@@ -19,13 +19,13 @@ class MyModel < MyBaseModel
     end
 
     def bump_save_count
-        puts 'save_count=' + save_count.to_s
+#        puts 'save_count=' + save_count.to_s
         if save_count.nil?
             self.save_count = 1
         else
             self.save_count += 1
         end
-         puts 'save_count=' + self.save_count.to_s
+#         puts 'save_count=' + self.save_count.to_s
     end
 
     def validate
@@ -37,7 +37,7 @@ class MyModel < MyBaseModel
     end
 
     def validate_on_update
-        puts 'save_count = ' + save_count.to_s
+#        puts 'save_count = ' + save_count.to_s
         errors.add("save_count", "should not be zero.") if save_count.blank? || save_count == 0
     end
 

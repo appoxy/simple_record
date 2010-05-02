@@ -354,18 +354,6 @@ class TestSimpleRecord < TestBase
         assert !o.nil?
     end
 
-    # Use to populate db
-    def create_my_models(count)
-        batch = []
-        count.times do |i|
-            mm = MyModel.new(:name=>"model_" + i.to_s)
-            batch << mm
-        end
-        MyModel.batch_save batch
-
-
-    end
-
     def test_objects_in_constructor
         mm = MyModel.new(:name=>"model1")
         mm.save
@@ -586,7 +574,7 @@ class TestSimpleRecord < TestBase
         mm.update_attributes(:name=>"name2", :age=>21, "date2"=>now)
         assert mm.name == "name2", "Name is #{mm.name}"
         assert mm.age == 21
-        assert mm.date2 == now
+        assert mm.date2.to_time.eql?(now), "#{mm.date2.class.name} #{mm.date2.to_time.inspect} != #{now.inspect}"
         sleep 1
 
         mm = MyModel.find(mm.id)

@@ -84,6 +84,13 @@ module SimpleRecord
         extend SimpleRecord::Attributes
         include SimpleRecord::Callbacks
 
+        # Too many ActiveRecord dependencies.
+#        if Gem.available?('will_paginate')
+#            require 'will_paginate/finder'
+#            include WillPaginate::Finder
+#        end
+        
+
 
         def initialize(attrs={})
             # todo: Need to deal with objects passed in. iterate through belongs_to perhaps and if in attrs, set the objects id rather than the object itself
@@ -684,6 +691,49 @@ module SimpleRecord
         def self.select(*params)
             return find(*params)
         end
+
+        def self.all(*args)
+            find(:all, *args)
+        end
+
+        def self.first(*args)
+            find(:first, *args)
+        end
+
+        def self.count(*args)
+            find(:count, *args)
+        end
+
+        # This gets less and less efficient the higher the page since SimpleDB has no way
+        # to start at a specific row. So it will iterate from the first record and pull out the specific pages.
+        def self.paginate(*args)
+            options = args.pop
+            puts 'paginate options=' + options.inspect
+            page     = options[:page] || 1
+            per_page = options[:per_page] || self.per_page || 50
+            total    = options[:total_entries]
+            fr = find(:all, *args)
+            puts 'fr.size=' + fr.size.to_s
+            ret = []
+            i = 0
+            p = 1
+            fr.each do |x|
+                puts 'x=' + x.inspect
+                if p == page
+                    puts 'adding'
+                    ret << x
+                end
+                i += 1
+                if i > 0 && i % per_page == 0
+                    p += 1
+                    if p > page
+                        break
+                    end
+                end
+            end
+            ret
+        end
+
 
         def self.convert_condition_params(options)
             return if options.nil?

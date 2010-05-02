@@ -32,4 +32,19 @@ class TestBase < Test::Unit::TestCase
 
     end
 
+
+    # Use to populate db
+    def create_my_models(count)
+        batch = []
+        count.times do |i|
+            mm = MyModel.new(:name=>"model_" + i.to_s)
+            batch << mm
+        end
+        MyModel.batch_save batch
+
+        sleep 2
+
+    end
+
+
 end
