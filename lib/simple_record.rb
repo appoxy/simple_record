@@ -42,6 +42,15 @@ module SimpleRecord
 
     @@options = {}
     @@stats = SimpleRecord::Stats.new
+    @@logging = false
+
+    def self.enable_logging
+        @@logging = true
+    end
+
+    def self.disable_logging
+        @@logging = false
+    end
 
     def self.stats
         @@stats
@@ -706,21 +715,22 @@ module SimpleRecord
 
         # This gets less and less efficient the higher the page since SimpleDB has no way
         # to start at a specific row. So it will iterate from the first record and pull out the specific pages.
-        def self.paginate(*args)
-            options = args.pop
-            puts 'paginate options=' + options.inspect
+        def self.paginate(options={})
+#            options = args.pop
+            puts 'paginate options=' + options.inspect if @@logging
             page     = options[:page] || 1
             per_page = options[:per_page] || self.per_page || 50
             total    = options[:total_entries]
-            fr = find(:all, *args)
+            options[:limit] = page * per_page
+            fr = find(:all, options)
             puts 'fr.size=' + fr.size.to_s
             ret = []
             i = 0
             p = 1
             fr.each do |x|
-                puts 'x=' + x.inspect
+#                puts 'x=' + x.inspect
                 if p == page
-                    puts 'adding'
+#                    puts 'adding'
                     ret << x
                 end
                 i += 1
