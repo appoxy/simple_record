@@ -4,17 +4,9 @@ An ActiveRecord interface for SimpleDB.  Can be used as a drop in replacement fo
 
 Brought to you by: [![Appoxy](http://www.simpledeployr.com/images/global/appoxy-small.png)](http://www.appoxy.com)
 
-## Full Documentation
-
-[http://sites.appoxy.com/simple_record/]
-
 ## Discussion Group
 
-[http://groups.google.com/group/simple-record]
-
-## Issue Tracking
-
-[http://appoxy.lighthouseapp.com/projects/38366-simplerecord/overview]
+<http://groups.google.com/group/simple-record>
 
 ## Getting Started
 
@@ -132,6 +124,14 @@ but this should get you started.
 You can get more ideas from here: http://api.rubyonrails.org/classes/ActiveRecord/Base.html. Not everything is supported
 but a lot is.
 
+### Pagination
+
+SimpleRecord has paging built in and acts much like will_paginate:
+
+    MyModel.paginate(:page=>2, :per_page=>30 [, the other normal query options like in find()])
+
+That will return results 30 to 59.
+
 ## Configuration
 
 ### Domain Prefix
@@ -236,6 +236,30 @@ You can use any cache that supports the ActiveSupport::Cache::Store interface.
 
 If you want a simple in memory cache store, try: http://gemcutter.org/gems/local_cache . It supports max cache size and
 timeouts. You can also use memcached or http://www.quetzall.com/cloudcache.
+
+## Encryption
+
+SimpleRecord has built in support for encrypting attributes with AES-256 encryption and one way hashing using SHA-512 (good for passwords).  And it's easy to use.
+
+Here is an example of a model with an encrypted attribute and a hashed attribute.
+
+    class ModelWithEnc < SimpleRecord::Base
+        has_strings :name,
+                    {:name=>:ssn, :encrypted=>"simple_record_test_key"},
+                    {:name=>:password, :hashed=>true}
+    end
+
+The :encrypted option takes a key that you specify. The attribute can only be decrypted with the exact same key.
+
+The :hashed option is simply true/false.
+
+Encryption is generally transparent to you, SimpleRecord will store the encrypted value in the database and unencrypt it when you use it.
+
+Hashing is not quite as transparent as it cannot be converted back to it's original value, but you can do easy comparisons with it, for instance:
+
+ob2.password == "mypassword"
+
+This will actually be compared by hashing "mypassword" first.
 
 ## Kudos
 
