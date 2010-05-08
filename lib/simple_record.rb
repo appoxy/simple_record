@@ -52,6 +52,10 @@ module SimpleRecord
         @@logging = false
     end
 
+    def self.logging?
+        @@logging
+    end
+
     def self.stats
         @@stats
     end
@@ -717,7 +721,7 @@ module SimpleRecord
         # to start at a specific row. So it will iterate from the first record and pull out the specific pages.
         def self.paginate(options={})
 #            options = args.pop
-            puts 'paginate options=' + options.inspect if @@logging
+            puts 'paginate options=' + options.inspect if SimpleRecord.logging?
             page     = options[:page] || 1
             per_page = options[:per_page] || self.per_page || 50
             total    = options[:total_entries]

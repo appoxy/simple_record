@@ -38,6 +38,7 @@ class TestBase < Test::Unit::TestCase
         batch = []
         count.times do |i|
             mm = MyModel.new(:name=>"model_" + i.to_s)
+            mm.age = i
             batch << mm
         end
         MyModel.batch_save batch

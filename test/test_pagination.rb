@@ -16,11 +16,14 @@ class TestPagination < TestBase
     def test_paginate
         create_my_models(20)
 
+        i = 20
         (1..3).each do |page|
-            models = MyModel.paginate :page=>page, :per_page=>5, :order=>"name"
+            models = MyModel.paginate :page=>page, :per_page=>5, :order=>"created desc"
             assert models.size == 5
             models.each do |m|
+                i -= 1
                 puts m.name
+                assert m.age == i
             end
         end
     end
