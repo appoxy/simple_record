@@ -1,17 +1,21 @@
 module SimpleRecord
     class Stats
-        attr_accessor :selects, :puts, :deletes
+        attr_accessor :selects, :saves, :deletes, :s3_puts, :s3_gets
 
         def initialize
             @selects = 0
-            @puts = 0
+            @saves = 0
             @deletes = 0
+            @s3_puts = 0
+            @s3_gets = 0
         end
 
         def clear
             self.selects = 0
-            self.puts = 0
+            self.saves = 0
             self.deletes = 0
+            self.s3_puts = 0
+            self.s3_gets = 0
         end
     end
 end

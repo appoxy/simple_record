@@ -44,6 +44,10 @@ module SimpleRecord
     @@stats = SimpleRecord::Stats.new
     @@logging = false
 
+    class << self;
+        attr_accessor :aws_access_key, :aws_secret_key
+    end
+
     def self.enable_logging
         @@logging = true
     end
@@ -76,6 +80,8 @@ module SimpleRecord
     #                                                  :pool (uses a connection pool with a maximum number of connections - NOT IMPLEMENTED YET)
     #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
     def self.establish_connection(aws_access_key=nil, aws_secret_key=nil, params={})
+        @aws_access_key = aws_access_key
+        @aws_secret_key = aws_secret_key
         @@options.merge!(params)
         puts 'SimpleRecord.establish_connection with options: ' + @@options.inspect
         Aws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, @@options)
@@ -102,7 +108,6 @@ module SimpleRecord
 #            require 'will_paginate/finder'
 #            include WillPaginate::Finder
 #        end
-        
 
 
         def initialize(attrs={})
@@ -126,6 +131,7 @@ module SimpleRecord
 
             @attributes = {} # sdb values
             @attributes_rb = {} # ruby values
+            @lobs = {}
             @new_record = true
 
         end
@@ -151,7 +157,7 @@ module SimpleRecord
 
 
         def defined_attributes_local
-            #puts 'local defined_attributes'
+            # todo: store this somewhere so it doesn't keep going through this
             ret = self.class.defined_attributes
             ret.merge!(self.class.superclass.defined_attributes) if self.class.superclass.respond_to?(:defined_attributes)
         end
@@ -208,16 +214,34 @@ module SimpleRecord
         end
 
         def get_attribute_sdb(name)
+            name = name.to_sym
 #            arg = arg.to_s
 #            puts "get_attribute_sdb(#{arg}) - #{arg.class.name}"
 #            puts 'self[]=' + self.inspect
+#            att_meta = get_att_meta(name)
             ret = strip_array(@attributes[sdb_att_name(name)])
             return ret
         end
 
-        def sdb_att_name(name)
+        def has_id_on_end(name_s)
+            name_s.length > 3 && name_s[-3..-1] == "_id"
+        end
+
+        def get_att_meta(name)
+            name_s = name.to_s
             att_meta = defined_attributes_local[name.to_sym]
-            if att_meta.type == :belongs_to
+            puts 'name_s=' + name_s
+            puts 'end of string=' + name_s[-3..-1] if name_s.length > 4
+            if att_meta.nil? && has_id_on_end(name_s)
+                puts 'strip _id=' + name_s[0..-4].to_s
+                att_meta = defined_attributes_local[name_s[0..-4].to_sym]
+            end
+            return att_meta
+        end
+
+        def sdb_att_name(name)
+            att_meta = get_att_meta(name)
+            if att_meta.type == :belongs_to && !has_id_on_end(name.to_s)
                 return "#{name}_id"
             end
             name.to_s
@@ -241,14 +265,14 @@ module SimpleRecord
             sdb_att_name = sdb_att_name(arg)
             arg = arg.to_s
 
-#            puts "Marking #{arg} dirty with #{value}"
+            puts "Marking #{arg} dirty with #{value}" if SimpleRecord.logging?
             if @dirty.include?(sdb_att_name)
                 old = @dirty[sdb_att_name]
 #                puts "#{sdb_att_name} was already dirty #{old}"
                 @dirty.delete(sdb_att_name) if value == old
             else
                 old = get_attribute(arg)
-#                puts "dirtifying #{sdb_att_name} old=#{old.inspect} to new=#{value.inspect}"
+                puts "dirtifying #{sdb_att_name} old=#{old.inspect} to new=#{value.inspect}" if SimpleRecord.logging?
                 @dirty[sdb_att_name] = old if value != old
             end
         end
@@ -262,7 +286,7 @@ module SimpleRecord
             super
         end
 
-        def []( attribute)
+        def [](attribute)
             super
         end
 
@@ -343,30 +367,36 @@ module SimpleRecord
         #   - :dirty => true - Will only store attributes that were modified. To make it save regardless and have it update the :updated value, include this and set it to false.
         #
         def save(options={})
-#            puts 'SAVING: ' + self.inspect
+            puts 'SAVING: ' + self.inspect if SimpleRecord.logging?
             # todo: Clean out undefined values in @attributes (in case someone set the attributes hash with values that they hadn't defined)
             clear_errors
             # todo: decide whether this should go before pre_save or after pre_save? pre_save dirties "updated" and perhaps other items due to callbacks
             if options[:dirty]
-#                puts '@dirtyA=' + @dirty.inspect
+                puts '@dirtyA=' + @dirty.inspect 
                 return true if @dirty.size == 0 # Nothing to save so skip it
             end
             is_create = self[:id].nil?
             ok = pre_save(options)
             if ok
                 begin
+                    dirty = @dirty
+                    puts 'dirty before=' + @dirty.inspect
                     if options[:dirty]
-#                        puts '@dirty=' + @dirty.inspect
+                        puts '@dirty=' + @dirty.inspect
                         return true if @dirty.size == 0 # This should probably never happen because after pre_save, created/updated dates are changed
                         options[:dirty_atts] = @dirty
                     end
-                    to_delete = get_atts_to_delete # todo: this should use the @dirty hash now
-                    SimpleRecord.stats.puts += 1
+                    to_delete = get_atts_to_delete
+                    SimpleRecord.stats.saves += 1
 #                    puts 'SELF BEFORE super=' + self.inspect
+                    puts 'dirty before2=' + @dirty.inspect
                     if super(options)
+                        puts 'dirty super=' + @dirty.inspect
 #                        puts 'SELF AFTER super=' + self.inspect
                         self.class.cache_results(self)
                         delete_niled(to_delete)
+                        save_lobs(dirty)
+                        after_save_cleanup
                         if (is_create ? run_after_create : run_after_update) && run_after_save
 #                            puts 'all good?'
                             return true
@@ -393,6 +423,56 @@ module SimpleRecord
                 #@debug = "not saved"
                 return false
             end
+        end
+
+        def save_lobs(dirty=nil)
+            puts 'dirty.inspect=' + dirty.inspect
+            dirty = @dirty if dirty.nil?
+            defined_attributes_local.each_pair do |k, v|
+                if v.type == :clob
+                    puts 'storing clob '
+                    if dirty.include?(k.to_s)
+                        begin
+                            val = @lobs[k]
+                            puts 'val=' + val.inspect
+                            s3_bucket.put(s3_lob_id(k), val)
+                        rescue Aws::AwsError => ex
+                            if ex.include? /NoSuchBucket/
+                                s3_bucket(true).put(s3_lob_id(k), val)
+                            else
+                                raise ex
+                            end
+                        end
+                        SimpleRecord.stats.s3_puts += 1
+                    else
+                        puts 'NOT DIRTY'
+                    end
+
+                end
+            end
+        end
+
+        def is_dirty?(name)
+            # todo: should change all the dirty stuff to symbols?
+            puts '@dirty=' + @dirty.inspect
+            puts 'name=' +name.to_s
+            @dirty.include? name.to_s
+        end
+
+        def s3
+            Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key)
+        end
+
+        def s3_bucket(create=false)
+            s3.bucket(s3_bucket_name, create)
+        end
+
+        def s3_bucket_name
+            SimpleRecord.aws_access_key + "_lobs"
+        end
+
+        def s3_lob_id(name)
+            self.id + "_" + name.to_s
         end
 
         def save!(options={})
@@ -428,7 +508,7 @@ module SimpleRecord
 
             is_create ? validate_on_create : validate_on_update
 #      puts 'AFTER VALIDATIONS, ERRORS=' + errors.inspect
-            if (!@errors.nil? && @errors.length > 0 )
+            if (!@errors.nil? && @errors.length > 0)
 #        puts 'THERE ARE ERRORS, returning false'
                 return false
             end
@@ -456,15 +536,20 @@ module SimpleRecord
 
 
         def get_atts_to_delete
-            # todo: this should use the @dirty hash now
             to_delete = []
-            @attributes.each do |key, value|
-#                puts 'key=' + key.inspect + ' value=' + value.inspect
-                if value.nil? || (value.is_a?(Array) && value.size == 0) || (value.is_a?(Array) && value.size == 1 && value[0] == nil)
+            changes.each_pair do |key, v|
+                if v[1].nil?
                     to_delete << key
                     @attributes.delete(key)
                 end
             end
+#            @attributes.each do |key, value|
+##                puts 'key=' + key.inspect + ' value=' + value.inspect
+#                if value.nil? || (value.is_a?(Array) && value.size == 0) || (value.is_a?(Array) && value.size == 1 && value[0] == nil)
+#                    to_delete << key
+#                    @attributes.delete(key)
+#                end
+#            end
             return to_delete
         end
 
@@ -488,6 +573,9 @@ module SimpleRecord
                 end
             end
             connection.batch_put_attributes(domain, to_save) if to_save.size > 0
+            objects.each do |o|
+                o.save_lobs(nil)
+            end
             results
         end
 
@@ -498,7 +586,7 @@ module SimpleRecord
             connection.delete_attributes(domain, id)
         end
 
-        def self.delete_all(*params)
+        def self.delete_all(* params)
             # could make this quicker by just getting item_names and deleting attributes rather than creating objects
             obs = self.find(params)
             i = 0
@@ -509,7 +597,7 @@ module SimpleRecord
             return i
         end
 
-        def self.destroy_all(*params)
+        def self.destroy_all(* params)
             obs = self.find(params)
             i = 0
             obs.each do |a|
@@ -530,33 +618,63 @@ module SimpleRecord
 
         # Since SimpleDB supports multiple attributes per value, the values are an array.
         # This method will return the value unwrapped if it's the only, otherwise it will return the array.
-        def get_attribute(arg)
+        def get_attribute(name)
 #            puts "GET #{arg}"
             # Check if this arg is already converted
-            arg_s = arg.to_s
-#            instance_var = ("@" + arg_s)
-#            puts "defined?(#{instance_var.to_sym}) " + (defined?(instance_var.to_sym)).inspect
-#            if defined?(instance_var.to_sym) # this returns "method" for some reason??
-#            puts "attribute #{instance_var} is defined"
-            @attributes_rb = {} unless @attributes_rb # was getting errors after upgrade.
-            ret = @attributes_rb[arg_s] # instance_variable_get(instance_var)
-#            puts 'ret from rb=' + ret.inspect
-            return ret if !ret.nil?
-#            end
-            ret = get_attribute_sdb(arg)
-#            puts 'ret from atts=' + ret.inspect
-            ret = sdb_to_ruby(arg, ret)
-#            puts 'ret from atts to rb=' + ret.inspect
-#            puts "Setting instance var #{arg_s} to #{ret}"
-#            instance_variable_set(instance_var, ret)
-            @attributes_rb[arg_s] = ret
-            return ret
+            name_s = name.to_s
+            name = name.to_sym
+            att_meta = get_att_meta(name)
+            puts "att_meta for #{name}: " + att_meta.inspect
+            if att_meta && att_meta.type == :clob
+                ret = @lobs[name]
+                puts 'get_attribute clob ' + ret.inspect
+                if ret
+                    if ret.is_a? RemoteNil
+                        return nil
+                    else
+                        return ret
+                    end
+                end
+                # get it from s3
+                unless new_record?
+                    begin
+                        ret = s3_bucket.get(s3_lob_id(name))
+                        puts 'got from s3 ' + ret.inspect
+                        SimpleRecord.stats.s3_gets += 1
+                    rescue Aws::AwsError => ex
+                        if ex.include? /NoSuchKey/
+                            ret = nil
+                        else
+                            raise ex
+                        end
+                    end
+
+                    if ret.nil?
+                        ret = RemoteNil.new
+                    end
+                end
+                @lobs[name] = ret
+                return ret
+            else
+
+                @attributes_rb = {} unless @attributes_rb # was getting errors after upgrade.
+                ret = @attributes_rb[name_s] # instance_variable_get(instance_var)
+                return ret unless ret.nil?
+                return nil if ret.is_a? RemoteNil
+                ret = get_attribute_sdb(name)
+                ret = sdb_to_ruby(name, ret)
+                @attributes_rb[name_s] = ret
+                return ret
+            end
+
         end
 
         def set(name, value, dirtify=true)
-#            puts "SET #{name}=#{value.inspect}"
+            puts "SET #{name}=#{value.inspect}" if SimpleRecord.logging?
 #            puts "self=" + self.inspect
-            att_meta = defined_attributes_local[name.to_sym]
+            attname = name.to_s # default attname
+            name = name.to_sym
+            att_meta = get_att_meta(name)
             if att_meta.nil?
                 # check if it ends with id and see if att_meta is there
                 ends_with = name.to_s[-3, 3]
@@ -568,13 +686,23 @@ module SimpleRecord
 #                    puts 'defined_attributes_local=' + defined_attributes_local.inspect
                     attname = name.to_s
                     attvalue = value
-                    name = n2
+                    name = n2.to_sym
                 end
                 return if att_meta.nil?
             else
                 if att_meta.type == :belongs_to
-                    attname = name.to_s + '_id'
-                    attvalue = value.nil? ? nil : value.id
+                    ends_with = name.to_s[-3, 3]
+                    if ends_with == "_id"
+                        att_name = name.to_s
+                        attvalue = value
+                    else
+                        attname = name.to_s + '_id'
+                        attvalue = value.nil? ? nil : value.id
+                    end
+                elsif att_meta.type == :clob
+                    make_dirty(name, value) if dirtify
+                    @lobs[name] = value
+                    return
                 else
                     attname = name.to_s
                     attvalue = att_meta.init_value(value)
@@ -592,7 +720,6 @@ module SimpleRecord
 #            puts 'attvalue2=' + attvalue.to_s
             @attributes_rb.delete(name.to_s) # todo: we should set the value here so it doesn't reget anything
 
-
 #            instance_var = "@" + attname.to_s
 #            instance_variable_set(instance_var, attvalue)
         end
@@ -603,6 +730,12 @@ module SimpleRecord
 #      puts 'Deleting attributes=' + to_delete.inspect
                 SimpleRecord.stats.deletes += 1
                 delete_attributes to_delete
+                to_delete.each do |att|
+                    att_meta = get_att_meta(att)
+                    if att_meta.type == :clob
+                        s3_bucket.key(s3_lob_id(att)).delete
+                    end
+                end
             end
         end
 
@@ -657,7 +790,7 @@ module SimpleRecord
         # Query example:
         #   MyModel.find(:all, :conditions=>["name = ?", name], :order=>"created desc", :limit=>10)
         #
-        def self.find(*params)
+        def self.find(* params)
             #puts 'params=' + params.inspect
             q_type = :all
             select_attributes=[]
@@ -678,7 +811,7 @@ module SimpleRecord
 
             results = q_type == :all ? [] : nil
             begin
-                results=super(*params)
+                results=super(* params)
 #                puts "RESULT=" + results.inspect
                 #puts 'params3=' + params.inspect
                 SimpleRecord.stats.selects += 1
@@ -701,20 +834,20 @@ module SimpleRecord
             return results
         end
 
-        def self.select(*params)
-            return find(*params)
+        def self.select(* params)
+            return find(* params)
         end
 
-        def self.all(*args)
-            find(:all, *args)
+        def self.all(* args)
+            find(:all, * args)
         end
 
-        def self.first(*args)
-            find(:first, *args)
+        def self.first(* args)
+            find(:first, * args)
         end
 
-        def self.count(*args)
-            find(:count, *args)
+        def self.count(* args)
+            find(:count, * args)
         end
 
         # This gets less and less efficient the higher the page since SimpleDB has no way
@@ -785,8 +918,8 @@ module SimpleRecord
             @@debug
         end
 
-        def self.sanitize_sql(*params)
-            return ActiveRecord::Base.sanitize_sql(*params)
+        def self.sanitize_sql(* params)
+            return ActiveRecord::Base.sanitize_sql(* params)
         end
 
         def self.table_name
@@ -804,12 +937,11 @@ module SimpleRecord
         def changes
             ret = {}
             #puts 'in CHANGES=' + @dirty.inspect
-            @dirty.each_pair {|key, value| ret[key] = [value, get_attribute(key)]}
+            @dirty.each_pair { |key, value| ret[key] = [value, get_attribute(key)] }
             return ret
         end
 
-        def mark_as_old
-            super
+        def after_save_cleanup
             @dirty = {}
         end
 
@@ -864,30 +996,30 @@ module SimpleRecord
             return count
         end
 
-        def each(*params, &block)
-            return load.each(*params){|record| block.call(record)}
+        def each(* params, & block)
+            return load.each(* params) { |record| block.call(record) }
         end
 
-        def find_all(*params)
-            find(:all, *params)
+        def find_all(* params)
+            find(:all, * params)
         end
 
         def empty?
             return load.empty?
         end
 
-        def build(*params)
+        def build(* params)
             params[0][@referencename]=@referencevalue
-            eval(@subname).new(*params)
+            eval(@subname).new(* params)
         end
 
-        def create(*params)
+        def create(* params)
             params[0][@referencename]=@referencevalue
-            record = eval(@subname).new(*params)
+            record = eval(@subname).new(* params)
             record.save
         end
 
-        def find(*params)
+        def find(* params)
             query=[:first, {}]
             #{:conditions=>"id=>1"}
             if params[0]
@@ -910,8 +1042,13 @@ module SimpleRecord
                 #query[1][:conditions]="id='#{@id}'"
             end
 
-            return eval(@subname).find(*query)
+            return eval(@subname).find(* query)
         end
+
+    end
+
+    # This is simply a place holder so we don't keep doing gets to s3 or simpledb if already checked.
+    class RemoteNil
 
     end
 

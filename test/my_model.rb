@@ -8,6 +8,7 @@ class MyModel < MyBaseModel
     has_booleans :cool
     has_dates :birthday, :date1, :date2, :date3
 
+    has_clobs :clob1
 
     #callbacks
     before_create :set_nickname

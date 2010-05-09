@@ -24,8 +24,11 @@ class TestBase < Test::Unit::TestCase
         @config = YAML::load(File.open(File.expand_path("~/.test-configs/simple_record.yml")))
         #puts 'inspecting config = ' + @config.inspect
 
+        SimpleRecord.enable_logging
+
         SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")
         SimpleRecord.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'], :connection_mode=>:single)
+
 
         # Establish AWS connection directly
         @@sdb = Aws::SdbInterface.new(@config['amazon']['access_key'], @config['amazon']['secret_key'], {:connection_mode => :per_request})

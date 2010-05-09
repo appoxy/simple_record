@@ -186,6 +186,15 @@ This is most helpful on windows so Rails doesn't need sqlite or mysql gems/drive
     end
 
 
+## Large Objects (LOBS)
+
+Typical databases support BLOB's and/or CLOB's, but SimpleDB has a 1024 character per attribute maximum so larger
+values should be stored in S3. Fortunately SimpleRecord takes care of this for you by defining has_clobs for a large
+string value.
+
+    has_clobs :my_clob
+    
+
 ## Tips and Tricks and Things to Know
 
 ### Automagic Stuff

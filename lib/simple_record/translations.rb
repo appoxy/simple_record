@@ -15,7 +15,7 @@ module SimpleRecord
 #            puts "Converting #{name} to sdb value=#{value}"
 #            puts "atts_local=" + defined_attributes_local.inspect
 
-            att_meta = defined_attributes_local[name.to_sym]
+            att_meta = get_att_meta(name)
 
             if att_meta.type == :int
                 ret = Translations.pad_and_offset(value, att_meta)
@@ -48,7 +48,7 @@ module SimpleRecord
         def sdb_to_ruby(name, value)
 #            puts 'sdb_to_ruby arg=' + name.inspect + ' - ' + name.class.name + ' - value=' + value.to_s
             return nil if value.nil?
-            att_meta = defined_attributes_local[name.to_sym]
+            att_meta = get_att_meta(name)
 
             if att_meta.options
                 if att_meta.options[:encrypted]
@@ -60,7 +60,7 @@ module SimpleRecord
             end
 
 
-            if att_meta.type == :belongs_to
+            if !has_id_on_end(name) && att_meta.type == :belongs_to
                 class_name = att_meta.options[:class_name] || name.to_s[0...1].capitalize + name.to_s[1...name.to_s.length]
                 # Camelize classnames with underscores (ie my_model.rb --> MyModel)
                 class_name = class_name.camelize
@@ -82,11 +82,11 @@ module SimpleRecord
 #      puts 'to eval=' + to_eval
                         begin
                             ret = eval(to_eval) # (defined? #{arg}_id)
-                        rescue Aws::ActiveSdb::ActiveSdbError
-                            if $!.message.include? "Couldn't find"
-                                ret = nil
+                        rescue Aws::ActiveSdb::ActiveSdbError => ex
+                            if ex.message.include? "Couldn't find"
+                                ret = RemoteNil.new
                             else
-                                raise $!
+                                raise ex
                             end
                         end
 

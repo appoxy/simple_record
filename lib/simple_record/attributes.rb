@@ -24,14 +24,21 @@ module SimpleRecord
         end
 
         def has_attributes(*args)
+            has_attributes2(args)
+        end
+
+        def has_attributes2(args, options_for_all={})
+            puts 'args=' + args.inspect
+            puts 'options_for_all = ' + options_for_all.inspect
             args.each do |arg|
-                arg_options = nil
+                arg_options = {}
                 if arg.is_a?(Hash)
                     # then attribute may have extra options
                     arg_options = arg
                     arg = arg_options[:name].to_sym
                 end
-                attr = Attribute.new(:string, arg_options)
+                type = options_for_all[:type] || :string
+                attr = Attribute.new(type, arg_options)
                 defined_attributes[arg] = attr if defined_attributes[arg].nil?
 
                 # define reader method
@@ -106,6 +113,11 @@ module SimpleRecord
             args.each do |arg|
                 defined_attributes[arg].type = :boolean
             end
+        end
+
+        def has_clobs(*args)
+            has_attributes2(args, :type=>:clob)
+
         end
 
         @@virtuals=[]
