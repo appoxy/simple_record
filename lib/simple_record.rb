@@ -230,8 +230,8 @@ module SimpleRecord
         def get_att_meta(name)
             name_s = name.to_s
             att_meta = defined_attributes_local[name.to_sym]
-            puts 'name_s=' + name_s
-            puts 'end of string=' + name_s[-3..-1] if name_s.length > 4
+#            puts 'name_s=' + name_s
+#            puts 'end of string=' + name_s[-3..-1] if name_s.length > 4
             if att_meta.nil? && has_id_on_end(name_s)
                 puts 'strip _id=' + name_s[0..-4].to_s
                 att_meta = defined_attributes_local[name_s[0..-4].to_sym]
@@ -372,7 +372,7 @@ module SimpleRecord
             clear_errors
             # todo: decide whether this should go before pre_save or after pre_save? pre_save dirties "updated" and perhaps other items due to callbacks
             if options[:dirty]
-                puts '@dirtyA=' + @dirty.inspect 
+#                puts '@dirtyA=' + @dirty.inspect
                 return true if @dirty.size == 0 # Nothing to save so skip it
             end
             is_create = self[:id].nil?
@@ -380,18 +380,18 @@ module SimpleRecord
             if ok
                 begin
                     dirty = @dirty
-                    puts 'dirty before=' + @dirty.inspect
+#                    puts 'dirty before=' + @dirty.inspect
                     if options[:dirty]
-                        puts '@dirty=' + @dirty.inspect
+#                        puts '@dirty=' + @dirty.inspect
                         return true if @dirty.size == 0 # This should probably never happen because after pre_save, created/updated dates are changed
                         options[:dirty_atts] = @dirty
                     end
                     to_delete = get_atts_to_delete
                     SimpleRecord.stats.saves += 1
 #                    puts 'SELF BEFORE super=' + self.inspect
-                    puts 'dirty before2=' + @dirty.inspect
+#                    puts 'dirty before2=' + @dirty.inspect
                     if super(options)
-                        puts 'dirty super=' + @dirty.inspect
+#                        puts 'dirty super=' + @dirty.inspect
 #                        puts 'SELF AFTER super=' + self.inspect
                         self.class.cache_results(self)
                         delete_niled(to_delete)
@@ -426,15 +426,15 @@ module SimpleRecord
         end
 
         def save_lobs(dirty=nil)
-            puts 'dirty.inspect=' + dirty.inspect
+#            puts 'dirty.inspect=' + dirty.inspect
             dirty = @dirty if dirty.nil?
             defined_attributes_local.each_pair do |k, v|
                 if v.type == :clob
-                    puts 'storing clob '
+#                    puts 'storing clob '
                     if dirty.include?(k.to_s)
                         begin
                             val = @lobs[k]
-                            puts 'val=' + val.inspect
+#                            puts 'val=' + val.inspect
                             s3_bucket.put(s3_lob_id(k), val)
                         rescue Aws::AwsError => ex
                             if ex.include? /NoSuchBucket/
@@ -445,7 +445,7 @@ module SimpleRecord
                         end
                         SimpleRecord.stats.s3_puts += 1
                     else
-                        puts 'NOT DIRTY'
+#                        puts 'NOT DIRTY'
                     end
 
                 end
@@ -454,8 +454,8 @@ module SimpleRecord
 
         def is_dirty?(name)
             # todo: should change all the dirty stuff to symbols?
-            puts '@dirty=' + @dirty.inspect
-            puts 'name=' +name.to_s
+#            puts '@dirty=' + @dirty.inspect
+#            puts 'name=' +name.to_s
             @dirty.include? name.to_s
         end
 
@@ -624,10 +624,10 @@ module SimpleRecord
             name_s = name.to_s
             name = name.to_sym
             att_meta = get_att_meta(name)
-            puts "att_meta for #{name}: " + att_meta.inspect
+#            puts "att_meta for #{name}: " + att_meta.inspect
             if att_meta && att_meta.type == :clob
                 ret = @lobs[name]
-                puts 'get_attribute clob ' + ret.inspect
+#                puts 'get_attribute clob ' + ret.inspect
                 if ret
                     if ret.is_a? RemoteNil
                         return nil
@@ -639,7 +639,7 @@ module SimpleRecord
                 unless new_record?
                     begin
                         ret = s3_bucket.get(s3_lob_id(name))
-                        puts 'got from s3 ' + ret.inspect
+#                        puts 'got from s3 ' + ret.inspect
                         SimpleRecord.stats.s3_gets += 1
                     rescue Aws::AwsError => ex
                         if ex.include? /NoSuchKey/
