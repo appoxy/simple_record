@@ -732,7 +732,10 @@ module SimpleRecord
                 @attributes_rb.delete(name.to_s)
             end
 
+        end
 
+        def set_attribute_sdb(name, val)
+            @attributes[sdb_att_name(name)] = val
         end
 
         def delete_niled(to_delete)
