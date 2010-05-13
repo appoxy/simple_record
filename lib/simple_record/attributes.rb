@@ -28,8 +28,8 @@ module SimpleRecord
         end
 
         def has_attributes2(args, options_for_all={})
-            puts 'args=' + args.inspect
-            puts 'options_for_all = ' + options_for_all.inspect
+#            puts 'args=' + args.inspect
+#            puts 'options_for_all = ' + options_for_all.inspect
             args.each do |arg|
                 arg_options = {}
                 if arg.is_a?(Hash)

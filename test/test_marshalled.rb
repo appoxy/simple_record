@@ -12,7 +12,7 @@ class Person < SimpleRecord::Base
     has_strings :name, :i_as_s
     has_ints :age, :i2
 end
-class DirtyTest < TestBase
+class MarshalTest < TestBase
 
     def setup
         super

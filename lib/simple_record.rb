@@ -32,6 +32,7 @@ require File.expand_path(File.dirname(__FILE__) + "/simple_record/callbacks")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/encryptor")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/exceptions")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/errors")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/json")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/password")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/results_array")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/stats")
@@ -102,6 +103,7 @@ module SimpleRecord
 #        include SimpleRecord::Attributes
         extend SimpleRecord::Attributes
         include SimpleRecord::Callbacks
+        include SimpleRecord::Json
 
         # Too many ActiveRecord dependencies.
 #        if Gem.available?('will_paginate')
@@ -109,6 +111,9 @@ module SimpleRecord
 #            include WillPaginate::Finder
 #        end
 
+        def self.extended(base)
+            
+        end
 
         def initialize(attrs={})
             # todo: Need to deal with objects passed in. iterate through belongs_to perhaps and if in attrs, set the objects id rather than the object itself
@@ -233,7 +238,7 @@ module SimpleRecord
 #            puts 'name_s=' + name_s
 #            puts 'end of string=' + name_s[-3..-1] if name_s.length > 4
             if att_meta.nil? && has_id_on_end(name_s)
-                puts 'strip _id=' + name_s[0..-4].to_s
+#                puts 'strip _id=' + name_s[0..-4].to_s
                 att_meta = defined_attributes_local[name_s[0..-4].to_sym]
             end
             return att_meta
@@ -265,14 +270,14 @@ module SimpleRecord
             sdb_att_name = sdb_att_name(arg)
             arg = arg.to_s
 
-            puts "Marking #{arg} dirty with #{value}" if SimpleRecord.logging?
+#            puts "Marking #{arg} dirty with #{value}" if SimpleRecord.logging?
             if @dirty.include?(sdb_att_name)
                 old = @dirty[sdb_att_name]
 #                puts "#{sdb_att_name} was already dirty #{old}"
                 @dirty.delete(sdb_att_name) if value == old
             else
                 old = get_attribute(arg)
-                puts "dirtifying #{sdb_att_name} old=#{old.inspect} to new=#{value.inspect}" if SimpleRecord.logging?
+#                puts "dirtifying #{sdb_att_name} old=#{old.inspect} to new=#{value.inspect}" if SimpleRecord.logging?
                 @dirty[sdb_att_name] = old if value != old
             end
         end
@@ -654,9 +659,9 @@ module SimpleRecord
                     end
                 end
                 @lobs[name] = ret
+                return nil if ret.is_a? RemoteNil
                 return ret
             else
-
                 @attributes_rb = {} unless @attributes_rb # was getting errors after upgrade.
                 ret = @attributes_rb[name_s] # instance_variable_get(instance_var)
                 return ret unless ret.nil?
@@ -670,7 +675,7 @@ module SimpleRecord
         end
 
         def set(name, value, dirtify=true)
-            puts "SET #{name}=#{value.inspect}" if SimpleRecord.logging?
+#            puts "SET #{name}=#{value.inspect}" if SimpleRecord.logging?
 #            puts "self=" + self.inspect
             attname = name.to_s # default attname
             name = name.to_sym
@@ -718,10 +723,8 @@ module SimpleRecord
             @attributes[attname] = sdb_val
 #            attvalue = wrap_if_required(name, attvalue, sdb_val)
 #            puts 'attvalue2=' + attvalue.to_s
-            @attributes_rb.delete(name.to_s) # todo: we should set the value here so it doesn't reget anything
+            @attributes_rb[name.to_s] = value
 
-#            instance_var = "@" + attname.to_s
-#            instance_variable_set(instance_var, attvalue)
         end
 
         def delete_niled(to_delete)
