@@ -29,12 +29,14 @@ module SimpleRecord
             unless value.blank?
                 if att_meta.options
                     if att_meta.options[:encrypted]
-#                    puts "ENCRYPTING #{name} value #{value}"
+                    puts "ENCRYPTING #{name} value #{value}"
                         ret = Translations.encrypt(ret, att_meta.options[:encrypted])
-#                    puts 'encrypted value=' + ret.to_s
+                    puts 'encrypted value=' + ret.to_s
                     end
                     if att_meta.options[:hashed]
+                        puts "hashing #{name}"
                         ret = Translations.pass_hash(ret)
+                        puts "hashed value=" + ret.inspect
                     end
                 end
             end

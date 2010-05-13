@@ -112,7 +112,7 @@ module SimpleRecord
 #        end
 
         def self.extended(base)
-            
+
         end
 
         def initialize(attrs={})
@@ -372,7 +372,7 @@ module SimpleRecord
         #   - :dirty => true - Will only store attributes that were modified. To make it save regardless and have it update the :updated value, include this and set it to false.
         #
         def save(options={})
-            puts 'SAVING: ' + self.inspect if SimpleRecord.logging?
+#            puts 'SAVING: ' + self.inspect if SimpleRecord.logging?
             # todo: Clean out undefined values in @attributes (in case someone set the attributes hash with values that they hadn't defined)
             clear_errors
             # todo: decide whether this should go before pre_save or after pre_save? pre_save dirties "updated" and perhaps other items due to callbacks
@@ -680,6 +680,7 @@ module SimpleRecord
             attname = name.to_s # default attname
             name = name.to_sym
             att_meta = get_att_meta(name)
+            store_rb_val = false
             if att_meta.nil?
                 # check if it ends with id and see if att_meta is there
                 ends_with = name.to_s[-3, 3]
@@ -703,6 +704,7 @@ module SimpleRecord
                     else
                         attname = name.to_s + '_id'
                         attvalue = value.nil? ? nil : value.id
+                        store_rb_val = true
                     end
                 elsif att_meta.type == :clob
                     make_dirty(name, value) if dirtify
@@ -723,7 +725,13 @@ module SimpleRecord
             @attributes[attname] = sdb_val
 #            attvalue = wrap_if_required(name, attvalue, sdb_val)
 #            puts 'attvalue2=' + attvalue.to_s
-            @attributes_rb[name.to_s] = value
+
+            if store_rb_val
+                @attributes_rb[name.to_s] = value
+            else
+                @attributes_rb.delete(name.to_s)
+            end
+
 
         end
 

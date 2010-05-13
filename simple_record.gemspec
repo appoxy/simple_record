@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "1.2.1"
+  s.version = "1.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
-  s.date = %q{2010-05-08}
+  s.date = %q{2010-05-12}
   s.description = %q{Drop in replacement for ActiveRecord to Amazon SimpleDB instead.}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
      "lib/simple_record/encryptor.rb",
      "lib/simple_record/errors.rb",
      "lib/simple_record/exceptions.rb",
+     "lib/simple_record/json.rb",
      "lib/simple_record/password.rb",
      "lib/simple_record/results_array.rb",
      "lib/simple_record/stats.rb",
@@ -45,6 +46,8 @@ Gem::Specification.new do |s|
      "test/test_encodings.rb",
      "test/test_global_options.rb",
      "test/test_helpers.rb",
+     "test/test_json.rb",
+     "test/test_lobs.rb",
      "test/test_marshalled.rb",
      "test/test_pagination.rb",
      "test/test_results_array.rb",
