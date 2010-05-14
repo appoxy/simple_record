@@ -868,13 +868,13 @@ module SimpleRecord
         # to start at a specific row. So it will iterate from the first record and pull out the specific pages.
         def self.paginate(options={})
 #            options = args.pop
-            puts 'paginate options=' + options.inspect if SimpleRecord.logging?
+#            puts 'paginate options=' + options.inspect if SimpleRecord.logging?
             page     = options[:page] || 1
             per_page = options[:per_page] || self.per_page || 50
             total    = options[:total_entries]
             options[:limit] = page * per_page
             fr = find(:all, options)
-            puts 'fr.size=' + fr.size.to_s
+#            puts 'fr.size=' + fr.size.to_s
             ret = []
             i = 0
             p = 1
