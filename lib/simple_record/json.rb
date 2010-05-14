@@ -2,8 +2,6 @@ module SimpleRecord
     module Json
 
         def self.included(base)
-            puts "TestMixin included in #{base}"
-
             base.extend ClassMethods
         end
 
@@ -37,11 +35,7 @@ module SimpleRecord
                 end
 #                puts 'result[name]=' + result[name].inspect
             end
-#
-#            instance_variables.inject(result) do |r, name|
-#                r[name[1..-1]] = instance_variable_get name
-#                r
-#            end
+
             result.to_json(* a)
         end
 
