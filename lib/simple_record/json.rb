@@ -22,7 +22,7 @@ module SimpleRecord
 
         end
 
-        def to_json(* a)
+        def to_json(*a)
             result = {
                     'json_class' => self.class.name
             }
@@ -36,7 +36,7 @@ module SimpleRecord
 #                puts 'result[name]=' + result[name].inspect
             end
 
-            result.to_json(* a)
+            result.to_json(*a)
         end
 
     end

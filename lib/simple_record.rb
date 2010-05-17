@@ -591,7 +591,7 @@ module SimpleRecord
             connection.delete_attributes(domain, id)
         end
 
-        def self.delete_all(* params)
+        def self.delete_all(*params)
             # could make this quicker by just getting item_names and deleting attributes rather than creating objects
             obs = self.find(params)
             i = 0
@@ -602,7 +602,7 @@ module SimpleRecord
             return i
         end
 
-        def self.destroy_all(* params)
+        def self.destroy_all(*params)
             obs = self.find(params)
             i = 0
             obs.each do |a|
@@ -804,7 +804,7 @@ module SimpleRecord
         # Query example:
         #   MyModel.find(:all, :conditions=>["name = ?", name], :order=>"created desc", :limit=>10)
         #
-        def self.find(* params)
+        def self.find(*params)
             #puts 'params=' + params.inspect
             q_type = :all
             select_attributes=[]
@@ -825,7 +825,7 @@ module SimpleRecord
 
             results = q_type == :all ? [] : nil
             begin
-                results=super(* params)
+                results=super(*params)
 #                puts "RESULT=" + results.inspect
                 #puts 'params3=' + params.inspect
                 SimpleRecord.stats.selects += 1
@@ -848,20 +848,20 @@ module SimpleRecord
             return results
         end
 
-        def self.select(* params)
-            return find(* params)
+        def self.select(*params)
+            return find(*params)
         end
 
-        def self.all(* args)
-            find(:all, * args)
+        def self.all(*args)
+            find(:all, *args)
         end
 
-        def self.first(* args)
-            find(:first, * args)
+        def self.first(*args)
+            find(:first, *args)
         end
 
-        def self.count(* args)
-            find(:count, * args)
+        def self.count(*args)
+            find(:count, *args)
         end
 
         # This gets less and less efficient the higher the page since SimpleDB has no way
@@ -932,8 +932,8 @@ module SimpleRecord
             @@debug
         end
 
-        def self.sanitize_sql(* params)
-            return ActiveRecord::Base.sanitize_sql(* params)
+        def self.sanitize_sql(*params)
+            return ActiveRecord::Base.sanitize_sql(*params)
         end
 
         def self.table_name
@@ -1010,30 +1010,30 @@ module SimpleRecord
             return count
         end
 
-        def each(* params, & block)
-            return load.each(* params) { |record| block.call(record) }
+        def each(*params, &block)
+            return load.each(*params) { |record| block.call(record) }
         end
 
-        def find_all(* params)
-            find(:all, * params)
+        def find_all(*params)
+            find(:all, *params)
         end
 
         def empty?
             return load.empty?
         end
 
-        def build(* params)
+        def build(*params)
             params[0][@referencename]=@referencevalue
-            eval(@subname).new(* params)
+            eval(@subname).new(*params)
         end
 
-        def create(* params)
+        def create(*params)
             params[0][@referencename]=@referencevalue
-            record = eval(@subname).new(* params)
+            record = eval(@subname).new(*params)
             record.save
         end
 
-        def find(* params)
+        def find(*params)
             query=[:first, {}]
             #{:conditions=>"id=>1"}
             if params[0]
@@ -1056,7 +1056,7 @@ module SimpleRecord
                 #query[1][:conditions]="id='#{@id}'"
             end
 
-            return eval(@subname).find(* query)
+            return eval(@subname).find(*query)
         end
 
     end
