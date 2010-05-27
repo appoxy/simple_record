@@ -229,6 +229,7 @@ module SimpleRecord
         end
 
         def has_id_on_end(name_s)
+            name_s = name_s.to_s
             name_s.length > 3 && name_s[-3..-1] == "_id"
         end
 
@@ -804,6 +805,8 @@ module SimpleRecord
         # Query example:
         #   MyModel.find(:all, :conditions=>["name = ?", name], :order=>"created desc", :limit=>10)
         #
+        # Extra options:
+        #   :per_token => the number of results to return per next_token, max is 2500.
         def self.find(*params)
             #puts 'params=' + params.inspect
             q_type = :all
@@ -820,6 +823,13 @@ module SimpleRecord
                 #puts 'options=' + options.inspect
                 #puts 'after collect=' + options.inspect
                 convert_condition_params(options)
+                per_token = options[:per_token]
+                if per_token
+                    op_dup = options.dup
+                    op_dup[:limit] = per_token # simpledb uses Limit as a paging thing, not what is normal
+                    params[1] = op_dup
+                end
+
             end
 #            puts 'params2=' + params.inspect
 

@@ -662,4 +662,5 @@ class TestSimpleRecord < TestBase
 
     end
 
+
 end
