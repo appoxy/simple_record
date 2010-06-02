@@ -105,12 +105,6 @@ module SimpleRecord
         include SimpleRecord::Callbacks
         include SimpleRecord::Json
 
-        # Too many ActiveRecord dependencies.
-#        if Gem.available?('will_paginate')
-#            require 'will_paginate/finder'
-#            include WillPaginate::Finder
-#        end
-
         def self.extended(base)
 
         end
@@ -298,20 +292,11 @@ module SimpleRecord
 
 
         def set_created
-#    puts 'SETTING CREATED'
-            #    @created = DateTime.now
             set(:created, Time.now)
-#            self[:created] = Time.now
-#    @tester = 'some test value'
-            #    self[:tester] = 'some test value'
         end
 
         def set_updated
-            #puts 'SETTING UPDATED'
-            #    @updated = DateTime.now
             set(:updated, Time.now)
-#            self[:updated] = Time.now
-#    @tester = 'some test value updated'
         end
 
 
