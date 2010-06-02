@@ -86,9 +86,9 @@ module SimpleRecord
             params_for_count = params.dup
             params_for_count[0] = :count
             params_for_count[1].delete(:limit)
-            puts 'params_for_count=' + params_for_count.inspect
+           # puts 'params_for_count=' + params_for_count.inspect
             @count = clz.find(*params_for_count)
-            puts '@count=' + @count.to_s
+            # puts '@count=' + @count.to_s
             @count
         end
 
@@ -127,11 +127,11 @@ module SimpleRecord
 
         # for will_paginate support
         def total_pages
-            puts 'total_pages'
+            #puts 'total_pages'
             puts  @params[1][:per_page].to_s
             return 1 if @params[1][:per_page].nil?
             ret = (size / @params[1][:per_page].to_f).ceil
-            puts 'ret=' + ret.to_s
+            #puts 'ret=' + ret.to_s
             ret
         end
 
