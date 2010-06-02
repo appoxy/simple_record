@@ -876,15 +876,16 @@ module SimpleRecord
 
         # This gets less and less efficient the higher the page since SimpleDB has no way
         # to start at a specific row. So it will iterate from the first record and pull out the specific pages.
-        def self.paginate(options={})
+       def self.paginate(options={})
 #            options = args.pop
 #            puts 'paginate options=' + options.inspect if SimpleRecord.logging?
-            page     = options[:page].to_i || 1
-            per_page = options[:per_page].to_i || self.per_page || 50
+            page     = options[:page] || 1
+            per_page = options[:per_page] || 50
 #            total    = options[:total_entries].to_i
-            options[:page] = page # makes sure it's to_i
-            options[:per_page] = per_page
-            options[:limit] = page * per_page
+            options[:page] = page.to_i # makes sure it's to_i
+            options[:per_page] = per_page.to_i
+            options[:limit] = options[:page] * options[:per_page]
+#            puts 'paging options=' + options.inspect
             fr = find(:all, options)
             return fr
 
