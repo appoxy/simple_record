@@ -879,30 +879,15 @@ module SimpleRecord
         def self.paginate(options={})
 #            options = args.pop
 #            puts 'paginate options=' + options.inspect if SimpleRecord.logging?
-            page     = options[:page] || 1
-            per_page = options[:per_page] || self.per_page || 50
-            total    = options[:total_entries]
+            page     = options[:page].to_i || 1
+            per_page = options[:per_page].to_i || self.per_page || 50
+#            total    = options[:total_entries].to_i
+            options[:page] = page # makes sure it's to_i
+            options[:per_page] = per_page
             options[:limit] = page * per_page
             fr = find(:all, options)
-#            puts 'fr.size=' + fr.size.to_s
-            ret = []
-            i = 0
-            p = 1
-            fr.each do |x|
-#                puts 'x=' + x.inspect
-                if p == page
-#                    puts 'adding'
-                    ret << x
-                end
-                i += 1
-                if i > 0 && i % per_page == 0
-                    p += 1
-                    if p > page
-                        break
-                    end
-                end
-            end
-            ret
+            return fr
+
         end
 
 

@@ -19,6 +19,11 @@ module SimpleRecord
             @items = items
             @currentset_items = items
             @next_token = next_token
+            @options = @params[1]
+            if @options[:page]
+                load_to(@options[:per_page] * @options[:page])
+                @start_at = @options[:per_page] * (@options[:page] - 1)
+            end
         end
 
         def << (val)
@@ -80,9 +85,10 @@ module SimpleRecord
             return @count if @count
             params_for_count = params.dup
             params_for_count[0] = :count
-            #puts 'params_for_count=' + params_for_count.inspect
+            params_for_count[1].delete(:limit)
+            puts 'params_for_count=' + params_for_count.inspect
             @count = clz.find(*params_for_count)
-            # puts '@count=' + @count.to_s
+            puts '@count=' + @count.to_s
             @count
         end
 
@@ -91,7 +97,7 @@ module SimpleRecord
         end
 
         def each(&blk)
-            each2(0, &blk)
+            each2((@start_at || 0), &blk)
         end
 
         def each2(i, &blk)
@@ -117,6 +123,53 @@ module SimpleRecord
                 load_next_token_set
                 each2(i, &blk)
             end
+        end
+
+        # for will_paginate support
+        def total_pages
+            puts 'total_pages'
+            puts  @params[1][:per_page].to_s
+            return 1 if @params[1][:per_page].nil?
+            ret = (size / @params[1][:per_page].to_f).ceil
+            puts 'ret=' + ret.to_s
+            ret
+        end
+
+        def current_page
+            return query_options[:page] || 1
+        end
+
+        def query_options
+            return @options
+        end
+
+        def total_entries
+            return size
+        end
+
+        # Helper method that is true when someone tries to fetch a page with a
+        # larger number than the last page. Can be used in combination with flashes
+        # and redirecting.
+        def out_of_bounds?
+            current_page > total_pages
+        end
+
+        # Current offset of the paginated collection. If we're on the first page,
+        # it is always 0. If we're on the 2nd page and there are 30 entries per page,
+        # the offset is 30. This property is useful if you want to render ordinals
+        # side by side with records in the view: simply start with offset + 1.
+        def offset
+            (current_page - 1) * per_page
+        end
+
+        # current_page - 1 or nil if there is no previous page
+        def previous_page
+            current_page > 1 ? (current_page - 1) : nil
+        end
+
+        # current_page + 1 or nil if there is no next page
+        def next_page
+            current_page < total_pages ? (current_page + 1) : nil
         end
 
         def load_next_token_set
