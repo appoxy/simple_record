@@ -24,7 +24,8 @@ module SimpleRecord
 
         def to_json(*a)
             result = {
-                    'json_class' => self.class.name
+                    'json_class' => self.class.name,
+                    'id' => self.id
             }
             defined_attributes_local.each_pair do |name, val|
 #                puts name.to_s + "=" + val.inspect
