@@ -24,6 +24,7 @@ module SimpleRecord
                 load_to(@options[:per_page] * @options[:page])
                 @start_at = @options[:per_page] * (@options[:page] - 1)
             end
+            # puts 'RESULTS_ARRAY=' + self.inspect
         end
 
         def << (val)
@@ -83,9 +84,13 @@ module SimpleRecord
                 return @items.size
             end
             return @count if @count
-            params_for_count = params.dup
+#            puts '@params=' + @params.inspect
+            params_for_count = @params.dup
             params_for_count[0] = :count
+            params_for_count[1] =  params_for_count[1].dup # for deep clone
             params_for_count[1].delete(:limit)
+
+     #       puts '@params2=' + @params.inspect
            # puts 'params_for_count=' + params_for_count.inspect
             @count = clz.find(*params_for_count)
             # puts '@count=' + @count.to_s
@@ -102,7 +107,9 @@ module SimpleRecord
 
         def each2(i, &blk)
             options = @params[1]
+#            puts 'options=' + options.inspect
             limit = options[:limit]
+    #        puts 'limit=' + limit.inspect
 
             @items[i..@items.size].each do |v|
 #                puts "i=" + i.to_s
@@ -128,7 +135,7 @@ module SimpleRecord
         # for will_paginate support
         def total_pages
             #puts 'total_pages'
-            puts  @params[1][:per_page].to_s
+#            puts  @params[1][:per_page].to_s
             return 1 if @params[1][:per_page].nil?
             ret = (size / @params[1][:per_page].to_f).ceil
             #puts 'ret=' + ret.to_s
