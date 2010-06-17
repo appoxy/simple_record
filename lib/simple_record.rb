@@ -193,21 +193,28 @@ module SimpleRecord
 
         # Sets the domain name for this class
         def self.set_domain_name(table_name)
-            # puts 'setting domain name for class ' + self.inspect + '=' + table_name
-            #@domain_name_for_class = table_name
             super
         end
 
 
         def domain
-            self.class.domain # super # super.domain
+            self.class.domain
         end
 
         def self.domain
-            #return self.get_domain_name unless self.get_domain_name.nil?
-            d = super
+            unless @domain
+                # This strips off the module if there is one.
+                n2 = name.split('::').last || name
+                puts 'n2=' + n2
+                if defined? ActiveSupport::CoreExtensions::String::Inflections
+                    @domain = n2.tableize
+                else
+                    @domain = n2.downcase
+                end
+                set_domain_name @domain
+            end
 #            puts 'in self.domain, d=' + d.to_s + ' domain_prefix=' + SimpleRecord::Base.domain_prefix.to_s
-            domain_name_for_class = (SimpleRecord::Base.domain_prefix || "") + d.to_s
+            domain_name_for_class = (SimpleRecord::Base.domain_prefix || "") + @domain.to_s
             #self.set_domain_name(domain_name_for_class)
             domain_name_for_class
         end
