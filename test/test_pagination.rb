@@ -19,7 +19,7 @@ class TestPagination < TestBase
         i = 20
         (1..3).each do |page|
             models = MyModel.paginate :page=>page, :per_page=>5, :order=>"created desc"
-            assert models.size == 5
+            assert models.size == 5, "models.size=#{models.size}"
             models.each do |m|
                 i -= 1
                 puts m.name

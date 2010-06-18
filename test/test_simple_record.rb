@@ -306,7 +306,9 @@ class TestSimpleRecord < TestBase
         assert count > 0
 
         mms = MyModel.find(:all) # select 2
+        puts 'mms=' + mms.inspect
         assert mms.size > 0 # select 3
+        puts 'mms=' + mms.inspect
         assert mms.size == count, "size != count! size=" + mms.size.to_s + " count=" + count.to_s
         assert SimpleRecord.stats.selects == 3, "should have been 3 select, but was actually #{SimpleRecord.stats.selects}" # count should not have been called twice
 
@@ -480,15 +482,15 @@ class TestSimpleRecord < TestBase
 
         mm = MyModel.find(:first, :conditions=>["date1 >= ?", 1.days.ago.to_date])
         puts 'mm=' + mm.inspect
-        assert mm
+        assert mm.is_a? MyModel
 
         mm = MyModel.find(:first, :conditions=>["date2 >= ?", 1.minutes.ago])
         puts 'mm=' + mm.inspect
-        assert mm
+        assert mm.is_a? MyModel
 
         mm = MyModel.find(:first, :conditions=>["date3 >= ?", 1.minutes.ago])
         puts 'mm=' + mm.inspect
-        assert mm
+        assert mm.is_a? MyModel
 
     end
 
@@ -662,5 +664,18 @@ class TestSimpleRecord < TestBase
 
     end
 
+    def test_box_usage
+        mm = MyModel.new
+        mm.name = "whatever"
+        mm.age = "1"
+        mm.save
+        sleep 1
+
+        mms = MyModel.all
+
+        assert mms.box_usage && mms.box_usage > 0
+        assert mms.request_id
+
+    end
 
 end
