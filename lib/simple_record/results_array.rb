@@ -5,10 +5,10 @@ module SimpleRecord
     class ResultsArray
         include Enumerable
 
-        attr_reader :next_token, :clz, :params, :items, :i
+        attr_reader :next_token, :clz, :params, :items, :i, :box_usage, :request_id
 
 
-        def initialize(clz=nil, params=[], items=[], next_token=nil)
+        def initialize(clz=nil, params=[], results=nil, next_token=nil)
             @clz = clz
             #puts 'class=' + clz.inspect
             @params = params
@@ -16,9 +16,12 @@ module SimpleRecord
                 options = {}
                 @params[1] = options
             end
-            @items = items
-            @currentset_items = items
+            @items = results[:items]
+            @currentset_items = results[:items]
             @next_token = next_token
+            puts 'bu=' + results[:box_usage]
+            @box_usage = results[:box_usage].to_f
+            @request_id = results[:request_id]
             @options = @params[1]
             if @options[:page]
                 load_to(@options[:per_page] * @options[:page])
@@ -80,6 +83,9 @@ module SimpleRecord
         end
 
         def size
+            if @options[:per_page]
+                return @items.size - @start_at
+            end
             if @next_token.nil?
                 return @items.size
             end
@@ -87,13 +93,13 @@ module SimpleRecord
 #            puts '@params=' + @params.inspect
             params_for_count = @params.dup
             params_for_count[0] = :count
-            params_for_count[1] =  params_for_count[1].dup # for deep clone
+            params_for_count[1] = params_for_count[1].dup # for deep clone
             params_for_count[1].delete(:limit)
 
      #       puts '@params2=' + @params.inspect
            # puts 'params_for_count=' + params_for_count.inspect
             @count = clz.find(*params_for_count)
-            # puts '@count=' + @count.to_s
+#            puts '@count=' + @count.to_s
             @count
         end
 

@@ -213,18 +213,12 @@ module SimpleRecord
                 end
                 set_domain_name @domain
             end
-#            puts 'in self.domain, d=' + d.to_s + ' domain_prefix=' + SimpleRecord::Base.domain_prefix.to_s
             domain_name_for_class = (SimpleRecord::Base.domain_prefix || "") + @domain.to_s
-            #self.set_domain_name(domain_name_for_class)
             domain_name_for_class
         end
 
         def get_attribute_sdb(name)
             name = name.to_sym
-#            arg = arg.to_s
-#            puts "get_attribute_sdb(#{arg}) - #{arg.class.name}"
-#            puts 'self[]=' + self.inspect
-#            att_meta = get_att_meta(name)
             ret = strip_array(@attributes[sdb_att_name(name)])
             return ret
         end
@@ -237,10 +231,7 @@ module SimpleRecord
         def get_att_meta(name)
             name_s = name.to_s
             att_meta = defined_attributes_local[name.to_sym]
-#            puts 'name_s=' + name_s
-#            puts 'end of string=' + name_s[-3..-1] if name_s.length > 4
             if att_meta.nil? && has_id_on_end(name_s)
-#                puts 'strip _id=' + name_s[0..-4].to_s
                 att_meta = defined_attributes_local[name_s[0..-4].to_sym]
             end
             return att_meta
@@ -827,13 +818,23 @@ module SimpleRecord
 
             results = q_type == :all ? [] : nil
             begin
-                results=super(*params)
-#                puts "RESULT=" + results.inspect
+                results=find_with_metadata(*params)
+                # puts "RESULT=" + results.inspect
                 #puts 'params3=' + params.inspect
                 SimpleRecord.stats.selects += 1
-                if q_type != :count
+                if q_type == :count
+                    results = results[:count]
+                elsif q_type == :first
+                    ret = results[:items].first
+                    # todo: we should store request_id and box_usage with the object maybe?
+                    cache_results(ret)
+                    results = ret
+                elsif results[:single]
+                    results = results[:single]
                     cache_results(results)
-                    if results.is_a?(Array)
+                else
+                    if results[:items] #.is_a?(Array)
+                        cache_results(results[:items])
                         results = SimpleRecord::ResultsArray.new(self, params, results, next_token)
                     end
                 end
@@ -868,7 +869,7 @@ module SimpleRecord
 
         # This gets less and less efficient the higher the page since SimpleDB has no way
         # to start at a specific row. So it will iterate from the first record and pull out the specific pages.
-       def self.paginate(options={})
+        def self.paginate(options={})
 #            options = args.pop
 #            puts 'paginate options=' + options.inspect if SimpleRecord.logging?
             page     = options[:page] || 1
@@ -900,6 +901,13 @@ module SimpleRecord
             if !cache_store.nil? && !results.nil?
                 if results.is_a?(Array)
                     # todo: cache each result
+                    results.each do |item|
+                        class_name = item.class.name
+                        id = item.id
+                        cache_key = self.cache_key(class_name, id)
+                        #puts 'caching result at ' + cache_key + ': ' + results.inspect
+                        cache_store.write(cache_key, item, :expires_in =>30)
+                    end
                 else
                     class_name = results.class.name
                     id = results.id
