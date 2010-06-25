@@ -84,7 +84,7 @@ module SimpleRecord
         @aws_access_key = aws_access_key
         @aws_secret_key = aws_secret_key
         @@options.merge!(params)
-        puts 'SimpleRecord.establish_connection with options: ' + @@options.inspect
+        #puts 'SimpleRecord.establish_connection with options: ' + @@options.inspect
         Aws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, @@options)
     end
 
@@ -313,7 +313,7 @@ module SimpleRecord
 
         def domain_ok(ex)
             if (ex.message().index("NoSuchDomain") != nil)
-                puts "Creating new SimpleDB Domain: " + domain
+                #puts "Creating new SimpleDB Domain: " + domain
                 self.class.create_domain
                 return true
             end
@@ -799,6 +799,7 @@ module SimpleRecord
         #
         # Extra options:
         #   :per_token => the number of results to return per next_token, max is 2500.
+        #   :consistent_read => true/false  --  as per http://developer.amazonwebservices.com/connect/entry.jspa?externalID=3572
         def self.find(*params)
             #puts 'params=' + params.inspect
             q_type = :all
@@ -816,9 +817,11 @@ module SimpleRecord
                 #puts 'after collect=' + options.inspect
                 convert_condition_params(options)
                 per_token = options[:per_token]
-                if per_token
+                consistent_read = options[:consistent_read]
+                if per_token || consistent_read then
                     op_dup = options.dup
                     op_dup[:limit] = per_token # simpledb uses Limit as a paging thing, not what is normal
+                    op_dup[:consistent_read] = consistent_read
                     params[1] = op_dup
                 end
 
