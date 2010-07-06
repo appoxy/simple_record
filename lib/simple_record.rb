@@ -297,6 +297,15 @@ module SimpleRecord
             set(:updated, Time.now)
         end
 
+        # an aliased method since many people use created_at/updated_at naming convention
+        def created_at
+            self.created
+        end
+
+        # an aliased method since many people use created_at/updated_at naming convention
+        def updated_at
+            self.updated
+        end
 
         def cache_store
             @@cache_store
