@@ -25,9 +25,9 @@
 # Forked off old ActiveRecord2sdb library.
 
 require 'aws'
-require 'sdb/active_sdb'
 require 'base64'
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/attributes")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/active_sdb")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/callbacks")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/encryptor")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/exceptions")
@@ -97,7 +97,7 @@ module SimpleRecord
     end
 
 
-    class Base < Aws::ActiveSdb::Base
+    class Base < SimpleRecord::ActiveSdb::Base
 
         include SimpleRecord::Translations
 #        include SimpleRecord::Attributes
