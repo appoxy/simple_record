@@ -84,7 +84,7 @@ module SimpleRecord
 #      puts 'to eval=' + to_eval
                         begin
                             ret = eval(to_eval) # (defined? #{arg}_id)
-                        rescue Aws::ActiveSdb::ActiveSdbError => ex
+                        rescue SimpleRecord::ActiveSdb::ActiveSdbError => ex
                             if ex.message.include? "Couldn't find"
                                 ret = RemoteNil.new
                             else

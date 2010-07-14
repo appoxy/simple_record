@@ -33,6 +33,7 @@ require File.expand_path(File.dirname(__FILE__) + "/simple_record/encryptor")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/exceptions")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/errors")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/json")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/logging")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/password")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/results_array")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/stats")
@@ -44,58 +45,78 @@ module SimpleRecord
     @@options = {}
     @@stats = SimpleRecord::Stats.new
     @@logging = false
+    @@usage_logging_options = {}
 
     class << self;
         attr_accessor :aws_access_key, :aws_secret_key
-    end
 
-    def self.enable_logging
-        @@logging = true
-    end
+        def enable_logging
+            @@logging = true
+        end
 
-    def self.disable_logging
-        @@logging = false
-    end
+        def disable_logging
+            @@logging = false
+        end
 
-    def self.logging?
-        @@logging
-    end
+        def logging?
+            @@logging
+        end
 
-    def self.stats
-        @@stats
-    end
+        # This can be used to log queries and what not to a file.
+        # Params:
+        # :select=>{:filename=>"file_to_write_to", :format=>"csv"}
+        def log_usage(types={})
+            return if types.nil?
+            types.each_pair do |type, options|
+                @@usage_logging_options[type] = options
+            end
+        end
 
-    # Create a new handle to an Sdb account. All handles share the same per process or per thread
-    # HTTP connection to Amazon Sdb. Each handle is for a specific account.
-    # The +params+ are passed through as-is to Aws::SdbInterface.new
-    # Params:
-    #    { :server       => 'sdb.amazonaws.com'  # Amazon service host: 'sdb.amazonaws.com'(default)
-    #      :port         => 443                  # Amazon service port: 80(default) or 443
-    #      :protocol     => 'https'              # Amazon service protocol: 'http'(default) or 'https'
-    #      :signature_version => '0'             # The signature version : '0' or '1'(default)
-    #      :connection_mode  => :default         # options are
-    #                                                  :default (will use best known safe (as in won't need explicit close) option, may change in the future)
-    #                                                  :per_request (opens and closes a connection on every request to SDB)
-    #                                                  :single (one thread across entire app)
-    #                                                  :per_thread (one connection per thread)
-    #                                                  :pool (uses a connection pool with a maximum number of connections - NOT IMPLEMENTED YET)
-    #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
-    def self.establish_connection(aws_access_key=nil, aws_secret_key=nil, params={})
-        @aws_access_key = aws_access_key
-        @aws_secret_key = aws_secret_key
-        @@options.merge!(params)
-        #puts 'SimpleRecord.establish_connection with options: ' + @@options.inspect
-        Aws::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, @@options)
-    end
+        def close_usage_log(type)
+            @@usage_logging_options[type][:file].close if @@usage_logging_options[type][:file]
+        end
 
-    def self.close_connection()
-        Aws::ActiveSdb.close_connection
-    end
+        def usage_logging_options
+            @@usage_logging_options
+        end
 
-    def self.options
-        @@options
-    end
+        def stats
+            @@stats
+        end
 
+
+        # Create a new handle to an Sdb account. All handles share the same per process or per thread
+        # HTTP connection to Amazon Sdb. Each handle is for a specific account.
+        # The +params+ are passed through as-is to Aws::SdbInterface.new
+        # Params:
+        #    { :server       => 'sdb.amazonaws.com'  # Amazon service host: 'sdb.amazonaws.com'(default)
+        #      :port         => 443                  # Amazon service port: 80(default) or 443
+        #      :protocol     => 'https'              # Amazon service protocol: 'http'(default) or 'https'
+        #      :signature_version => '0'             # The signature version : '0' or '1'(default)
+        #      :connection_mode  => :default         # options are
+        #                                                  :default (will use best known safe (as in won't need explicit close) option, may change in the future)
+        #                                                  :per_request (opens and closes a connection on every request to SDB)
+        #                                                  :single (one thread across entire app)
+        #                                                  :per_thread (one connection per thread)
+        #                                                  :pool (uses a connection pool with a maximum number of connections - NOT IMPLEMENTED YET)
+        #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
+        def establish_connection(aws_access_key=nil, aws_secret_key=nil, params={})
+            @aws_access_key = aws_access_key
+            @aws_secret_key = aws_secret_key
+            @@options.merge!(params)
+            #puts 'SimpleRecord.establish_connection with options: ' + @@options.inspect
+            SimpleRecord::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, @@options)
+        end
+
+        def close_connection()
+            SimpleRecord::ActiveSdb.close_connection
+        end
+
+        def options
+            @@options
+        end
+
+    end
 
     class Base < SimpleRecord::ActiveSdb::Base
 
@@ -104,6 +125,9 @@ module SimpleRecord
         extend SimpleRecord::Attributes
         include SimpleRecord::Callbacks
         include SimpleRecord::Json
+        include SimpleRecord::Logging
+        extend SimpleRecord::Logging::ClassMethods
+
 
         def self.extended(base)
 
@@ -831,7 +855,8 @@ module SimpleRecord
             results = q_type == :all ? [] : nil
             begin
                 results=find_with_metadata(*params)
-                # puts "RESULT=" + results.inspect
+                puts "RESULT=" + results.inspect
+                write_usage(:select, domain, q_type, options, results)
                 #puts 'params3=' + params.inspect
                 SimpleRecord.stats.selects += 1
                 if q_type == :count
@@ -850,7 +875,7 @@ module SimpleRecord
                         results = SimpleRecord::ResultsArray.new(self, params, results, next_token)
                     end
                 end
-            rescue Aws::AwsError, Aws::ActiveSdb::ActiveSdbError
+            rescue Aws::AwsError, SimpleRecord::ActiveSdb::ActiveSdbError
 #                puts "RESCUED: " + $!.message
                 if ($!.message().index("NoSuchDomain") != nil)
                     # this is ok
