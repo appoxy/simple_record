@@ -6,7 +6,7 @@ module SimpleRecord
 
         module ClassMethods
             def write_usage(type, domain, q_type, params, results)
-                puts 'params=' + params.inspect
+#                puts 'params=' + params.inspect
                 if SimpleRecord.usage_logging_options
                     type_options = SimpleRecord.usage_logging_options[type]
                     if type_options
@@ -19,7 +19,11 @@ module SimpleRecord
                         conditions = params[:conditions][0] if params[:conditions]
                         line = usage_line(type_options[:format], [type, domain, q_type, conditions, params[:order]], results[:request_id], results[:box_usage])
                         file.puts line
-                        puts 'line=' + line
+                        type_options[:lines] = type_options[:lines] ? type_options[:lines] + 1 : 1
+                        if type_options[:lines] % 100 == 0
+                            file.flush
+                        end
+#                        puts 'line=' + line
                     end
                 end
             end
