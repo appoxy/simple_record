@@ -68,6 +68,7 @@ module SimpleRecord
         def log_usage(types={})
             return if types.nil?
             types.each_pair do |type, options|
+                options[:lines_between_flushes] = 100 unless options[:lines_between_flushes]
                 @@usage_logging_options[type] = options
             end
         end
