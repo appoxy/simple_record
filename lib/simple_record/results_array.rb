@@ -19,7 +19,7 @@ module SimpleRecord
             @items = results[:items]
             @currentset_items = results[:items]
             @next_token = next_token
-            puts 'bu=' + results[:box_usage]
+#            puts 'bu=' + results[:box_usage]
             @box_usage = results[:box_usage].to_f
             @request_id = results[:request_id]
             @options = @params[1]

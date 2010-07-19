@@ -855,7 +855,7 @@ module SimpleRecord
             results = q_type == :all ? [] : nil
             begin
                 results=find_with_metadata(*params)
-                puts "RESULT=" + results.inspect
+#                puts "RESULT=" + results.inspect
                 write_usage(:select, domain, q_type, options, results)
                 #puts 'params3=' + params.inspect
                 SimpleRecord.stats.selects += 1

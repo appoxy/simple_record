@@ -372,9 +372,9 @@ module SimpleRecord
                     options[:conditions] = build_conditions(options[:conditions])
                     # join ids condition and user defined conditions
                     options[:conditions] = options[:conditions].blank? ? ids_cond : "(#{options[:conditions]}) AND #{ids_cond}"
-                    puts 'options=' + options.inspect
+#                    puts 'options=' + options.inspect
                     result = sql_select(options)
-                    puts 'select_from_ids result=' + result.inspect
+#                    puts 'select_from_ids result=' + result.inspect
                     # if one record was requested then return it
                     unless bunch_of_records_requested
                         record = result[:items].first
