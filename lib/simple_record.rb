@@ -45,7 +45,6 @@ module SimpleRecord
     @@options = {}
     @@stats = SimpleRecord::Stats.new
     @@logging = false
-    @@usage_logging_options = {}
 
     class << self;
         attr_accessor :aws_access_key, :aws_secret_key
@@ -66,19 +65,22 @@ module SimpleRecord
         # Params:
         # :select=>{:filename=>"file_to_write_to", :format=>"csv"}
         def log_usage(types={})
+            @usage_logging_options = {} unless @usage_logging_options
             return if types.nil?
             types.each_pair do |type, options|
                 options[:lines_between_flushes] = 100 unless options[:lines_between_flushes]
-                @@usage_logging_options[type] = options
+                @usage_logging_options[type] = options
             end
+            #puts 'SimpleRecord.usage_logging_options=' + SimpleRecord.usage_logging_options.inspect
         end
 
         def close_usage_log(type)
-            @@usage_logging_options[type][:file].close if @@usage_logging_options[type][:file]
+            return unless @usage_logging_options[type]
+            @usage_logging_options[type][:file].close if @usage_logging_options[type][:file]
         end
 
         def usage_logging_options
-            @@usage_logging_options
+            @usage_logging_options
         end
 
         def stats
