@@ -83,9 +83,9 @@ module SimpleRecord
         end
 
         def size
-            if @options[:per_page]
-                return @items.size - @start_at
-            end
+#             if @options[:per_page]
+#                return @items.size - @start_at
+#            end
             if @next_token.nil?
                 return @items.size
             end
