@@ -36,13 +36,16 @@ class TestJson < TestBase
 
         models << mm
 
-        jsoned = JSON.generate models
+        jsoned = models.to_json
         puts 'jsoned=' + jsoned
         unjsoned = JSON.parse jsoned
         puts 'unjsoned=' + unjsoned.inspect
         assert unjsoned.size == models.size
         assert unjsoned[0].name == mm.name
         assert unjsoned[0].age == mm.age
+        assert unjsoned[0].created.present?
+        assert unjsoned[0].id.present?
+        assert unjsoned[0].id == mm.id, "unjsoned.id=#{unjsoned[0].id}"
 
         t = Tester.new
         t2 = Tester.new

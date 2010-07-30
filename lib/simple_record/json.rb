@@ -11,6 +11,10 @@ module SimpleRecord
                 obj = new
                 for key, value in object
                     next if key == 'json_class'
+                    if key == 'id'
+                        obj.id = value
+                        next
+                    end
                     obj.set key, value
                 end
                 obj
@@ -23,6 +27,7 @@ module SimpleRecord
         end
 
         def to_json(*a)
+#            puts 'to_json called'
             result = {
                     'json_class' => self.class.name,
                     'id' => self.id
@@ -36,8 +41,9 @@ module SimpleRecord
                 end
 #                puts 'result[name]=' + result[name].inspect
             end
-
-            result.to_json(*a)
+            ret = result.to_json(*a)
+#            puts 'ret=' + ret.inspect
+            return ret
         end
 
     end
