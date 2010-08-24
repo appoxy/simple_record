@@ -855,7 +855,7 @@ module SimpleRecord
             end
 #            puts 'params2=' + params.inspect
 
-            results = q_type == :all ? [] : nil
+             ret = q_type == :all ? [] : nil
             begin
                 results=find_with_metadata(*params)
 #                puts "RESULT=" + results.inspect
@@ -863,32 +863,32 @@ module SimpleRecord
                 #puts 'params3=' + params.inspect
                 SimpleRecord.stats.selects += 1
                 if q_type == :count
-                    results = results[:count]
+                    ret = results[:count]
                 elsif q_type == :first
                     ret = results[:items].first
                     # todo: we should store request_id and box_usage with the object maybe?
                     cache_results(ret)
-                    results = ret
                 elsif results[:single]
-                    results = results[:single]
-                    cache_results(results)
+                    ret = results[:single]
+                    cache_results(ret)
                 else
                     if results[:items] #.is_a?(Array)
                         cache_results(results[:items])
-                        results = SimpleRecord::ResultsArray.new(self, params, results, next_token)
+                        ret = SimpleRecord::ResultsArray.new(self, params, results, next_token)
                     end
                 end
-            rescue Aws::AwsError, SimpleRecord::ActiveSdb::ActiveSdbError
-#                puts "RESCUED: " + $!.message
-                if ($!.message().index("NoSuchDomain") != nil)
+            rescue Aws::AwsError, SimpleRecord::ActiveSdb::ActiveSdbError => ex
+#                puts "RESCUED: " + ex.message
+                if (ex.message().index("NoSuchDomain") != nil)
                     # this is ok
-                elsif ($!.message() =~ @@regex_no_id)
-                    results = nil
+                elsif (ex.message() =~ @@regex_no_id)
+                    ret = nil
                 else
-                    raise $!
+                    raise ex
                 end
             end
-            return results
+#            puts 'single2=' + ret.inspect
+            return ret
         end
 
         def self.select(*params)

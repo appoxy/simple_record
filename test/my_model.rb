@@ -1,5 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
-require 'my_base_model'
+require_relative 'my_base_model'
 
 class MyModel < MyBaseModel
 

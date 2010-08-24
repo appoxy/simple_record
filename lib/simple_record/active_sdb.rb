@@ -944,9 +944,9 @@ module SimpleRecord
             end
 
             # Item ID
-            def to_s
-                @id
-            end
+#            def to_s
+#                @id
+#            end
 
             # Returns true if this object hasn‘t been saved yet.
             def new_record?
