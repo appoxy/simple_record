@@ -232,7 +232,7 @@ module SimpleRecord
             unless @domain
                 # This strips off the module if there is one.
                 n2 = name.split('::').last || name
-                puts 'n2=' + n2
+#                puts 'n2=' + n2
                 if n2.respond_to?(:tableize)
                     @domain = n2.tableize
                 else
