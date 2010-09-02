@@ -233,7 +233,7 @@ module SimpleRecord
                 # This strips off the module if there is one.
                 n2 = name.split('::').last || name
                 puts 'n2=' + n2
-                if defined? ActiveSupport::CoreExtensions::String::Inflections
+                if n2.respond_to?(:tableize)
                     @domain = n2.tableize
                 else
                     @domain = n2.downcase
