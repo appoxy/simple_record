@@ -3,8 +3,8 @@ require File.join(File.dirname(__FILE__), "/../lib/simple_record")
 require File.join(File.dirname(__FILE__), "./test_helpers")
 require "yaml"
 require 'aws'
-require 'my_model'
-require 'my_child_model'
+require_relative 'my_model'
+require_relative 'my_child_model'
 require 'active_support'
 
 class TestBase < Test::Unit::TestCase

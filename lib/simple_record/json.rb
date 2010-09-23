@@ -25,9 +25,29 @@ module SimpleRecord
             end
 
         end
+#
+#        def to_json(*a)
+#            puts 'SimpleRecord to_json called'
+#            result = {
+#                    'json_class' => self.class.name,
+#                    'id' => self.id
+#            }
+#            defined_attributes_local.each_pair do |name, val|
+##                puts name.to_s + "=" + val.inspect
+#                if val.type == :belongs_to
+#                    result[name.to_s + "_id"] = get_attribute_sdb(name)
+#                else
+#                    result[name] = get_attribute(name)
+#                end
+##                puts 'result[name]=' + result[name].inspect
+#            end
+#            ret = result.to_json(*a)
+##            puts 'ret=' + ret.inspect
+#            return ret
+#        end
 
-        def to_json(*a)
-#            puts 'to_json called'
+        def as_json(options={})
+#            puts 'SimpleRecord as_json called'
             result = {
                     'json_class' => self.class.name,
                     'id' => self.id
@@ -41,7 +61,7 @@ module SimpleRecord
                 end
 #                puts 'result[name]=' + result[name].inspect
             end
-            ret = result.to_json(*a)
+            ret = result.as_json(options)
 #            puts 'ret=' + ret.inspect
             return ret
         end

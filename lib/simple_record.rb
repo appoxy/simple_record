@@ -26,6 +26,8 @@
 
 require 'aws'
 require 'base64'
+require 'active_support'
+require 'active_support/core_ext'
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/attributes")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/active_sdb")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/callbacks")

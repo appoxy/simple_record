@@ -4,10 +4,9 @@ require File.join(File.dirname(__FILE__), "./test_helpers")
 require File.join(File.dirname(__FILE__), "./test_base")
 require "yaml"
 require 'aws'
-require 'my_model'
-require 'my_child_model'
-require 'model_with_enc'
-require 'active_support'
+require_relative 'my_model'
+require_relative 'my_child_model'
+require_relative 'model_with_enc'
 
 # Tests for SimpleRecord
 #
@@ -495,7 +494,7 @@ class TestSimpleRecord < TestBase
     end
 
     def test_attr_encrypted
-        require 'model_with_enc'
+        require_relative 'model_with_enc'
         ssn = "123456789"
         password = "my_password"
 
