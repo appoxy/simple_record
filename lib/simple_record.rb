@@ -338,10 +338,10 @@ module SimpleRecord
             @@cache_store
         end
 
-        def domain_ok(ex)
+        def domain_ok(ex, options={})
             if (ex.message().index("NoSuchDomain") != nil)
-                #puts "Creating new SimpleDB Domain: " + domain
-                self.class.create_domain
+                dom = options[:domain] || domain
+                self.class.create_domain(dom)
                 return true
             end
             return false
@@ -390,6 +390,7 @@ module SimpleRecord
         # Options:
         #   - :except => Array of attributes to NOT save
         #   - :dirty => true - Will only store attributes that were modified. To make it save regardless and have it update the :updated value, include this and set it to false.
+        #   - :domain => Explicitly define domain to use.
         #
         def save(options={})
 #            puts 'SAVING: ' + self.inspect if SimpleRecord.logging?
@@ -431,9 +432,9 @@ module SimpleRecord
                     else
                         return false
                     end
-                rescue Aws::AwsError
+                rescue Aws::AwsError => ex
                     # puts "RESCUED in save: " + $!
-                    if (domain_ok($!))
+                    if (domain_ok(ex, options))
                         if !@create_domain_called
                             @create_domain_called = true
                             save(options)

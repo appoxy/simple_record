@@ -240,8 +240,10 @@ module SimpleRecord
                 #  end
                 #  Client.create_domain  #=> {:request_id=>"6fc652a0-0000-41d5-91f4-3ed390a3d3b2", :box_usage=>"0.0055590278"}
                 #
-                def create_domain
-                    connection.create_domain(domain)
+                def create_domain(dom=nil)
+                    dom = domain if dom.nil?
+                    puts "Creating new SimpleDB Domain: " + dom
+                    connection.create_domain(dom)
                 end
 
                 # Remove domain from SDB.
@@ -251,8 +253,10 @@ module SimpleRecord
                 #  end
                 #  Client.delete_domain  #=> {:request_id=>"e14d90d3-0000-4898-9995-0de28cdda270", :box_usage=>"0.0055590278"}
                 #
-                def delete_domain
-                    connection.delete_domain(domain)
+                def delete_domain(dom=nil)
+                    dom = domain if dom.nil?
+                    puts "!!! DELETING SimpleDB Domain: " + dom
+                    connection.delete_domain(dom)
                 end
 
                 #
@@ -844,8 +848,9 @@ module SimpleRecord
                     dirty_atts = options[:dirty_atts]
                     atts_to_save.delete_if { |key, value| !dirty_atts.has_key?(key) }
                 end
+                dom = options[:domain] || domain
                 #puts 'atts_to_save2=' + atts_to_save.inspect
-                connection.put_attributes(domain, id, atts_to_save, :replace)
+                connection.put_attributes(dom, id, atts_to_save, :replace)
                 apres_save2
                 @attributes
             end
@@ -948,7 +953,7 @@ module SimpleRecord
 #                @id
 #            end
 
-            # Returns true if this object hasn‘t been saved yet.
+            # Returns true if this object hasnï¿½t been saved yet.
             def new_record?
                 @new_record
             end
