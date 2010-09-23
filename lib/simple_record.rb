@@ -633,6 +633,7 @@ module SimpleRecord
         end
 
         def delete()
+            # TODO: DELETE CLOBS, etc from s3
             super
         end
 
@@ -838,6 +839,7 @@ module SimpleRecord
 
             # Pad and Offset number attributes
             options = {}
+            params_dup = params.dup
             if params.size > 1
                 options = params[1]
                 #puts 'options=' + options.inspect
@@ -849,15 +851,14 @@ module SimpleRecord
                     op_dup = options.dup
                     op_dup[:limit] = per_token # simpledb uses Limit as a paging thing, not what is normal
                     op_dup[:consistent_read] = consistent_read
-                    params[1] = op_dup
+                    params_dup[1] = op_dup
                 end
-
             end
 #            puts 'params2=' + params.inspect
 
              ret = q_type == :all ? [] : nil
             begin
-                results=find_with_metadata(*params)
+                results=find_with_metadata(*params_dup)
 #                puts "RESULT=" + results.inspect
                 write_usage(:select, domain, q_type, options, results)
                 #puts 'params3=' + params.inspect
