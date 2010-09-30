@@ -95,6 +95,7 @@ module SimpleRecord
             params_for_count[0] = :count
             params_for_count[1] = params_for_count[1].dup # for deep clone
             params_for_count[1].delete(:limit)
+             params_for_count[1].delete(:per_token)
 
      #       puts '@params2=' + @params.inspect
            # puts 'params_for_count=' + params_for_count.inspect
