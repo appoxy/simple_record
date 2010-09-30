@@ -14,7 +14,6 @@ begin
         gemspec.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
         gemspec.files = FileList['lib/**/*.rb']
         gemspec.add_dependency 'aws'
-        gemspec.add_dependency 'active_support'
     end
 rescue LoadError
     puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
