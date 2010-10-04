@@ -26,8 +26,8 @@ class TestSimpleRecord < TestBase
         assert !mm.updated.nil?
         assert !mm.id.nil?
         assert mm.age == 32
-        assert mm.cool = true
-        assert mm.name = "Travis"
+        assert mm.cool == true
+        assert mm.name == "Travis"
 
         id = mm.id
         puts 'id=' + id.to_s
@@ -39,8 +39,8 @@ class TestSimpleRecord < TestBase
         assert mm2.age == mm.age
         assert mm2.cool == mm.cool
         assert mm2.age == 32
-        assert mm2.cool = true
-        assert mm2.name = "Travis"
+        assert mm2.cool == true
+        assert mm2.name == "Travis"
         assert mm2.created.is_a? DateTime
 
         # test nilification
@@ -177,8 +177,8 @@ class TestSimpleRecord < TestBase
         assert mm.nickname == mm.name
 
         mm2 = MyModel.find(mm.id)
-        assert mm2.nickname = mm.nickname
-        assert mm2.name = mm.name
+        assert_equal mm2.nickname, mm.nickname
+        assert_equal mm2.name, mm.name
 
 
     end
@@ -262,7 +262,7 @@ class TestSimpleRecord < TestBase
         assert mmc3.my_model_id == mm2.id
         assert mmc3.changed?
         assert mmc3.my_model_changed?
-        assert mmc3.my_model.id = mm2.id
+        assert mmc3.my_model.id == mm2.id
 
     end
 
@@ -541,7 +541,7 @@ class TestSimpleRecord < TestBase
     def test_atts_using_strings_and_symbols
         mm = MyModel.new({:name=>"myname"})
         mm2 = MyModel.new({"name"=>"myname"})
-        assert mm.name = mm2.name
+        assert_equal(mm.name, mm2.name)
 
         mm.save
         mm2.save
@@ -549,7 +549,7 @@ class TestSimpleRecord < TestBase
 
         mm = MyModel.find(mm.id)
         mm2 = MyModel.find(mm2.id)
-        assert mm.name = mm2.name
+        assert_equal mm.name, mm2.name
     end
 
     def test_constructor_using_belongs_to_ids
@@ -559,10 +559,12 @@ class TestSimpleRecord < TestBase
 
         mm2 = MyChildModel.new({"name"=>"myname2", :my_model_id=>mm.id})
         puts 'mm2=' + mm2.inspect
-        assert mm.id == mm2.my_model_id, "#{mm.id} != #{mm2.my_model_id}"
+        assert_equal mm.id, mm2.my_model_id, "#{mm.id} != #{mm2.my_model_id}"
         mm3 = mm2.my_model
         puts 'mm3=' + mm3.inspect
-        assert mm.name == mm3.name
+        assert_equal mm.name, mm3.name
+
+
 
     end
 
