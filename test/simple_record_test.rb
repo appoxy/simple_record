@@ -11,7 +11,7 @@ require_relative 'model_with_enc'
 # Tests for SimpleRecord
 #
 
-class TestSimpleRecord < TestBase
+class SimpleRecordTest < TestBase
 
 
     def test_save_get
@@ -564,7 +564,12 @@ class TestSimpleRecord < TestBase
         puts 'mm3=' + mm3.inspect
         assert_equal mm.name, mm3.name
 
+        mm3 = MyChildModel.create(:my_model_id=>mm.id, :name=>"myname3")
 
+        sleep 2
+        mm4 = MyChildModel.find(mm3.id)
+        assert_equal mm4.my_model_id, mm.id
+        assert !mm4.my_model.nil?
 
     end
 
