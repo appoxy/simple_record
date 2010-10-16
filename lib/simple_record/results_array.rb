@@ -118,7 +118,12 @@ module SimpleRecord
             limit = options[:limit]
     #        puts 'limit=' + limit.inspect
 
-            @items[i..@items.size].each do |v|
+            if i > @items.size
+                i = @items.size
+            end
+            range = i..@items.size
+#            puts 'range=' + range.inspect
+            @items[range].each do |v|
 #                puts "i=" + i.to_s
                 yield v
                 i += 1
