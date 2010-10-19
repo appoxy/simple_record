@@ -47,6 +47,8 @@ module SimpleRecord
     @@options = {}
     @@stats = SimpleRecord::Stats.new
     @@logging = false
+    @@s3 = nil
+    @@auto_close_s3 = false
 
     class << self;
         attr_accessor :aws_access_key, :aws_secret_key
@@ -105,16 +107,35 @@ module SimpleRecord
         #                                                  :per_thread (one connection per thread)
         #                                                  :pool (uses a connection pool with a maximum number of connections - NOT IMPLEMENTED YET)
         #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
-        def establish_connection(aws_access_key=nil, aws_secret_key=nil, params={})
+        def establish_connection(aws_access_key=nil, aws_secret_key=nil, options={})
             @aws_access_key = aws_access_key
             @aws_secret_key = aws_secret_key
-            @@options.merge!(params)
+            @@options.merge!(options)
             #puts 'SimpleRecord.establish_connection with options: ' + @@options.inspect
             SimpleRecord::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, @@options)
+            if options[:connection_mode] == :per_thread
+                @@auto_close_s3 = true
+                @@s3 = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, {:connection_mode=>:per_thread})
+            end
         end
 
+        # Call this to close the connection to SimpleDB.
+        # If you're using this in Rails with per_thread connection mode, you should do this in
+        # an after_filter for each request.
         def close_connection()
             SimpleRecord::ActiveSdb.close_connection
+            @@s3.close_connection if @@auto_close_s3
+        end
+
+   # If you'd like to specify the s3 connection to use for LOBs, you can pass it in here.
+        # We recommend that this connection matches the type of connection you're using for SimpleDB,
+        # at least if you're using per_thread connection mode.
+        def s3=(s3)
+            @@s3 = s3
+        end
+
+        def s3
+            @@s3
         end
 
         def options
@@ -488,6 +509,10 @@ module SimpleRecord
         end
 
         def s3
+
+            return SimpleRecord.s3 if SimpleRecord.s3
+            # todo: should optimize this somehow, like use the same connection_mode as used in SR
+            # or keep open while looping in ResultsArray.
             Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key)
         end
 

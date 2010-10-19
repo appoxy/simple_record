@@ -193,7 +193,8 @@ values should be stored in S3. Fortunately SimpleRecord takes care of this for y
 string value.
 
     has_clobs :my_clob
-    
+
+These clob values will be stored in s3 under a bucket named: "#{aws_access_key}_lobs"
 
 ## Tips and Tricks and Things to Know
 
