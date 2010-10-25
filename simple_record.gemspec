@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "1.4.15"
+  s.version = "1.4.17"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
-  s.date = %q{2010-10-19}
+  s.date = %q{2010-10-24}
   s.description = %q{Drop in replacement for ActiveRecord to Amazon SimpleDB instead.}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{Drop in replacement for ActiveRecord to Amazon SimpleDB instead.}
   s.test_files = [
-    "test/conversions.rb",
+    "test/conversions_test.rb",
      "test/model_with_enc.rb",
      "test/my_base_model.rb",
      "test/my_child_model.rb",

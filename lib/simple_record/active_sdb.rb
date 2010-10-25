@@ -599,7 +599,7 @@ module SimpleRecord
                     # mix sort by argument (it must present in response)
                     unless order.blank?
                         sort_by, sort_order = sort_options(options[:order])
-                        unless condition_fields.include? sort_by
+                        if condition_fields.nil? || !condition_fields.include?(sort_by)
                             conditions << (conditions.blank? ? " WHERE " : " AND ") << "(#{sort_by} IS NOT NULL)"
                         else
 #                            puts 'skipping is not null on sort because already there.'
@@ -625,7 +625,7 @@ module SimpleRecord
                     return nil unless conditions && conditions.present?
                     rx     = /\b(\w*)[\s|>=|<=|!=|=|>|<|like]/
                     fields = conditions[0].scan(rx)
-                    puts 'condition_fields = ' + fields.inspect
+#                    puts 'condition_fields = ' + fields.inspect
                 end
 
             end

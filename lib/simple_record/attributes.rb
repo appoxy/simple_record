@@ -86,6 +86,11 @@ module SimpleRecord
             are_ints(*args)
         end
 
+        def has_floats(*args)
+            has_attributes(*args)
+            are_floats(*args)
+        end
+
         def has_dates(*args)
             has_attributes(*args)
             are_dates(*args)
@@ -100,6 +105,13 @@ module SimpleRecord
             #    puts 'calling are_ints: ' + args.inspect
             args.each do |arg|
                 defined_attributes[arg].type = :int
+            end
+        end
+
+        def are_floats(*args)
+            #    puts 'calling are_ints: ' + args.inspect
+            args.each do |arg|
+                defined_attributes[arg].type = :float
             end
         end
 

@@ -1,7 +1,7 @@
 require 'test/unit'
 require File.join(File.dirname(__FILE__), "/../lib/simple_record")
 require File.join(File.dirname(__FILE__), "./test_helpers")
-require File.join(File.dirname(__FILE__), "./test_base")
+require_relative "test_base"
 require "yaml"
 require 'aws'
 require_relative 'my_model'

@@ -131,9 +131,20 @@ module SimpleRecord
 
                 end
                 return x_str
+            elsif x.is_a? Float
+                from_float(x)
             else
                 return x
             end
+        end
+
+        # This conversion to a string is based on: http://tools.ietf.org/html/draft-wood-ldapext-float-00
+        # Java code sample is here: http://code.google.com/p/typica/source/browse/trunk/java/com/xerox/amazonws/simpledb/DataUtils.java        
+        def self.from_float(x)
+            return x
+#            if x == 0.0
+#                return "3 000 0.0000000000000000"
+#            end
         end
 
 
