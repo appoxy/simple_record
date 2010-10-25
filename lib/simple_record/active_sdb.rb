@@ -263,7 +263,7 @@ module SimpleRecord
                 # See select(), original find with QUERY syntax is deprecated so now find and select are synonyms.
                 #
                 def find(*args)
-                      options = args.last.is_a?(Hash) ? args.pop : {}
+                    options = args.last.is_a?(Hash) ? args.pop : {}
                     case args.first
                         when nil then
                             raise "Invalid parameters passed to find: nil."
@@ -285,11 +285,11 @@ module SimpleRecord
                 # Same as find, but will return SimpleDB metadata like :request_id and :box_usage
                 #
                 def find_with_metadata(*args)
-                      options = args.last.is_a?(Hash) ? args.pop : {}
+                    options = args.last.is_a?(Hash) ? args.pop : {}
                     case args.first
                         when nil then
                             raise "Invalid parameters passed to find: nil."
-                        when :all   then
+                        when :all then
                             sql_select(options)
                         when :first then
                             sql_select(options.merge(:limit => 1))
@@ -363,23 +363,23 @@ module SimpleRecord
                 # Select
 
                 def select_from_ids(args, options) # :nodoc:
-                    cond = []
+                    cond                       = []
                     # detect amount of records requested
                     bunch_of_records_requested = args.size > 1 || args.first.is_a?(Array)
                     # flatten ids
-                    args = args.to_a.flatten
+                    args                       = args.to_a.flatten
                     args.each { |id| cond << "itemName() = #{self.connection.escape(id)}" }
-                    ids_cond = "(#{cond.join(' OR ')})"
+                    ids_cond                   = "(#{cond.join(' OR ')})"
                     # user defined :conditions to string (if it was defined)
-                    options[:conditions] = build_conditions(options[:conditions])
+                    options[:conditions]       = build_conditions(options[:conditions])
                     # join ids condition and user defined conditions
-                    options[:conditions] = options[:conditions].blank? ? ids_cond : "(#{options[:conditions]}) AND #{ids_cond}"
+                    options[:conditions]       = options[:conditions].blank? ? ids_cond : "(#{options[:conditions]}) AND #{ids_cond}"
                     #puts 'options=' + options.inspect
-                    result = sql_select(options)
+                    result                     = sql_select(options)
                     #puts 'select_from_ids result=' + result.inspect
                     # if one record was requested then return it
                     unless bunch_of_records_requested
-                        record = result[:items].first
+                        record          = result[:items].first
                         # railse if nothing was found
                         raise ActiveSdbError.new("Couldn't find #{name} with ID #{args}") unless record
                         result[:single] = record
@@ -388,7 +388,7 @@ module SimpleRecord
                         # and return as an array
                         unless args.size == result[:items].size
                             # todo: might make sense to return the array but with nil values in the slots where an item wasn't found?
-                            id_list = args.map{|i| "'#{i}'"}.join(',')
+                            id_list = args.map { |i| "'#{i}'" }.join(',')
                             raise ActiveSdbError.new("Couldn't find all #{name} with IDs (#{id_list}) (found #{result[:items].size} results, but was looking for #{args.size})")
                         else
                             result
@@ -398,37 +398,37 @@ module SimpleRecord
                 end
 
                 def sql_select(options) # :nodoc:
-                    count = options[:count] || false
+                    count             = options[:count] || false
                     #puts 'count? ' + count.to_s
-                    @next_token = options[:next_token]
-                    @consistent_read = options[:consistent_read]
+                    @next_token       = options[:next_token]
+                    @consistent_read  = options[:consistent_read]
                     select_expression = build_select(options)
                     # request items
-                    query_result = self.connection.select(select_expression, @next_token, @consistent_read)
+                    query_result      = self.connection.select(select_expression, @next_token, @consistent_read)
                     # puts 'QR=' + query_result.inspect
-                    ret = {}
+                    ret               = {}
                     if count
                         ret[:count] = query_result.delete(:items)[0]["Domain"]["Count"][0].to_i
                         ret.merge!(query_result)
                         return ret
                     end
-                    @next_token = query_result[:next_token]
-                    items = query_result.delete(:items).map do |hash|
+                    @next_token       = query_result[:next_token]
+                    items             = query_result.delete(:items).map do |hash|
                         id, attributes = hash.shift
-                        new_item = self.new( )
-                        new_item.initialize_from_db(attributes.merge({ 'id' => id }))
+                        new_item = self.new()
+                        new_item.initialize_from_db(attributes.merge({'id' => id}))
                         new_item.mark_as_old
                         new_item
                     end
-                    ret[:items] = items
+                    ret[:items]       = items
                     ret.merge!(query_result)
                     ret
                 end
 
                 # select_by helpers
                 def select_all_by_(format_str, args, options) # :nodoc:
-                    fields = format_str.to_s.sub(/^select_(all_)?by_/, '').split('_and_')
-                    conditions = fields.map { |field| "#{field}=?" }.join(' AND ')
+                    fields               = format_str.to_s.sub(/^select_(all_)?by_/, '').split('_and_')
+                    conditions           = fields.map { |field| "#{field}=?" }.join(' AND ')
                     options[:conditions] = [conditions, *args]
                     find(:all, options)
                 end
@@ -468,7 +468,7 @@ module SimpleRecord
                 #  :sort_option          nil | string    "name desc|asc"
                 #
                 def query(options) # :nodoc:
-                    @next_token = options[:next_token]
+                    @next_token      = options[:next_token]
                     @consistent_read = options[:consistent_read]
                     query_expression = build_conditions(options[:query_expression])
                     # add sort_options to the query_expression
@@ -477,7 +477,7 @@ module SimpleRecord
                         sort_query_expression = "['#{sort_by}' starts-with '']"
                         sort_by_expression    = " sort '#{sort_by}' #{sort_order}"
                         # make query_expression to be a string (it may be null)
-                        query_expression = query_expression.to_s
+                        query_expression      = query_expression.to_s
                         # quote from Amazon:
                         # The sort attribute must be present in at least one of the predicates of the query expression.
                         if query_expression.blank?
@@ -485,12 +485,12 @@ module SimpleRecord
                         elsif !query_attributes(query_expression).include?(sort_by)
                             query_expression += " intersection #{sort_query_expression}"
                         end
-                        query_expression += sort_by_expression
+                        query_expression      += sort_by_expression
                     end
                     # request items
-                    query_result = self.connection.query(domain, query_expression, options[:max_number_of_items], @next_token, @consistent_read)
-                    @next_token = query_result[:next_token]
-                    items = query_result[:items].map do |name|
+                    query_result     = self.connection.query(domain, query_expression, options[:max_number_of_items], @next_token, @consistent_read)
+                    @next_token      = query_result[:next_token]
+                    items            = query_result[:items].map do |name|
                         new_item = self.new('id' => name)
                         new_item.mark_as_old
                         reload_if_exists(record) if options[:auto_load]
@@ -509,33 +509,33 @@ module SimpleRecord
                 end
 
                 def find_every(options) # :nodoc:
-                    records = query( :query_expression    => options[:conditions],
-                                     :max_number_of_items => options[:limit],
-                                     :next_token          => options[:next_token],
-                                     :sort_option         => options[:sort] || options[:order],
-                                     :consistent_read     => options[:consistent_read] )
+                    records = query(:query_expression    => options[:conditions],
+                                    :max_number_of_items => options[:limit],
+                                    :next_token          => options[:next_token],
+                                    :sort_option         => options[:sort] || options[:order],
+                                    :consistent_read     => options[:consistent_read])
                     options[:auto_load] ? reload_all_records(records) : records
                 end
 
                 def find_initial(options) # :nodoc:
                     options[:limit] = 1
-                    record = find_every(options).first
+                    record          = find_every(options).first
                     options[:auto_load] ? reload_all_records(record).first : record
                 end
 
                 def find_from_ids(args, options) # :nodoc:
-                    cond = []
+                    cond                       = []
                     # detect amount of records requested
                     bunch_of_records_requested = args.size > 1 || args.first.is_a?(Array)
                     # flatten ids
-                    args = args.to_a.flatten
+                    args                       = args.to_a.flatten
                     args.each { |id| cond << "'id'=#{self.connection.escape(id)}" }
-                    ids_cond = "[#{cond.join(' OR ')}]"
+                    ids_cond                   = "[#{cond.join(' OR ')}]"
                     # user defined :conditions to string (if it was defined)
-                    options[:conditions] = build_conditions(options[:conditions])
+                    options[:conditions]       = build_conditions(options[:conditions])
                     # join ids condition and user defined conditions
-                    options[:conditions] = options[:conditions].blank? ? ids_cond : "#{options[:conditions]} intersection #{ids_cond}"
-                    result = find_every(options)
+                    options[:conditions]       = options[:conditions].blank? ? ids_cond : "#{options[:conditions]} intersection #{ids_cond}"
+                    result                     = find_every(options)
                     # if one record was requested then return it
                     unless bunch_of_records_requested
                         record = result.first
@@ -546,7 +546,7 @@ module SimpleRecord
                         # if a bunch of records was requested then return check that we found all of them
                         # and return as an array
                         unless args.size == result.size
-                            id_list = args.map{|i| "'#{i}'"}.join(',')
+                            id_list = args.map { |i| "'#{i}'" }.join(',')
                             raise ActiveSdbError.new("Couldn't find all #{name} with IDs (#{id_list}) (found #{result.size} results, but was looking for #{args.size})")
                         else
                             options[:auto_load] ? reload_all_records(result) : result
@@ -556,8 +556,8 @@ module SimpleRecord
 
                 # find_by helpers
                 def find_all_by_(format_str, args, options) # :nodoc:
-                    fields = format_str.to_s.sub(/^find_(all_)?by_/, '').split('_and_')
-                    conditions = fields.map { |field| "['#{field}'=?]" }.join(' intersection ')
+                    fields               = format_str.to_s.sub(/^find_(all_)?by_/, '').split('_and_')
+                    conditions           = fields.map { |field| "['#{field}'=?]" }.join(' intersection ')
                     options[:conditions] = [conditions, *args]
                     find(:all, options)
                 end
@@ -580,7 +580,7 @@ module SimpleRecord
 #              puts 'CONVERTED ' + $1 + " to " + to_send_to
                         end
 
-                        options = args.last.is_a?(Hash) ? args.pop : {}
+                        options    = args.last.is_a?(Hash) ? args.pop : {}
                         __send__(to_send_to, attributes, args, options)
                     else
                         super(method, *args)
@@ -588,17 +588,23 @@ module SimpleRecord
                 end
 
                 def build_select(options) # :nodoc:
-                    select     = options[:select]    || '*'
-                    select     = options[:count] ? "count(*)" : select
+                    select           = options[:select] || '*'
+                    select           = options[:count] ? "count(*)" : select
                     #puts 'select=' + select.to_s
-                    from       = options[:from]      || domain
-                    conditions = options[:conditions] ? " WHERE #{build_conditions(options[:conditions])}" : ''
-                    order      = options[:order]      ? " ORDER BY #{options[:order]}"                     : ''
-                    limit      = options[:limit]      ? " LIMIT #{options[:limit]}"                        : ''
+                    from             = options[:from] || domain
+                    condition_fields = parse_condition_fields(options[:conditions])
+                    conditions       = options[:conditions] ? " WHERE #{build_conditions(options[:conditions])}" : ''
+                    order            = options[:order] ? " ORDER BY #{options[:order]}" : ''
+                    limit            = options[:limit] ? " LIMIT #{options[:limit]}" : ''
                     # mix sort by argument (it must present in response)
                     unless order.blank?
                         sort_by, sort_order = sort_options(options[:order])
-                        conditions << (conditions.blank? ? " WHERE " : " AND ") << "(#{sort_by} IS NOT NULL)"
+                        unless condition_fields.include? sort_by
+                            conditions << (conditions.blank? ? " WHERE " : " AND ") << "(#{sort_by} IS NOT NULL)"
+                        else
+#                            puts 'skipping is not null on sort because already there.'
+                        end
+
                     end
                     "SELECT #{select} FROM `#{from}`#{conditions}#{order}#{limit}"
                 end
@@ -607,11 +613,19 @@ module SimpleRecord
                     case
                         when conditions.is_a?(Array) then
                             connection.query_expression_from_array(conditions)
-                        when conditions.is_a?(Hash)  then
+                        when conditions.is_a?(Hash) then
                             connection.query_expression_from_hash(conditions)
                         else
                             conditions
                     end
+                end
+
+                # This will currently return and's, or's and betweens. Doesn't hurt anything, but could remove.
+                def parse_condition_fields(conditions)
+                    return nil unless conditions && conditions.present?
+                    rx     = /\b(\w*)[\s|>=|<=|!=|=|>|<|like]/
+                    fields = conditions[0].scan(rx)
+                    puts 'condition_fields = ' + fields.inspect
                 end
 
             end
@@ -684,7 +698,7 @@ module SimpleRecord
             #  puts item.attributes.inspect   #=> {"name"=>["Birds"], "id"=>"blah-blah", "toys"=>["seeds", "dogs tail"]}
             #
             def attributes=(attrs)
-                old_id = @attributes['id']
+                old_id      = @attributes['id']
                 @attributes = uniq_values(attrs)
                 @attributes['id'] = old_id if @attributes['id'].blank? && !old_id.blank?
                 self.attributes
@@ -714,7 +728,7 @@ module SimpleRecord
             #  puts item['Cat'].inspect  #=> ["Whiskas", "chicken"]
             #
             def []=(attribute, values)
-                attribute = attribute.to_s
+                attribute              = attribute.to_s
                 @attributes[attribute] = attribute == 'id' ? values.to_s : values.is_a?(Array) ? values.uniq : [values]
 
             end
@@ -726,8 +740,8 @@ module SimpleRecord
             #
             def reload
                 raise_on_id_absence
-                old_id = id
-                attrs = connection.get_attributes(domain, id)[:attributes]
+                old_id      = id
+                attrs       = connection.get_attributes(domain, id)[:attributes]
                 @attributes = {}
                 unless attrs.blank?
                     attrs.each { |attribute, values| @attributes[attribute] = values }
@@ -749,12 +763,12 @@ module SimpleRecord
             #
             def reload_attributes(*attrs_list)
                 raise_on_id_absence
-                attrs_list = attrs_list.flatten.map{ |attribute| attribute.to_s }
+                attrs_list = attrs_list.flatten.map { |attribute| attribute.to_s }
                 attrs_list.delete('id')
-                result = {}
+                result     = {}
                 attrs_list.flatten.uniq.each do |attribute|
                     attribute = attribute.to_s
-                    values = connection.get_attributes(domain, id, attribute)[:attributes][attribute]
+                    values    = connection.get_attributes(domain, id, attribute)[:attributes][attribute]
                     unless values.blank?
                         @attributes[attribute] = result[attribute] = values
                     else
@@ -783,10 +797,10 @@ module SimpleRecord
             def put
                 @attributes = uniq_values(@attributes)
                 prepare_for_update
-                attrs = @attributes.dup
+                attrs       = @attributes.dup
                 attrs.delete('id')
                 connection.put_attributes(domain, id, attrs) unless attrs.blank?
-                connection.put_attributes(domain, id, { 'id' => id }, :replace)
+                connection.put_attributes(domain, id, {'id' => id}, :replace)
                 mark_as_old
                 @attributes
             end
@@ -805,7 +819,7 @@ module SimpleRecord
                 attrs.delete('id')
                 # add new values to all attributes from list
                 connection.put_attributes(domain, id, attrs) unless attrs.blank?
-                connection.put_attributes(domain, id, { 'id' => id }, :replace)
+                connection.put_attributes(domain, id, {'id' => id}, :replace)
                 attrs.each do |attribute, values|
                     @attributes[attribute] ||= []
                     @attributes[attribute] += values
@@ -848,7 +862,7 @@ module SimpleRecord
                     dirty_atts = options[:dirty_atts]
                     atts_to_save.delete_if { |key, value| !dirty_atts.has_key?(key) }
                 end
-                dom = options[:domain] || domain
+                dom          = options[:domain] || domain
                 #puts 'atts_to_save2=' + atts_to_save.inspect
                 connection.put_attributes(dom, id, atts_to_save, :replace)
                 apres_save2
@@ -925,7 +939,7 @@ module SimpleRecord
             #
             def delete_attributes(*attrs_list)
                 raise_on_id_absence
-                attrs_list = attrs_list.flatten.map{ |attribute| attribute.to_s }
+                attrs_list = attrs_list.flatten.map { |attribute| attribute.to_s }
                 attrs_list.delete('id')
                 unless attrs_list.blank?
                     connection.delete_attributes(domain, id, attrs_list)
@@ -958,7 +972,7 @@ module SimpleRecord
                 @new_record
             end
 
-            def mark_as_old  # :nodoc:
+            def mark_as_old # :nodoc:
                 @new_record = false
             end
 
@@ -975,8 +989,8 @@ module SimpleRecord
             def uniq_values(attributes=nil) # :nodoc:
                 attrs = {}
                 attributes.each do |attribute, values|
-                    attribute = attribute.to_s
-                    newval = attribute == 'id' ? values.to_s : values.is_a?(Array) ? values.uniq : [values]
+                    attribute        = attribute.to_s
+                    newval           = attribute == 'id' ? values.to_s : values.is_a?(Array) ? values.uniq : [values]
                     attrs[attribute] = newval
                     if newval.blank?
 #                        puts "VALUE IS BLANK " + attribute.to_s + " val=" + values.inspect
