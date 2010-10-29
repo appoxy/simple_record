@@ -49,20 +49,30 @@ module SimpleRecord
     @@logging = false
     @@s3 = nil
     @@auto_close_s3 = false
+    @@logger = Logger.new(STDOUT)
+    @@logger.level = Logger::INFO
 
     class << self;
         attr_accessor :aws_access_key, :aws_secret_key
 
+        # Deprecated
         def enable_logging
             @@logging = true
+            @@logger.level = Logger::DEBUG
         end
 
+        # Deprecated
         def disable_logging
             @@logging = false
         end
 
+        # Deprecated
         def logging?
             @@logging
+        end
+
+        def logger
+            @@logger
         end
 
         # This can be used to log queries and what not to a file.

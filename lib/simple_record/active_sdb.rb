@@ -360,6 +360,9 @@ module SimpleRecord
 
                 protected
 
+                def logger
+                    SimpleRecord.logger
+                end
                 # Select
 
                 def select_from_ids(args, options) # :nodoc:
@@ -403,16 +406,18 @@ module SimpleRecord
                     @next_token       = options[:next_token]
                     @consistent_read  = options[:consistent_read]
                     select_expression = build_select(options)
+                    logger.debug 'SELECT=' + select_expression
                     # request items
                     query_result      = self.connection.select(select_expression, @next_token, @consistent_read)
                     # puts 'QR=' + query_result.inspect
+                    @next_token       = query_result[:next_token]
                     ret               = {}
                     if count
                         ret[:count] = query_result.delete(:items)[0]["Domain"]["Count"][0].to_i
                         ret.merge!(query_result)
                         return ret
                     end
-                    @next_token       = query_result[:next_token]
+
                     items             = query_result.delete(:items).map do |hash|
                         id, attributes = hash.shift
                         new_item = self.new()
@@ -626,6 +631,7 @@ module SimpleRecord
                     rx     = /\b(\w*)[\s|>=|<=|!=|=|>|<|like]/
                     fields = conditions[0].scan(rx)
 #                    puts 'condition_fields = ' + fields.inspect
+                    fields[0]
                 end
 
             end
