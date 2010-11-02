@@ -100,15 +100,15 @@ Querying is similar to ActiveRecord for the most part.
 
 To find all objects that match conditions returned in an Array:
 
-    Company.find(:all, :conditions => ["created_at > ?", 10.days.ago], :order=>"name", :limit=>50)
+    Company.find(:all, :conditions => ["created > ?", 10.days.ago], :order=>"name", :limit=>50)
 
 To find a single object:
 
-    Company.find(:first, :conditions => ["name = ? AND division = ? AND created_at > ?", "Appoxy", "West", 10.days.ago ])
+    Company.find(:first, :conditions => ["name = ? AND division = ? AND created > ?", "Appoxy", "West", 10.days.ago ])
 
 To count objects:
 
-    Company.find(:count, :conditions => ["name = ? AND division = ? AND created_at > ?", "Appoxy", "West", 10.days.ago ])
+    Company.find(:count, :conditions => ["name = ? AND division = ? AND created > ?", "Appoxy", "West", 10.days.ago ])
 
 You can also the dynamic method style, for instance the line below is the same as the Company.find(:first....) line above:
 
