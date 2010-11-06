@@ -41,3 +41,6 @@ p = MyModel.new
 puts 'p=' + p.inspect.to_s
 puts 'p=' + p.to_s
 puts "p=" + p.inspect
+
+id = 123
+puts 'id&&id ' + (id && id.to_s).inspect

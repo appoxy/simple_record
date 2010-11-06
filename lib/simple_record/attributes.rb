@@ -146,6 +146,9 @@ module SimpleRecord
         #
         # This method will also create an {association)_id method that will return the ID of the foreign object
         # without actually materializing it.
+        #
+        # options:
+        #     :class_name=>"User" - to change the default class to use
         def belongs_to(association_id, options = {})
             arg = association_id
             arg_s = arg.to_s

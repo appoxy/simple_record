@@ -37,6 +37,7 @@ require File.expand_path(File.dirname(__FILE__) + "/simple_record/errors")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/json")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/logging")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/password")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/rails2")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/results_array")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/stats")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/translations")
@@ -125,6 +126,7 @@ module SimpleRecord
             SimpleRecord::ActiveSdb.establish_connection(aws_access_key, aws_secret_key, @@options)
             if options[:connection_mode] == :per_thread
                 @@auto_close_s3 = true
+                # todo: should we init this only when needed?
                 @@s3 = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, {:connection_mode=>:per_thread})
             end
         end
@@ -164,6 +166,16 @@ module SimpleRecord
         include SimpleRecord::Logging
         extend SimpleRecord::Logging::ClassMethods
 
+#        puts 'Is ActiveModel defined? ' + defined?(ActiveModel).inspect
+        if defined?(ActiveModel)
+            extend ActiveModel::Naming
+            include ActiveModel::Conversion
+            include ActiveModel::Validations
+        else
+            attr_accessor :errors
+            include SimpleRecord::Rails2
+        end
+
 
         def self.extended(base)
 
@@ -185,7 +197,7 @@ module SimpleRecord
             #we have to handle the virtuals.
             Attributes.handle_virtuals(attrs)
 
-            @errors=SimpleRecord_errors.new
+#            @errors=SimpleRecord_errors.new
             @dirty = {}
 
             @attributes = {} # sdb values
@@ -215,6 +227,12 @@ module SimpleRecord
         end
 
 
+        def persisted?
+            true
+        end
+        
+
+
         def defined_attributes_local
             # todo: store this somewhere so it doesn't keep going through this
             ret = self.class.defined_attributes
@@ -222,7 +240,7 @@ module SimpleRecord
         end
 
 
-        attr_accessor :errors
+
 
         class << self;
             attr_accessor :domain_prefix
@@ -380,43 +398,12 @@ module SimpleRecord
             return false
         end
 
-        def valid?
-            errors.clear
-
-#            run_callbacks(:validate)
-            validate
-
-            if new_record?
-#                run_callbacks(:validate_on_create)
-                validate_on_create
-            else
-#                run_callbacks(:validate_on_update)
-                validate_on_update
-            end
-
-            errors.empty?
-        end
 
         def new_record?
             # todo: new_record in activesdb should align with how we're defining a new record here, ie: if id is nil
             super
         end
 
-        def invalid?
-            !valid?
-        end
-
-        def validate
-            true
-        end
-
-        def validate_on_create
-            true
-        end
-
-        def validate_on_update
-            true
-        end
 
         @create_domain_called = false
 
@@ -561,6 +548,19 @@ module SimpleRecord
         end
 
 
+        def validate
+            true
+        end
+        
+        def validate_on_create
+            true
+        end
+
+        def validate_on_update
+            true
+        end
+
+
         def pre_save(options)
 
             is_create = self[:id].nil?
@@ -571,7 +571,7 @@ module SimpleRecord
 
             is_create ? validate_on_create : validate_on_update
 #      puts 'AFTER VALIDATIONS, ERRORS=' + errors.inspect
-            if (!@errors.nil? && @errors.length > 0)
+            if (!errors.nil? && errors.size > 0)
 #        puts 'THERE ARE ERRORS, returning false'
                 return false
             end
@@ -1138,7 +1138,7 @@ module SimpleRecord
 
     # This is simply a place holder so we don't keep doing gets to s3 or simpledb if already checked.
     class RemoteNil
-
+      
     end
 
 
