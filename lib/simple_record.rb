@@ -197,7 +197,7 @@ module SimpleRecord
             #we have to handle the virtuals.
             Attributes.handle_virtuals(attrs)
 
-#            @errors=SimpleRecord_errors.new
+            @errors=SimpleRecord_errors.new  if not (defined?(ActiveModel))
             @dirty = {}
 
             @attributes = {} # sdb values
