@@ -598,19 +598,22 @@ module SimpleRecord
                     #puts 'select=' + select.to_s
                     from             = options[:from] || domain
                     condition_fields = parse_condition_fields(options[:conditions])
-                    conditions       = options[:conditions] ? " WHERE #{build_conditions(options[:conditions])}" : ''
+                    conditions       = options[:conditions] ? "#{build_conditions(options[:conditions])}" : ''
                     order            = options[:order] ? " ORDER BY #{options[:order]}" : ''
                     limit            = options[:limit] ? " LIMIT #{options[:limit]}" : ''
                     # mix sort by argument (it must present in response)
                     unless order.blank?
                         sort_by, sort_order = sort_options(options[:order])
                         if condition_fields.nil? || !condition_fields.include?(sort_by)
-                            conditions << (conditions.blank? ? " WHERE " : " AND ") << "(#{sort_by} IS NOT NULL)"
+#                            conditions << (conditions.blank? ? " WHERE " : " AND ") << "(#{sort_by} IS NOT NULL)"
+                            conditions = (conditions.blank? ? "" : "(#{conditions}) AND ") << "(#{sort_by} IS NOT NULL)"
                         else
 #                            puts 'skipping is not null on sort because already there.'
                         end
 
                     end
+                    conditions = conditions.blank? ? "" : " WHERE #{conditions}"
+#                    puts 'CONDITIONS=' + conditions
                     "SELECT #{select} FROM `#{from}`#{conditions}#{order}#{limit}"
                 end
 
