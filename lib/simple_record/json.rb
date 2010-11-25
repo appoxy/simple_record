@@ -61,9 +61,10 @@ module SimpleRecord
                 end
 #                puts 'result[name]=' + result[name].inspect
             end
-            ret = result.as_json(options)
+#            ret = result.as_json(options)
 #            puts 'ret=' + ret.inspect
-            return ret
+#            return ret
+            result
         end
 
     end

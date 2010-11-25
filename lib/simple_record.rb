@@ -158,13 +158,6 @@ module SimpleRecord
 
     class Base < SimpleRecord::ActiveSdb::Base
 
-        include SimpleRecord::Translations
-#        include SimpleRecord::Attributes
-        extend SimpleRecord::Attributes
-        include SimpleRecord::Callbacks
-        include SimpleRecord::Json
-        include SimpleRecord::Logging
-        extend SimpleRecord::Logging::ClassMethods
 
 #        puts 'Is ActiveModel defined? ' + defined?(ActiveModel).inspect
         if defined?(ActiveModel)
@@ -176,6 +169,13 @@ module SimpleRecord
             include SimpleRecord::Rails2
         end
 
+        include SimpleRecord::Translations
+#        include SimpleRecord::Attributes
+        extend SimpleRecord::Attributes
+        include SimpleRecord::Callbacks
+        include SimpleRecord::Json
+        include SimpleRecord::Logging
+        extend SimpleRecord::Logging::ClassMethods
 
         def self.extended(base)
 
@@ -230,7 +230,7 @@ module SimpleRecord
         def persisted?
             true
         end
-        
+
 
 
         def defined_attributes_local
@@ -551,7 +551,7 @@ module SimpleRecord
         def validate
             true
         end
-        
+
         def validate_on_create
             true
         end
@@ -1138,7 +1138,7 @@ module SimpleRecord
 
     # This is simply a place holder so we don't keep doing gets to s3 or simpledb if already checked.
     class RemoteNil
-      
+
     end
 
 

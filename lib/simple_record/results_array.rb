@@ -9,20 +9,20 @@ module SimpleRecord
 
 
         def initialize(clz=nil, params=[], results=nil, next_token=nil)
-            @clz = clz
+            @clz    = clz
             #puts 'class=' + clz.inspect
             @params = params
             if @params.size <= 1
-                options = {}
+                options    = {}
                 @params[1] = options
             end
-            @items = results[:items]
+            @items            = results[:items]
             @currentset_items = results[:items]
-            @next_token = next_token
+            @next_token       = next_token
 #            puts 'bu=' + results[:box_usage]
-            @box_usage = results[:box_usage].to_f
-            @request_id = results[:request_id]
-            @options = @params[1]
+            @box_usage        = results[:box_usage].to_f
+            @request_id       = results[:request_id]
+            @options          = @params[1]
             if @options[:page]
                 load_to(@options[:per_page] * @options[:page])
                 @start_at = @options[:per_page] * (@options[:page] - 1)
@@ -91,14 +91,14 @@ module SimpleRecord
             end
             return @count if @count
 #            puts '@params=' + @params.inspect
-            params_for_count = @params.dup
+            params_for_count    = @params.dup
             params_for_count[0] = :count
             params_for_count[1] = params_for_count[1].dup # for deep clone
             params_for_count[1].delete(:limit)
-             params_for_count[1].delete(:per_token)
+            params_for_count[1].delete(:per_token)
 
-     #       puts '@params2=' + @params.inspect
-           # puts 'params_for_count=' + params_for_count.inspect
+            #       puts '@params2=' + @params.inspect
+            # puts 'params_for_count=' + params_for_count.inspect
             @count = clz.find(*params_for_count)
 #            puts '@count=' + @count.to_s
             @count
@@ -115,8 +115,8 @@ module SimpleRecord
         def each2(i, &blk)
             options = @params[1]
 #            puts 'options=' + options.inspect
-            limit = options[:limit]
-    #        puts 'limit=' + limit.inspect
+            limit   = options[:limit]
+            #        puts 'limit=' + limit.inspect
 
             if i > @items.size
                 i = @items.size
@@ -192,10 +192,10 @@ module SimpleRecord
         end
 
         def load_next_token_set
-            options = @params[1]
+            options              = @params[1]
             options[:next_token] = @next_token
-            res = @clz.find(*@params)
-            @currentset_items = res.items # get the real items array from the ResultsArray
+            res                  = @clz.find(*@params)
+            @currentset_items    = res.items # get the real items array from the ResultsArray
             @currentset_items.each do |item|
                 @items << item
             end
@@ -208,6 +208,19 @@ module SimpleRecord
 
         def delete_at(index)
             @items.delete_at(index)
+        end
+
+
+        # A couple json serialization methods copied from active_support
+        def as_json(options = nil) #:nodoc:
+            # use encoder as a proxy to call as_json on all elements, to protect from circular references
+            encoder = options && options[:encoder] || ActiveSupport::JSON::Encoding::Encoder.new(options)
+            map { |v| encoder.as_json(v) }
+        end
+
+        def encode_json(encoder) #:nodoc:
+            # we assume here that the encoder has already run as_json on self and the elements, so we run encode_json directly
+            "[#{map { |v| v.encode_json(encoder) } * ','}]"
         end
 
     end
