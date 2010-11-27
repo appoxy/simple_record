@@ -65,9 +65,13 @@ module SimpleRecord
 
             end
 
+            def shards
+                send(sharding_options[:shards])
+            end
+
             def sharded_domains
                 sharded_domains = []
-                shard_names     = send(sharding_options[:shards])
+                shard_names     = shards
                 shard_names.each do |s|
                     sharded_domains << "#{domain}_#{s}"
                 end

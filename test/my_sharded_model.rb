@@ -30,7 +30,7 @@ class MyShardedByFieldModel < SimpleRecord::Base
     has_strings :name, :state
 
     def self.my_shards
-        ['']
+        ['AL', 'CA', 'FL', 'NY']
     end
 
     def my_mapping_function
