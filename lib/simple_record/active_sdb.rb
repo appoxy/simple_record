@@ -966,9 +966,9 @@ module SimpleRecord
             #  sandy.reload
             #  puts sandy.inspect  #=> #<Client:0xb7761d28 @attributes={}, @new_record=false>
             #
-            def delete
+            def delete(options={})
                 raise_on_id_absence
-                connection.delete_attributes(domain, id)
+                connection.delete_attributes(options[:domain] || domain, id)
             end
 
             # Item ID

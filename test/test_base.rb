@@ -19,6 +19,16 @@ class TestBase < Test::Unit::TestCase
         SimpleRecord.close_connection
     end
 
+    def delete_all(clz)
+        puts 'delete_all ' + clz.name
+        obs = clz.find(:all)
+        obs.each do |o|
+            o.delete
+        end
+#        @@sdb.select("select * from #{domain}") do |o|
+#            o.delete
+#        end
+    end
 
     def reset_connection
         puts 'reset_connection'
