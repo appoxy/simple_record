@@ -5,7 +5,7 @@ module SimpleRecord
     class ResultsArray
         include Enumerable
 
-        attr_reader :next_token, :clz, :params, :items, :i, :box_usage, :request_id
+        attr_reader :next_token, :clz, :params, :items, :index, :box_usage, :request_id
 
 
         def initialize(clz=nil, params=[], results=nil, next_token=nil)
@@ -27,6 +27,7 @@ module SimpleRecord
                 load_to(@options[:per_page] * @options[:page])
                 @start_at = @options[:per_page] * (@options[:page] - 1)
             end
+            @index = 0
             # puts 'RESULTS_ARRAY=' + self.inspect
         end
 
@@ -128,6 +129,7 @@ module SimpleRecord
 #                puts "i=" + i.to_s
                 yield v
                 i += 1
+                @index += 1
                 if !limit.nil? && i >= limit
                     return
                 end
