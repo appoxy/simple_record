@@ -96,6 +96,7 @@ module SimpleRecord
             params_for_count[1] = params_for_count[1].dup # for deep clone
             params_for_count[1].delete(:limit)
             params_for_count[1].delete(:per_token)
+            params_for_count[1][:called_by] = :results_array
 
             #       puts '@params2=' + @params.inspect
             # puts 'params_for_count=' + params_for_count.inspect
@@ -194,6 +195,7 @@ module SimpleRecord
         def load_next_token_set
             options              = @params[1]
             options[:next_token] = @next_token
+            options[:called_by] = :results_array
             res                  = @clz.find(*@params)
             @currentset_items    = res.items # get the real items array from the ResultsArray
             @currentset_items.each do |item|
