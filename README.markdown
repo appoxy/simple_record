@@ -244,8 +244,8 @@ You can use any cache that supports the ActiveSupport::Cache::Store interface.
 
     SimpleRecord::Base.cache_store = my_cache_store
 
-If you want a simple in memory cache store, try: http://gemcutter.org/gems/local_cache . It supports max cache size and
-timeouts. You can also use memcached or http://www.quetzall.com/cloudcache.
+If you want a simple in memory cache store, try: [http://gemcutter.org/gems/local_cache](http://gemcutter.org/gems/local_cache). It supports max cache size and
+timeouts. You can also use memcached or [http://www.getcloudcache.com/](http://www.getcloudcache.com/).
 
 ## Encryption
 

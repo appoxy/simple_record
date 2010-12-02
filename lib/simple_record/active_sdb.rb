@@ -292,9 +292,13 @@ module SimpleRecord
                         when :all then
                             sql_select(options)
                         when :first then
-                            sql_select(options.merge(:limit => 1))
+                            options = options.merge(:limit => 1)
+                            select_expression = build_select(options)
+                            sql_select(options, {:select=>select_expression})
                         when :count then
-                            res = sql_select(options.merge(:count => true))
+                            options = options.merge(:count => true)
+                            select_expression = build_select(options)
+                            sql_select(options, {:select=>select_expression})
                             res
                         else
                             select_from_ids args, options
@@ -400,18 +404,22 @@ module SimpleRecord
                     result
                 end
 
-                def sql_select(options) # :nodoc:
+                def sql_select(options, internal_options={}) # :nodoc:
+
                     count             = options[:count] || false
                     #puts 'count? ' + count.to_s
                     @next_token       = options[:next_token]
                     @consistent_read  = options[:consistent_read]
-                    select_expression = build_select(options)
+
+                    select_expression = internal_options[:select] || build_select(options)
                     logger.debug 'SELECT=' + select_expression
+
                     # request items
                     query_result      = self.connection.select(select_expression, @next_token, @consistent_read)
                     # puts 'QR=' + query_result.inspect
                     @next_token       = query_result[:next_token]
                     ret               = {}
+                    ret[:select] = select_expression
                     if count
                         ret[:count] = query_result.delete(:items)[0]["Domain"]["Count"][0].to_i
                         ret.merge!(query_result)

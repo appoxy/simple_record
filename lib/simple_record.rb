@@ -875,7 +875,8 @@ module SimpleRecord
         def self.find(*params)
             #puts 'params=' + params.inspect
 
-            q_type           = :all
+            # todo: q_type could be ids too, not all by default
+            q_type           = nil
             select_attributes=[]
             if params.size > 0
                 q_type = params[0]
@@ -911,6 +912,8 @@ module SimpleRecord
             ret = q_type == :all ? [] : nil
             begin
 
+
+
                 results=find_with_metadata(*params_dup)
 #                puts "RESULT=" + results.inspect
                 write_usage(:select, domain, q_type, options, results)
@@ -918,6 +921,7 @@ module SimpleRecord
                 SimpleRecord.stats.selects += 1
                 if q_type == :count
                     ret = results[:count]
+                    cache_results(ret, :key=>results[:select])
                 elsif q_type == :first
                     ret = results[:items].first
                     # todo: we should store request_id and box_usage with the object maybe?
@@ -991,26 +995,42 @@ module SimpleRecord
 
         end
 
-        def self.cache_results(results)
+        # If :key is passed in, will store directly in cache using that key
+        def self.cache_results(results, options={})
             if !cache_store.nil? && !results.nil?
-                if results.is_a?(Array)
-                    # todo: cache each result
+                if options[:key]
+                    cache_store.write(options[:key], results)
+                elsif results.is_a?(Array)
                     results.each do |item|
                         class_name = item.class.name
                         id         = item.id
                         cache_key  = self.cache_key(class_name, id)
-                        #puts 'caching result at ' + cache_key + ': ' + results.inspect
-                        cache_store.write(cache_key, item, :expires_in =>30)
+                        logger.debug 'caching result at ' + cache_key + ': ' + item.inspect
+                        cache_store.write(cache_key, item)
                     end
                 else
                     class_name = results.class.name
                     id         = results.id
                     cache_key  = self.cache_key(class_name, id)
-                    #puts 'caching result at ' + cache_key + ': ' + results.inspect
-                    cache_store.write(cache_key, results, :expires_in =>30)
+                    logger.debug 'caching result at ' + cache_key + ': ' + results.inspect
+                    cache_store.write(cache_key, results)
                 end
             end
         end
+
+        def self.find_in_cache(q_type, options)
+            return if cache_store.nil?
+            if q_type == :all
+                # can't do this yet
+            elsif q_type == :count
+
+            elsif q_type == :first
+
+            else
+
+            end
+        end
+
 
         def self.cache_key(class_name, id)
             return class_name + "/" + id.to_s
