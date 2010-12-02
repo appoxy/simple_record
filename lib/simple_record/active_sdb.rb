@@ -408,7 +408,7 @@ module SimpleRecord
                     select_expression = build_select(options)
                     logger.debug 'SELECT=' + select_expression
                     # request items
-                    query_result      = self.connection.select(select_expression, @next_token, @consistent_read)
+                    query_result      = self.connection.select(select_expression, options)
                     # puts 'QR=' + query_result.inspect
                     @next_token       = query_result[:next_token]
                     ret               = {}
