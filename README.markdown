@@ -118,6 +118,10 @@ To find all:
 
     Company.find_all_by_name_and_division("Appoxy", "West")
 
+Consistent read:
+
+    Company.find(:all, :conditions => ["created > ?", 10.days.ago], :order=>"name", :limit=>50, :consistent_read=>true)
+
 There are so many different combinations of the above for querying that I can't put them all here,
 but this should get you started.
 
