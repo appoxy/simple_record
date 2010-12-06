@@ -44,7 +44,7 @@ Gem::Specification.new do |s|
     "test/my_model.rb",
     "test/my_sharded_model.rb",
     "test/paging_array_test.rb",
-    "test/simple_record_test.rb",
+    "test/test_simple_record.rb",
     "test/temp.rb",
     "test/temp_test.rb",
     "test/test_base.rb",

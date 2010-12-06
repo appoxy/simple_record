@@ -11,7 +11,7 @@ require_relative 'model_with_enc'
 # Tests for SimpleRecord
 #
 
-class SimpleRecordTest < TestBase
+class TestSimpleRecord < TestBase
 
 
     def test_save_get
