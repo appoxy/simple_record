@@ -172,7 +172,8 @@ module SimpleRecord
 
         include SimpleRecord::Translations
 #        include SimpleRecord::Attributes
-        extend SimpleRecord::Attributes
+        extend SimpleRecord::Attributes::ClassMethods
+        include SimpleRecord::Attributes
         extend SimpleRecord::Sharding::ClassMethods
         include SimpleRecord::Sharding
         include SimpleRecord::Callbacks
