@@ -248,7 +248,7 @@ You can use any cache that supports the ActiveSupport::Cache::Store interface.
 
     SimpleRecord::Base.cache_store = my_cache_store
 
-If you want a simple in memory cache store, try: http://gemcutter.org/gems/local_cache . It supports max cache size and
+If you want a simple in memory cache store, try: <http://gemcutter.org/gems/local_cache>. It supports max cache size and
 timeouts. You can also use memcached or http://www.quetzall.com/cloudcache.
 
 ## Encryption
@@ -274,6 +274,19 @@ Hashing is not quite as transparent as it cannot be converted back to it's origi
 ob2.password == "mypassword"
 
 This will actually be compared by hashing "mypassword" first.
+
+## Sharding
+
+Sharding allows you to partition your data for a single class across multiple domains allowing increased write throughput,
+faster queries and more space (multiply your 10GB per domain limit).  And it's very easy to implement with SimpleRecord.
+
+    shard :shards=>:my_shards_function, :map=>:my_mapping_function
+
+The :shards function should return a list of shard names, for example: ['CA', 'FL', 'HI', ...] or [1,2,3,4,...]
+
+The :map function should return which shard name the object should be stored to.
+
+You can see some [example classes here](https://github.com/appoxy/simple_record/blob/master/test/my_sharded_model.rb).
 
 ## Kudos
 

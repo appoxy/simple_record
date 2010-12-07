@@ -13,6 +13,7 @@ class TestShards < TestBase
     def setup
         super
         delete_all MyShardedModel
+        delete_all MyShardedByFieldModel
     end
 
     def teardown
@@ -96,6 +97,7 @@ class TestShards < TestBase
             saved << mm
         end
 
+        sleep 1
         # todo: assert that we're actually sharding
 
         puts "finding them all"
@@ -108,6 +110,22 @@ class TestShards < TestBase
         saved.each do |so|
             assert(found.find { |m1| m1.id == so.id })
         end
+
+        rs    = MyShardedByFieldModel.find(:all)
+        rs.each do |m|
+            p m
+            found << m
+        end
+        saved.each do |so|
+            assert(found.find { |m1| m1.id == so.id })
+        end
+
+        # Try to find on a specific known shard
+        selects = SimpleRecord.stats.selects
+        cali_models = MyShardedByFieldModel.find(:all, :shard => "CA")
+        puts 'cali_models=' + cali_models.inspect
+        assert_equal(5, cali_models.size)
+        assert_equal(selects + 1, SimpleRecord.stats.selects)
 
         puts "deleting all of them"
         found.each do |fo|

@@ -752,6 +752,7 @@ module SimpleRecord
         #   :per_token => the number of results to return per next_token, max is 2500.
         #   :consistent_read => true/false  --  as per http://developer.amazonwebservices.com/connect/entry.jspa?externalID=3572
         #   :retries => maximum number of times to retry this query on an error response.
+        #   :shard => shard name or array of shard names to use on this query.
         def self.find(*params)
             #puts 'params=' + params.inspect
 
