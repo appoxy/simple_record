@@ -687,8 +687,21 @@ class TestSimpleRecord < TestBase
     def test_multi_value_attributes
 
         val = ['a', 'b', 'c']
+        val2 = [1, 2, 3]
 
-        val = [1, 2, 3]
+        mm = MyModel.new
+        mm.name = val
+        mm.age = val2
+        assert_equal val, mm.name
+        assert_equal val2, mm.age
+        mm.save
+
+        sleep 1
+        mm = MyModel.find(mm.id)
+        # Values are not returned in order
+        assert_equal val, mm.name.sort
+        assert_equal val2, mm.age.sort
+
 
 
 

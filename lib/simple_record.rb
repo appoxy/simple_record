@@ -296,12 +296,6 @@ module SimpleRecord
             domain_name_for_class
         end
 
-        def get_attribute_sdb(name)
-            name = name.to_sym
-            ret  = strip_array(@attributes[sdb_att_name(name)])
-            return ret
-        end
-
         def has_id_on_end(name_s)
             name_s = name_s.to_s
             name_s.length > 3 && name_s[-3..-1] == "_id"
@@ -325,7 +319,7 @@ module SimpleRecord
         end
 
         def strip_array(arg)
-            if arg.class==Array
+            if arg.is_a? Array
                 if arg.length==1
                     ret = arg[0]
                 else
@@ -687,59 +681,6 @@ module SimpleRecord
         end
 
 
-        # Since SimpleDB supports multiple attributes per value, the values are an array.
-        # This method will return the value unwrapped if it's the only, otherwise it will return the array.
-        def get_attribute(name)
-#            puts "GET #{arg}"
-            # Check if this arg is already converted
-            name_s   = name.to_s
-            name     = name.to_sym
-            att_meta = get_att_meta(name)
-#            puts "att_meta for #{name}: " + att_meta.inspect
-            if att_meta && att_meta.type == :clob
-                ret = @lobs[name]
-#                puts 'get_attribute clob ' + ret.inspect
-                if ret
-                    if ret.is_a? RemoteNil
-                        return nil
-                    else
-                        return ret
-                    end
-                end
-                # get it from s3
-                unless new_record?
-                    begin
-                        ret                        = s3_bucket.get(s3_lob_id(name))
-#                        puts 'got from s3 ' + ret.inspect
-                        SimpleRecord.stats.s3_gets += 1
-                    rescue Aws::AwsError => ex
-                        if ex.include? /NoSuchKey/
-                            ret = nil
-                        else
-                            raise ex
-                        end
-                    end
-
-                    if ret.nil?
-                        ret = RemoteNil.new
-                    end
-                end
-                @lobs[name] = ret
-                return nil if ret.is_a? RemoteNil
-                return ret
-            else
-                @attributes_rb = {} unless @attributes_rb # was getting errors after upgrade.
-                ret = @attributes_rb[name_s] # instance_variable_get(instance_var)
-                return ret unless ret.nil?
-                return nil if ret.is_a? RemoteNil
-                ret                    = get_attribute_sdb(name)
-                ret                    = sdb_to_ruby(name, ret)
-                @attributes_rb[name_s] = ret
-                return ret
-            end
-
-        end
-
 
         def delete_niled(to_delete)
 #            puts 'to_delete=' + to_delete.inspect
@@ -810,6 +751,7 @@ module SimpleRecord
         # Extra options:
         #   :per_token => the number of results to return per next_token, max is 2500.
         #   :consistent_read => true/false  --  as per http://developer.amazonwebservices.com/connect/entry.jspa?externalID=3572
+        #   :retries => maximum number of times to retry this query on an error response.
         def self.find(*params)
             #puts 'params=' + params.inspect
 

@@ -2,21 +2,11 @@
 module SimpleRecord
     module Translations
 
-        @@offset = 9223372036854775808
-        @@padding = 20
-        @@date_format = "%Y-%m-%dT%H:%M:%S"; # Time to second precision
+        @@offset      = 9223372036854775808
+        @@padding     = 20
+        @@date_format = "%Y-%m-%dT%H:%M:%S";
 
-        def ruby_to_sdb(name, value)
-
-            return nil if value.nil?
-
-            name = name.to_s
-
-#            puts "Converting #{name} to sdb value=#{value}"
-#            puts "atts_local=" + defined_attributes_local.inspect
-
-            att_meta = get_att_meta(name)
-
+        def ruby_to_string_val(att_meta, value)
             if att_meta.type == :int
                 ret = Translations.pad_and_offset(value, att_meta)
             elsif att_meta.type == :date
@@ -24,7 +14,24 @@ module SimpleRecord
             else
                 ret = value.to_s
             end
+            ret
+        end
 
+        # Time to second precision
+
+        def ruby_to_sdb(name, value)
+            return nil if value.nil?
+            name = name.to_s
+#            puts "Converting #{name} to sdb value=#{value}"
+#            puts "atts_local=" + defined_attributes_local.inspect
+
+            att_meta = get_att_meta(name)
+
+            if value.is_a? Array
+                ret = value.collect { |x| ruby_to_string_val(att_meta, x) }
+            else
+                ret = ruby_to_string_val(att_meta, value)
+            end
 
             unless value.blank?
                 if att_meta.options
@@ -41,7 +48,7 @@ module SimpleRecord
                 end
             end
 
-            return ret.to_s
+            return ret
 
         end
 
@@ -68,15 +75,15 @@ module SimpleRecord
                 class_name = class_name.camelize
                 #      puts "attr=" + @attributes[arg_id].inspect
                 #      puts 'val=' + @attributes[arg_id][0].inspect unless @attributes[arg_id].nil?
-                ret = nil
-                arg_id = name.to_s + '_id'
+                ret        = nil
+                arg_id     = name.to_s + '_id'
                 arg_id_val = send("#{arg_id}")
                 if arg_id_val
                     if !cache_store.nil?
 #                        arg_id_val = @attributes[arg_id][0]
                         cache_key = self.class.cache_key(class_name, arg_id_val)
 #          puts 'cache_key=' + cache_key
-                        ret = cache_store.read(cache_key)
+                        ret       = cache_store.read(cache_key)
 #          puts 'belongs_to incache=' + ret.inspect
                     end
                     if ret.nil?
@@ -95,7 +102,18 @@ module SimpleRecord
                     end
                 end
                 value = ret
-            elsif att_meta.type == :int
+            else
+                if value.is_a? Array
+                    value = value.collect { |x| string_val_to_ruby(att_meta, x) }
+                else
+                    value = string_val_to_ruby(att_meta, value)
+                end
+            end
+            value
+        end
+
+        def string_val_to_ruby(att_meta, value)
+            if att_meta.type == :int
                 value = Translations.un_offset_int(value)
             elsif att_meta.type == :date
                 value = to_date(value)
@@ -110,7 +128,7 @@ module SimpleRecord
             # todo: add Float, etc
             #    puts 'padding=' + x.class.name + " -- " + x.inspect
             if x.kind_of? Integer
-                x += @@offset
+                x     += @@offset
                 x_str = x.to_s
                 # pad
                 x_str = '0' + x_str while x_str.size < 20
@@ -139,7 +157,7 @@ module SimpleRecord
         end
 
         # This conversion to a string is based on: http://tools.ietf.org/html/draft-wood-ldapext-float-00
-        # Java code sample is here: http://code.google.com/p/typica/source/browse/trunk/java/com/xerox/amazonws/simpledb/DataUtils.java        
+        # Java code sample is here: http://code.google.com/p/typica/source/browse/trunk/java/com/xerox/amazonws/simpledb/DataUtils.java
         def self.from_float(x)
             return x
 #            if x == 0.0
@@ -192,7 +210,7 @@ module SimpleRecord
         def unpad(i, attributes)
             if !attributes[i].nil?
 #          puts 'before=' + self[i].inspect
-                attributes[i].collect!{ |x|
+                attributes[i].collect! { |x|
                     un_offset_int(x)
 
                 }
@@ -212,7 +230,7 @@ module SimpleRecord
             key = key || get_encryption_key()
             raise SimpleRecordError, "Encryption key must be defined on the attribute." if key.nil?
             encrypted_value = SimpleRecord::Encryptor.encrypt(:value => value, :key => key)
-            encoded_value = Base64.encode64(encrypted_value)
+            encoded_value   = Base64.encode64(encrypted_value)
             encoded_value
         end
 
@@ -221,7 +239,7 @@ module SimpleRecord
 #            puts "decrypt orig value #{value} "
             unencoded_value = Base64.decode64(value)
             raise SimpleRecordError, "Encryption key must be defined on the attribute." if key.nil?
-            key = key || get_encryption_key()
+            key             = key || get_encryption_key()
 #            puts "decrypting #{unencoded_value} "
             decrypted_value = SimpleRecord::Encryptor.decrypt(:value => unencoded_value, :key => key)
 #             "decrypted #{unencoded_value} to #{decrypted_value}"
@@ -249,7 +267,7 @@ module SimpleRecord
         end
 
         def self.pass_hash(value)
-            hashed = Password::create_hash(value)
+            hashed        = Password::create_hash(value)
             encoded_value = Base64.encode64(hashed)
             encoded_value
         end
