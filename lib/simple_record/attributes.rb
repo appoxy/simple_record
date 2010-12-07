@@ -236,6 +236,79 @@ module SimpleRecord
         end
 
 
+        def set(name, value, dirtify=true)
+#            puts "SET #{name}=#{value.inspect}" if SimpleRecord.logging?
+#            puts "self=" + self.inspect
+            attname      = name.to_s # default attname
+            name         = name.to_sym
+            att_meta     = get_att_meta(name)
+            store_rb_val = false
+            if att_meta.nil?
+                # check if it ends with id and see if att_meta is there
+                ends_with = name.to_s[-3, 3]
+                if ends_with == "_id"
+#                    puts 'ends with id'
+                    n2       = name.to_s[0, name.length-3]
+#                    puts 'n2=' + n2
+                    att_meta = defined_attributes_local[n2.to_sym]
+#                    puts 'defined_attributes_local=' + defined_attributes_local.inspect
+                    attname  = name.to_s
+                    attvalue = value
+                    name     = n2.to_sym
+                end
+                return if att_meta.nil?
+            else
+                if att_meta.type == :belongs_to
+                    ends_with = name.to_s[-3, 3]
+                    if ends_with == "_id"
+                        att_name = name.to_s
+                        attvalue = value
+                    else
+                        attname      = name.to_s + '_id'
+                        attvalue     = value.nil? ? nil : value.id
+                        store_rb_val = true
+                    end
+                elsif att_meta.type == :clob
+                    make_dirty(name, value) if dirtify
+                    @lobs[name] = value
+                    return
+                else
+                    attname  = name.to_s
+                    attvalue = att_meta.init_value(value)
+#                  attvalue = value
+                    #puts 'converted ' + value.inspect + ' to ' + attvalue.inspect
+                end
+            end
+            attvalue = strip_array(attvalue)
+            make_dirty(name, attvalue) if dirtify
+#            puts "ARG=#{attname.to_s} setting to #{attvalue}"
+            sdb_val              = ruby_to_sdb(name, attvalue)
+#            puts "sdb_val=" + sdb_val.to_s
+            @attributes[attname] = sdb_val
+#            attvalue = wrap_if_required(name, attvalue, sdb_val)
+#            puts 'attvalue2=' + attvalue.to_s
+
+            if store_rb_val
+                @attributes_rb[name.to_s] = value
+            else
+                @attributes_rb.delete(name.to_s)
+            end
+
+        end
+
+
+        def set_attribute_sdb(name, val)
+            @attributes[sdb_att_name(name)] = val
+        end
+
+        private
+        def set_attributes(atts)
+            atts.each_pair do |k, v|
+                set(k, v)
+            end
+        end
+
+
         # Holds information about an attribute
         class Attribute
             attr_accessor :type, :options

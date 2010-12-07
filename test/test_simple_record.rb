@@ -684,4 +684,14 @@ class TestSimpleRecord < TestBase
 
     end
 
+    def test_multi_value_attributes
+
+        val = ['a', 'b', 'c']
+
+        val = [1, 2, 3]
+
+
+
+    end
+
 end
