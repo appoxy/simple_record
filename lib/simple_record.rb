@@ -646,9 +646,10 @@ module SimpleRecord
             connection.delete_attributes(domain, id)
         end
 
-        def self.delete_all(*params)
+        # Pass in the same OPTIONS you'd pass into a find(:all, OPTIONS)
+        def self.delete_all(options)
             # could make this quicker by just getting item_names and deleting attributes rather than creating objects
-            obs = self.find(params)
+            obs = self.find(:all, options)
             i   = 0
             obs.each do |a|
                 a.delete
@@ -657,8 +658,9 @@ module SimpleRecord
             return i
         end
 
-        def self.destroy_all(*params)
-            obs = self.find(params)
+        # Pass in the same OPTIONS you'd pass into a find(:all, OPTIONS)
+        def self.destroy_all(options)
+            obs = self.find(:all, options)
             i   = 0
             obs.each do |a|
                 a.destroy

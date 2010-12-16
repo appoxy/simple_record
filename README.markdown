@@ -236,11 +236,23 @@ or
 
     o.something_id = x
 
-### Batch Save
+## Batch Save
 
 To do a batch save using SimpleDB's batch saving feature to improve performance, simply create your objects, add them to an array, then call:
 
     MyClass.batch_save(object_list)
+
+## Batch Delete
+
+To do a batch save using SimpleDB's batch saving feature to improve performance, simply create your objects, add them to an array, then call:
+
+    MyClass.batch_delete(object_list or list of ids)
+
+## Operations across a Query
+
+    MyClass.delete_all(find_options)
+    MyClass.destroy_all(find_options)
+
 
 ## Caching
 
