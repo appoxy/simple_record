@@ -434,6 +434,7 @@ module SimpleRecord
                         options[:domain] = sharded_domain
                     end
 
+                    # todo: Instead of doing the domain_ok, below, pass in the new option to aws lib :create_domain=>true, does the same thing now
                     if super(options)
                         self.class.cache_results(self)
                         delete_niled(to_delete)
@@ -637,6 +638,14 @@ module SimpleRecord
                 o.save_lobs(nil)
             end
             results
+        end
+
+        # Pass in an array of objects
+        def self.batch_delete(objects, options={})
+            if objects
+                # 25 item limit, we should maybe handle this limit in here.
+                connection.batch_delete_attributes @domain, objects.collect {|x| x.id }
+            end
         end
 
         #
