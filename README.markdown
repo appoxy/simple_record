@@ -50,12 +50,12 @@ More about ModelAttributes below.
 
 NOTE: All objects will automatically have :id, :created, :updated attributes.
 
-### has_attributes
+### has_strings
 
 Add string attributes.
 
     class MyModel < SimpleRecord::Base
-      has_attributes :name
+      has_strings :name
     end
 
 ### has_ints, has_dates and has_booleans
@@ -63,7 +63,7 @@ Add string attributes.
 Lets simple_record know that certain attributes defined in has_attributes should be treated as integers, dates or booleans. This is required because SimpleDB only has strings so SimpleRecord needs to know how to convert, pad, offset, etc.
 
     class MyModel < SimpleRecord::Base
-      has_attributes :name
+      has_strings :name
       has_ints :age, :height
       has_dates :birthday
       has_booleans :is_nerd
@@ -75,7 +75,7 @@ Creates a many-to-one relationship. Can only have one per belongs_to call.
 
     class MyModel < SimpleRecord::Base
         belongs_to :school
-        has_attributes :name
+        has_strings :name
         has_ints :age, :height
         has_dates :birthday
         has_booleans :is_nerd
@@ -236,6 +236,9 @@ or
 
     o.something_id = x
 
+Accessing the id can prevent a database call so if you only need the ID, then you
+should use this.
+
 ## Batch Save
 
 To do a batch save using SimpleDB's batch saving feature to improve performance, simply create your objects, add them to an array, then call:
@@ -244,15 +247,16 @@ To do a batch save using SimpleDB's batch saving feature to improve performance,
 
 ## Batch Delete
 
-To do a batch save using SimpleDB's batch saving feature to improve performance, simply create your objects, add them to an array, then call:
+To do a batch delete using SimpleDB's batch delete feature to improve performance, simply create your objects, add them to an array, then call:
 
-    MyClass.batch_delete(object_list or list of ids)
+    MyClass.batch_delete(object_list or list_of_ids)
 
 ## Operations across a Query
 
     MyClass.delete_all(find_options)
     MyClass.destroy_all(find_options)
 
+find_options can include anything you'd add after a find(:all, find_options) including :conditions, :limit, etc.
 
 ## Caching
 
@@ -260,8 +264,8 @@ You can use any cache that supports the ActiveSupport::Cache::Store interface.
 
     SimpleRecord::Base.cache_store = my_cache_store
 
-If you want a simple in memory cache store, try: <http://gemcutter.org/gems/local_cache>. It supports max cache size and
-timeouts. You can also use memcached or http://www.quetzall.com/cloudcache.
+If you want a simple in memory cache store that supports max cache size and expiration, try: <http://gemcutter.org/gems/local_cache>.
+You can also use memcached or http://www.quetzall.com/cloudcache.
 
 ## Encryption
 
@@ -297,6 +301,11 @@ faster queries and more space (multiply your 10GB per domain limit).  And it's v
 The :shards function should return a list of shard names, for example: ['CA', 'FL', 'HI', ...] or [1,2,3,4,...]
 
 The :map function should return which shard name the object should be stored to.
+
+When executing a find() operation, you can explicitly specify the shard(s) you'd like to find on. This is
+particularly useful if you know in advance which shard the data will be in.
+
+    MyClass.find(:all, :conditions=>....., :shard=>["CA", "FL"])
 
 You can see some [example classes here](https://github.com/appoxy/simple_record/blob/master/test/my_sharded_model.rb).
 
