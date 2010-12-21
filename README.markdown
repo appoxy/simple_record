@@ -19,7 +19,7 @@ Brought to you by: [![Appoxy](http://www.simpledeployr.com/images/global/appoxy-
         require 'simple_record'
     
         class MyModel < SimpleRecord::Base
-           has_attributes :name
+           has_strings :name
            has_ints :age
         end
 
@@ -60,7 +60,7 @@ Add string attributes.
 
 ### has_ints, has_dates and has_booleans
 
-Lets simple_record know that certain attributes defined in has_attributes should be treated as integers, dates or booleans. This is required because SimpleDB only has strings so SimpleRecord needs to know how to convert, pad, offset, etc.
+This is required because SimpleDB only has strings so SimpleRecord needs to know how to convert, pad, offset, etc.
 
     class MyModel < SimpleRecord::Base
       has_strings :name
