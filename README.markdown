@@ -202,7 +202,7 @@ string value. There is no support for blobs yet.
 These clob values will be stored in s3 under a bucket named "#{aws_access_key}_lobs"
 OR "simple_record_#{aws_access_key}/lobs" if you set :new_bucket=>true in establish_connection (RECOMMENDED).
 
-If it makes sense for performance reasons, you can set a configuration option on the class to store all clobs
+If you have more than one clob on an object and if it makes sense for performance reasons, you can set a configuration option on the class to store all clobs
 as one item on s3 which means it will do a single put to s3 and a single get for all the clobs on the object.
 This would generally be good for somewhat small clob values or when you know you will always be accessing
 all the clobs on the object. 
