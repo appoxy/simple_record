@@ -209,6 +209,7 @@ all the clobs on the object.
 
     sr_config :single_clob=>true
 
+Setting this will automatically use :new_bucket=>true as well.
 
 ## Tips and Tricks and Things to Know
 
