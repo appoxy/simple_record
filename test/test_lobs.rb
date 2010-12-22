@@ -53,6 +53,20 @@ class TestLobs < TestBase
         # shouldn't save twice if not dirty
         assert SimpleRecord.stats.s3_puts == 3
 
+        mm2.delete
+
+        assert_equal 2, SimpleRecord.stats.s3_deletes
+
+        e = assert_raise(Aws::AwsError) do
+            sclob = SimpleRecord.s3.bucket(mm2.s3_bucket_name2).get(mm2.s3_lob_id("clob1"))
+        end
+        assert_match(/NoSuchKey/, e.message)
+        e = assert_raise(Aws::AwsError) do
+            sclob = SimpleRecord.s3.bucket(mm2.s3_bucket_name2).get(mm2.s3_lob_id("clob2"))
+        end
+        assert_match(/NoSuchKey/, e.message)
+
+
     end
 
     def test_single_clob
@@ -89,6 +103,16 @@ class TestLobs < TestBase
 
         # shouldn't save twice if not dirty
         assert SimpleRecord.stats.s3_puts == 1
+
+        mm2.delete
+
+        assert SimpleRecord.stats.s3_deletes == 1
+
+        e = assert_raise(Aws::AwsError) do
+            sclob = SimpleRecord.s3.bucket(mm2.s3_bucket_name2).get(mm2.single_clob_id)
+        end
+        assert_match(/NoSuchKey/, e.message)
+
     end
 
 end

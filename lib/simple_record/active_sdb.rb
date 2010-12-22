@@ -972,11 +972,6 @@ module SimpleRecord
                 connection.delete_attributes(options[:domain] || domain, id)
             end
 
-            # Item ID
-#            def to_s
-#                @id
-#            end
-
             # Returns true if this object hasn�t been saved yet.
             def new_record?
                 @new_record

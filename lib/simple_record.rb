@@ -128,8 +128,9 @@ module SimpleRecord
             if options[:connection_mode] == :per_thread
                 @@auto_close_s3 = true
                 # todo: should we init this only when needed?
-                @@s3            = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, {:connection_mode=>:per_thread})
             end
+            s3_ops = {:connection_mode=>options[:connection_mode] || :default}
+            @@s3 = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, s3_ops)
         end
 
         # Call this to close the connection to SimpleDB.
@@ -500,8 +501,23 @@ module SimpleRecord
                     end
                 end
             end
-
         end
+
+        def delete_lobs
+            defined_attributes_local.each_pair do |k, v|
+                if v.type == :clob
+                    if self.class.get_sr_config[:single_clob]
+                        s3_bucket(false, :new_bucket=>true).delete_key(single_clob_id)
+                        SimpleRecord.stats.s3_deletes += 1
+                        return
+                    else
+                        s3_bucket.delete_key(s3_lob_id(k))
+                        SimpleRecord.stats.s3_deletes += 1
+                    end
+                end
+            end
+        end
+
 
         def put_lob(k, val, options={})
             begin
@@ -716,13 +732,14 @@ module SimpleRecord
             return i
         end
 
-        def delete()
-            # TODO: DELETE CLOBS, etc from s3
-            options = {}
+        def delete(options={})
             if self.class.is_sharded?
                 options[:domain] = sharded_domain
             end
             super(options)
+
+            # delete lobs now too
+            delete_lobs
         end
 
         def destroy
