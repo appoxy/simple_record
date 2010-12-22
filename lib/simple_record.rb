@@ -434,7 +434,6 @@ module SimpleRecord
                         options[:domain] = sharded_domain
                     end
 
-                    # todo: Instead of doing the domain_ok, below, pass in the new option to aws lib :create_domain=>true, does the same thing now
                     if super(options)
                         self.class.cache_results(self)
                         delete_niled(to_delete)
@@ -451,16 +450,18 @@ module SimpleRecord
                     end
                 rescue Aws::AwsError => ex
                     # puts "RESCUED in save: " + $!
-                    if (domain_ok(ex, options))
-                        if !@create_domain_called
-                            @create_domain_called = true
-                            save(options)
-                        else
-                            raise $!
-                        end
-                    else
-                        raise $!
-                    end
+                    # Domain is created in aws lib now using :create_domain=>true
+#                    if (domain_ok(ex, options))
+#                        if !@create_domain_called
+#                            @create_domain_called = true
+#                            save(options)
+#                        else
+#                            raise $!
+#                        end
+#                    else
+#                        raise $!
+#                    end
+                    raise ex
                 end
             else
                 #@debug = "not saved"
@@ -547,10 +548,14 @@ module SimpleRecord
         end
 
         def s3_lob_id(name)
-            self.id + "_" + name.to_s
+            if SimpleRecord.options[:new_bucket]
+                "lobs/#{self.id}_#{name}"
+            else
+                self.id + "_" + name.to_s
+            end
         end
 
-        def single_clob_id 
+        def single_clob_id
             "lobs/#{self.id}_single_clob"
         end
 
@@ -649,6 +654,7 @@ module SimpleRecord
         # Run pre_save on each object, then runs batch_put_attributes
         # Returns
         def self.batch_save(objects, options={})
+            options[:create_domain] = true if options[:create_domain].nil?
             results = []
             to_save = []
             if objects && objects.size > 0
@@ -660,12 +666,12 @@ module SimpleRecord
                     o.pre_save2
                     to_save << Aws::SdbInterface::Item.new(o.id, o.attributes, true)
                     if to_save.size == 25 # Max amount SDB will accept
-                        connection.batch_put_attributes(domain, to_save)
+                        connection.batch_put_attributes(domain, to_save, options)
                         to_save.clear
                     end
                 end
             end
-            connection.batch_put_attributes(domain, to_save) if to_save.size > 0
+            connection.batch_put_attributes(domain, to_save, options) if to_save.size > 0
             objects.each do |o|
                 o.save_lobs(nil)
             end

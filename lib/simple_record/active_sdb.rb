@@ -857,6 +857,7 @@ module SimpleRecord
             #
             # compare to +put+ method
             def save(options={})
+                options[:create_domain] = true if options[:create_domain].nil?
                 pre_save2
                 atts_to_save = @attributes.dup
                 #puts 'atts_to_save=' + atts_to_save.inspect
@@ -873,7 +874,7 @@ module SimpleRecord
                 end
                 dom          = options[:domain] || domain
                 #puts 'atts_to_save2=' + atts_to_save.inspect
-                connection.put_attributes(dom, id, atts_to_save, :replace)
+                connection.put_attributes(dom, id, atts_to_save, :replace, options)
                 apres_save2
                 @attributes
             end
