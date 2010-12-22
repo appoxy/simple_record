@@ -22,6 +22,17 @@ module SimpleRecord
         module ClassMethods
 
 
+            # Add configuration to this particular class.
+            #   :single_clob=> true/false. If true will store all clobs as a single object in s3. Default is false.
+            def sr_config(options={})
+                get_sr_config
+                @sr_config.merge!(options)
+            end
+
+            def get_sr_config
+                @sr_config ||= {}
+            end
+
             def defined_attributes
                 @attributes ||= {}
                 @attributes
@@ -329,15 +340,34 @@ module SimpleRecord
                 end
                 # get it from s3
                 unless new_record?
-                    begin
-                        ret                        = s3_bucket.get(s3_lob_id(name))
-#                        puts 'got from s3 ' + ret.inspect
-                        SimpleRecord.stats.s3_gets += 1
-                    rescue Aws::AwsError => ex
-                        if ex.include? /NoSuchKey/
-                            ret = nil
-                        else
-                            raise ex
+                    if self.class.get_sr_config[:single_clob]
+                        begin
+                            single_clob = s3_bucket(false, :new_bucket=>true).get(single_clob_id)
+                            single_clob = JSON.parse(single_clob)
+                            puts "single_clob=" + single_clob.inspect
+                            single_clob.each_pair do |name2,val|
+                                @lobs[name2.to_sym] = val
+                            end
+                            ret = @lobs[name]
+                            SimpleRecord.stats.s3_gets += 1
+                        rescue Aws::AwsError => ex
+                            if ex.include? /NoSuchKey/
+                                ret = nil
+                            else
+                                raise ex
+                            end
+                        end
+                    else
+                        begin
+                            ret = s3_bucket.get(s3_lob_id(name))
+                            # puts 'got from s3 ' + ret.inspect
+                            SimpleRecord.stats.s3_gets += 1
+                        rescue Aws::AwsError => ex
+                            if ex.include? /NoSuchKey/
+                                ret = nil
+                            else
+                                raise ex
+                            end
                         end
                     end
 

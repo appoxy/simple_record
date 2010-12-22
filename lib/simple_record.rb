@@ -471,29 +471,50 @@ module SimpleRecord
         def save_lobs(dirty=nil)
 #            puts 'dirty.inspect=' + dirty.inspect
             dirty = @dirty if dirty.nil?
+            all_clobs   = {}
+            dirty_clobs = {}
             defined_attributes_local.each_pair do |k, v|
+                # collect up the clobs in case it's a single put
                 if v.type == :clob
-#                    puts 'storing clob '
+                    val          = @lobs[k]
+                    all_clobs[k] = val
                     if dirty.include?(k.to_s)
-                        begin
-                            val = @lobs[k]
-#                            puts 'val=' + val.inspect
-                            s3_bucket.put(s3_lob_id(k), val)
-                        rescue Aws::AwsError => ex
-                            if ex.include? /NoSuchBucket/
-                                s3_bucket(true).put(s3_lob_id(k), val)
-                            else
-                                raise ex
-                            end
-                        end
-                        SimpleRecord.stats.s3_puts += 1
+                        dirty_clobs[k] = val
                     else
 #                        puts 'NOT DIRTY'
                     end
 
                 end
             end
+            if dirty_clobs.size > 0
+                if self.class.get_sr_config[:single_clob]
+                    # all clobs in one chunk
+                    # using json for now, could change later
+                    val = all_clobs.to_json
+                    puts 'val=' + val.inspect
+                    put_lob(single_clob_id, val, :new_bucket=>true)
+                else
+                    dirty_clobs.each_pair do |k, val|
+                        put_lob(s3_lob_id(k), val)
+                    end
+                end
+            end
+
         end
+
+        def put_lob(k, val, options={})
+            begin
+                s3_bucket(false, options).put(k, val)
+            rescue Aws::AwsError => ex
+                if ex.include? /NoSuchBucket/
+                    s3_bucket(true, options).put(k, val)
+                else
+                    raise ex
+                end
+            end
+            SimpleRecord.stats.s3_puts += 1
+        end
+
 
         def is_dirty?(name)
             # todo: should change all the dirty stuff to symbols?
@@ -510,8 +531,15 @@ module SimpleRecord
             Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key)
         end
 
-        def s3_bucket(create=false)
-            s3.bucket(s3_bucket_name, create)
+        # options:
+        #   :new_bucket => true/false. True if want to use new bucket. Defaults to false for backwards compatability.
+        def s3_bucket(create=false, options={})
+            s3.bucket(options[:new_bucket] || SimpleRecord.options[:new_bucket] ? s3_bucket_name2 : s3_bucket_name, create)
+        end
+
+        # this is the bucket that will be used going forward for anything related to s3
+        def s3_bucket_name2
+            "simple_record_#{SimpleRecord.aws_access_key}"
         end
 
         def s3_bucket_name
@@ -520,6 +548,10 @@ module SimpleRecord
 
         def s3_lob_id(name)
             self.id + "_" + name.to_s
+        end
+
+        def single_clob_id 
+            "lobs/#{self.id}_single_clob"
         end
 
         def save!(options={})
@@ -644,7 +676,7 @@ module SimpleRecord
         def self.batch_delete(objects, options={})
             if objects
                 # 25 item limit, we should maybe handle this limit in here.
-                connection.batch_delete_attributes @domain, objects.collect {|x| x.id }
+                connection.batch_delete_attributes @domain, objects.collect { |x| x.id }
             end
         end
 
@@ -690,7 +722,6 @@ module SimpleRecord
         def destroy
             return run_before_destroy && delete && run_after_destroy
         end
-
 
 
         def delete_niled(to_delete)

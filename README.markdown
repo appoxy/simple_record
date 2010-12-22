@@ -45,6 +45,7 @@ More about ModelAttributes below.
         puts 'got=' + mm2.name + ' and he/she is ' + mm.age.to_s + ' years old'
         # Or more advanced queries? mms = MyModel?.find(:all, ["age=?", 32], :order=>"name", :limit=>10)
 
+That's literally all you need to do to get started. No database install, no other setup required.
 
 ## Attributes and modifiers for models
 
@@ -194,11 +195,20 @@ This is most helpful on windows so Rails doesn't need sqlite or mysql gems/drive
 
 Typical databases support BLOB's and/or CLOB's, but SimpleDB has a 1024 character per attribute maximum so larger
 values should be stored in S3. Fortunately SimpleRecord takes care of this for you by defining has_clobs for a large
-string value.
+string value. There is no support for blobs yet.
 
     has_clobs :my_clob
 
-These clob values will be stored in s3 under a bucket named: "#{aws_access_key}_lobs"
+These clob values will be stored in s3 under a bucket named "#{aws_access_key}_lobs"
+OR "simple_record_#{aws_access_key}/lobs" if you set :new_bucket=>true in establish_connection (RECOMMENDED).
+
+If it makes sense for performance reasons, you can set a configuration option on the class to store all clobs
+as one item on s3 which means it will do a single put to s3 and a single get for all the clobs on the object.
+This would generally be good for somewhat small clob values or when you know you will always be accessing
+all the clobs on the object. 
+
+    sr_config :single_clob=>true
+
 
 ## Tips and Tricks and Things to Know
 
