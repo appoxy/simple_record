@@ -415,7 +415,7 @@ module SimpleRecord
                     logger.debug 'SELECT=' + select_expression
 
                     # request items
-                    query_result      = self.connection.select(select_expression, @next_token, @consistent_read)
+                    query_result      = self.connection.select(select_expression, options)
                     # puts 'QR=' + query_result.inspect
                     @next_token       = query_result[:next_token]
                     ret               = {}
@@ -639,10 +639,10 @@ module SimpleRecord
                 # This will currently return and's, or's and betweens. Doesn't hurt anything, but could remove.
                 def parse_condition_fields(conditions)
                     return nil unless conditions && conditions.present?
-                    rx     = /\b(\w*)[\s|>=|<=|!=|=|>|<|like]/
+                    rx     = /\b(\w*)[\s|>=|<=|!=|=|>|<|like|between]/
                     fields = conditions[0].scan(rx)
 #                    puts 'condition_fields = ' + fields.inspect
-                    fields[0]
+                    fields.flatten
                 end
 
             end
@@ -865,6 +865,7 @@ module SimpleRecord
             #
             # compare to +put+ method
             def save(options={})
+                options[:create_domain] = true if options[:create_domain].nil?
                 pre_save2
                 atts_to_save = @attributes.dup
                 #puts 'atts_to_save=' + atts_to_save.inspect
@@ -881,7 +882,7 @@ module SimpleRecord
                 end
                 dom          = options[:domain] || domain
                 #puts 'atts_to_save2=' + atts_to_save.inspect
-                connection.put_attributes(dom, id, atts_to_save, :replace)
+                connection.put_attributes(dom, id, atts_to_save, :replace, options)
                 apres_save2
                 @attributes
             end
@@ -978,11 +979,6 @@ module SimpleRecord
                 raise_on_id_absence
                 connection.delete_attributes(options[:domain] || domain, id)
             end
-
-            # Item ID
-#            def to_s
-#                @id
-#            end
 
             # Returns true if this object hasn�t been saved yet.
             def new_record?

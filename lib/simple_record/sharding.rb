@@ -25,8 +25,13 @@ module SimpleRecord
 
                 options = params.size > 1 ? params[1] : {}
 
-                domains = sharded_domains
-                puts "sharded_domains=" + domains.inspect
+                if options[:shard] # User specified shard.
+                    shard   = options[:shard]
+                    domains = shard.is_a?(Array) ? (shard.collect { |x| prefix_shard_name(x) }) : [ prefix_shard_name(shard)]
+                else
+                    domains = sharded_domains
+                end
+#                puts "sharded_domains=" + domains.inspect
 
                 single = false
                 case params.first
@@ -69,16 +74,20 @@ module SimpleRecord
                 send(sharding_options[:shards])
             end
 
+            def prefix_shard_name(s)
+                "#{domain}_#{s}"
+            end
+
+
             def sharded_domains
                 sharded_domains = []
                 shard_names     = shards
                 shard_names.each do |s|
-                    sharded_domains << "#{domain}_#{s}"
+                    sharded_domains << prefix_shard_name(s)
                 end
                 sharded_domains
             end
         end
-
 
         def sharded_domain
 #            puts 'getting sharded_domain'
@@ -90,7 +99,7 @@ module SimpleRecord
 #                shards = self.send(shards)
 #            end
             sharded_domain = "#{domain}_#{self.send(options[:map])}"
-            puts "sharded_domain=" + sharded_domain.inspect
+#            puts "sharded_domain=" + sharded_domain.inspect
             sharded_domain
         end
 

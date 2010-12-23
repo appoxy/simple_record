@@ -32,7 +32,7 @@ class TestBase < Test::Unit::TestCase
 
     def reset_connection
         puts 'reset_connection'
-        @config = YAML::load(File.open(File.expand_path("~/.test-configs/simple_record.yml")))
+        @config = YAML::load(File.open(File.expand_path("~/.test_configs/simple_record.yml")))
         #puts 'inspecting config = ' + @config.inspect
 
         SimpleRecord.enable_logging

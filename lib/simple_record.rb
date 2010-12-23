@@ -128,8 +128,9 @@ module SimpleRecord
             if options[:connection_mode] == :per_thread
                 @@auto_close_s3 = true
                 # todo: should we init this only when needed?
-                @@s3            = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, {:connection_mode=>:per_thread})
             end
+            s3_ops = {:connection_mode=>options[:connection_mode] || :default}
+            @@s3 = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, s3_ops)
         end
 
         # Call this to close the connection to SimpleDB.
@@ -172,7 +173,8 @@ module SimpleRecord
 
         include SimpleRecord::Translations
 #        include SimpleRecord::Attributes
-        extend SimpleRecord::Attributes
+        extend SimpleRecord::Attributes::ClassMethods
+        include SimpleRecord::Attributes
         extend SimpleRecord::Sharding::ClassMethods
         include SimpleRecord::Sharding
         include SimpleRecord::Callbacks
@@ -295,12 +297,6 @@ module SimpleRecord
             domain_name_for_class
         end
 
-        def get_attribute_sdb(name)
-            name = name.to_sym
-            ret  = strip_array(@attributes[sdb_att_name(name)])
-            return ret
-        end
-
         def has_id_on_end(name_s)
             name_s = name_s.to_s
             name_s.length > 3 && name_s[-3..-1] == "_id"
@@ -324,7 +320,7 @@ module SimpleRecord
         end
 
         def strip_array(arg)
-            if arg.class==Array
+            if arg.is_a? Array
                 if arg.length==1
                     ret = arg[0]
                 else
@@ -455,16 +451,18 @@ module SimpleRecord
                     end
                 rescue Aws::AwsError => ex
                     # puts "RESCUED in save: " + $!
-                    if (domain_ok(ex, options))
-                        if !@create_domain_called
-                            @create_domain_called = true
-                            save(options)
-                        else
-                            raise $!
-                        end
-                    else
-                        raise $!
-                    end
+                    # Domain is created in aws lib now using :create_domain=>true
+#                    if (domain_ok(ex, options))
+#                        if !@create_domain_called
+#                            @create_domain_called = true
+#                            save(options)
+#                        else
+#                            raise $!
+#                        end
+#                    else
+#                        raise $!
+#                    end
+                    raise ex
                 end
             else
                 #@debug = "not saved"
@@ -475,29 +473,65 @@ module SimpleRecord
         def save_lobs(dirty=nil)
 #            puts 'dirty.inspect=' + dirty.inspect
             dirty = @dirty if dirty.nil?
+            all_clobs   = {}
+            dirty_clobs = {}
             defined_attributes_local.each_pair do |k, v|
+                # collect up the clobs in case it's a single put
                 if v.type == :clob
-#                    puts 'storing clob '
+                    val          = @lobs[k]
+                    all_clobs[k] = val
                     if dirty.include?(k.to_s)
-                        begin
-                            val = @lobs[k]
-#                            puts 'val=' + val.inspect
-                            s3_bucket.put(s3_lob_id(k), val)
-                        rescue Aws::AwsError => ex
-                            if ex.include? /NoSuchBucket/
-                                s3_bucket(true).put(s3_lob_id(k), val)
-                            else
-                                raise ex
-                            end
-                        end
-                        SimpleRecord.stats.s3_puts += 1
+                        dirty_clobs[k] = val
                     else
 #                        puts 'NOT DIRTY'
                     end
 
                 end
             end
+            if dirty_clobs.size > 0
+                if self.class.get_sr_config[:single_clob]
+                    # all clobs in one chunk
+                    # using json for now, could change later
+                    val = all_clobs.to_json
+                    puts 'val=' + val.inspect
+                    put_lob(single_clob_id, val, :new_bucket=>true)
+                else
+                    dirty_clobs.each_pair do |k, val|
+                        put_lob(s3_lob_id(k), val)
+                    end
+                end
+            end
         end
+
+        def delete_lobs
+            defined_attributes_local.each_pair do |k, v|
+                if v.type == :clob
+                    if self.class.get_sr_config[:single_clob]
+                        s3_bucket(false, :new_bucket=>true).delete_key(single_clob_id)
+                        SimpleRecord.stats.s3_deletes += 1
+                        return
+                    else
+                        s3_bucket.delete_key(s3_lob_id(k))
+                        SimpleRecord.stats.s3_deletes += 1
+                    end
+                end
+            end
+        end
+
+
+        def put_lob(k, val, options={})
+            begin
+                s3_bucket(false, options).put(k, val)
+            rescue Aws::AwsError => ex
+                if ex.include? /NoSuchBucket/
+                    s3_bucket(true, options).put(k, val)
+                else
+                    raise ex
+                end
+            end
+            SimpleRecord.stats.s3_puts += 1
+        end
+
 
         def is_dirty?(name)
             # todo: should change all the dirty stuff to symbols?
@@ -514,8 +548,15 @@ module SimpleRecord
             Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key)
         end
 
-        def s3_bucket(create=false)
-            s3.bucket(s3_bucket_name, create)
+        # options:
+        #   :new_bucket => true/false. True if want to use new bucket. Defaults to false for backwards compatability.
+        def s3_bucket(create=false, options={})
+            s3.bucket(options[:new_bucket] || SimpleRecord.options[:new_bucket] ? s3_bucket_name2 : s3_bucket_name, create)
+        end
+
+        # this is the bucket that will be used going forward for anything related to s3
+        def s3_bucket_name2
+            "simple_record_#{SimpleRecord.aws_access_key}"
         end
 
         def s3_bucket_name
@@ -523,7 +564,15 @@ module SimpleRecord
         end
 
         def s3_lob_id(name)
-            self.id + "_" + name.to_s
+            if SimpleRecord.options[:new_bucket]
+                "lobs/#{self.id}_#{name}"
+            else
+                self.id + "_" + name.to_s
+            end
+        end
+
+        def single_clob_id
+            "lobs/#{self.id}_single_clob"
         end
 
         def save!(options={})
@@ -621,6 +670,7 @@ module SimpleRecord
         # Run pre_save on each object, then runs batch_put_attributes
         # Returns
         def self.batch_save(objects, options={})
+            options[:create_domain] = true if options[:create_domain].nil?
             results = []
             to_save = []
             if objects && objects.size > 0
@@ -632,16 +682,24 @@ module SimpleRecord
                     o.pre_save2
                     to_save << Aws::SdbInterface::Item.new(o.id, o.attributes, true)
                     if to_save.size == 25 # Max amount SDB will accept
-                        connection.batch_put_attributes(domain, to_save)
+                        connection.batch_put_attributes(domain, to_save, options)
                         to_save.clear
                     end
                 end
             end
-            connection.batch_put_attributes(domain, to_save) if to_save.size > 0
+            connection.batch_put_attributes(domain, to_save, options) if to_save.size > 0
             objects.each do |o|
                 o.save_lobs(nil)
             end
             results
+        end
+
+        # Pass in an array of objects
+        def self.batch_delete(objects, options={})
+            if objects
+                # 25 item limit, we should maybe handle this limit in here.
+                connection.batch_delete_attributes @domain, objects.collect { |x| x.id }
+            end
         end
 
         #
@@ -651,9 +709,10 @@ module SimpleRecord
             connection.delete_attributes(domain, id)
         end
 
-        def self.delete_all(*params)
+        # Pass in the same OPTIONS you'd pass into a find(:all, OPTIONS)
+        def self.delete_all(options)
             # could make this quicker by just getting item_names and deleting attributes rather than creating objects
-            obs = self.find(params)
+            obs = self.find(:all, options)
             i   = 0
             obs.each do |a|
                 a.delete
@@ -662,8 +721,9 @@ module SimpleRecord
             return i
         end
 
-        def self.destroy_all(*params)
-            obs = self.find(params)
+        # Pass in the same OPTIONS you'd pass into a find(:all, OPTIONS)
+        def self.destroy_all(options)
+            obs = self.find(:all, options)
             i   = 0
             obs.each do |a|
                 a.destroy
@@ -672,136 +732,20 @@ module SimpleRecord
             return i
         end
 
-        def delete()
-            # TODO: DELETE CLOBS, etc from s3
-            options = {}
+        def delete(options={})
             if self.class.is_sharded?
                 options[:domain] = sharded_domain
             end
             super(options)
+
+            # delete lobs now too
+            delete_lobs
         end
 
         def destroy
             return run_before_destroy && delete && run_after_destroy
         end
 
-
-        # Since SimpleDB supports multiple attributes per value, the values are an array.
-        # This method will return the value unwrapped if it's the only, otherwise it will return the array.
-        def get_attribute(name)
-#            puts "GET #{arg}"
-            # Check if this arg is already converted
-            name_s   = name.to_s
-            name     = name.to_sym
-            att_meta = get_att_meta(name)
-#            puts "att_meta for #{name}: " + att_meta.inspect
-            if att_meta && att_meta.type == :clob
-                ret = @lobs[name]
-#                puts 'get_attribute clob ' + ret.inspect
-                if ret
-                    if ret.is_a? RemoteNil
-                        return nil
-                    else
-                        return ret
-                    end
-                end
-                # get it from s3
-                unless new_record?
-                    begin
-                        ret                        = s3_bucket.get(s3_lob_id(name))
-#                        puts 'got from s3 ' + ret.inspect
-                        SimpleRecord.stats.s3_gets += 1
-                    rescue Aws::AwsError => ex
-                        if ex.include? /NoSuchKey/
-                            ret = nil
-                        else
-                            raise ex
-                        end
-                    end
-
-                    if ret.nil?
-                        ret = RemoteNil.new
-                    end
-                end
-                @lobs[name] = ret
-                return nil if ret.is_a? RemoteNil
-                return ret
-            else
-                @attributes_rb = {} unless @attributes_rb # was getting errors after upgrade.
-                ret = @attributes_rb[name_s] # instance_variable_get(instance_var)
-                return ret unless ret.nil?
-                return nil if ret.is_a? RemoteNil
-                ret                    = get_attribute_sdb(name)
-                ret                    = sdb_to_ruby(name, ret)
-                @attributes_rb[name_s] = ret
-                return ret
-            end
-
-        end
-
-        def set(name, value, dirtify=true)
-#            puts "SET #{name}=#{value.inspect}" if SimpleRecord.logging?
-#            puts "self=" + self.inspect
-            attname      = name.to_s # default attname
-            name         = name.to_sym
-            att_meta     = get_att_meta(name)
-            store_rb_val = false
-            if att_meta.nil?
-                # check if it ends with id and see if att_meta is there
-                ends_with = name.to_s[-3, 3]
-                if ends_with == "_id"
-#                    puts 'ends with id'
-                    n2       = name.to_s[0, name.length-3]
-#                    puts 'n2=' + n2
-                    att_meta = defined_attributes_local[n2.to_sym]
-#                    puts 'defined_attributes_local=' + defined_attributes_local.inspect
-                    attname  = name.to_s
-                    attvalue = value
-                    name     = n2.to_sym
-                end
-                return if att_meta.nil?
-            else
-                if att_meta.type == :belongs_to
-                    ends_with = name.to_s[-3, 3]
-                    if ends_with == "_id"
-                        att_name = name.to_s
-                        attvalue = value
-                    else
-                        attname      = name.to_s + '_id'
-                        attvalue     = value.nil? ? nil : value.id
-                        store_rb_val = true
-                    end
-                elsif att_meta.type == :clob
-                    make_dirty(name, value) if dirtify
-                    @lobs[name] = value
-                    return
-                else
-                    attname  = name.to_s
-                    attvalue = att_meta.init_value(value)
-#                  attvalue = value
-                    #puts 'converted ' + value.inspect + ' to ' + attvalue.inspect
-                end
-            end
-            attvalue = strip_array(attvalue)
-            make_dirty(name, attvalue) if dirtify
-#            puts "ARG=#{attname.to_s} setting to #{attvalue}"
-            sdb_val              = ruby_to_sdb(name, attvalue)
-#            puts "sdb_val=" + sdb_val.to_s
-            @attributes[attname] = sdb_val
-#            attvalue = wrap_if_required(name, attvalue, sdb_val)
-#            puts 'attvalue2=' + attvalue.to_s
-
-            if store_rb_val
-                @attributes_rb[name.to_s] = value
-            else
-                @attributes_rb.delete(name.to_s)
-            end
-
-        end
-
-        def set_attribute_sdb(name, val)
-            @attributes[sdb_att_name(name)] = val
-        end
 
         def delete_niled(to_delete)
 #            puts 'to_delete=' + to_delete.inspect
@@ -872,6 +816,8 @@ module SimpleRecord
         # Extra options:
         #   :per_token => the number of results to return per next_token, max is 2500.
         #   :consistent_read => true/false  --  as per http://developer.amazonwebservices.com/connect/entry.jspa?externalID=3572
+        #   :retries => maximum number of times to retry this query on an error response.
+        #   :shard => shard name or array of shard names to use on this query.
         def self.find(*params)
             #puts 'params=' + params.inspect
 
@@ -1074,12 +1020,6 @@ module SimpleRecord
             id.hash
         end
 
-        private
-        def set_attributes(atts)
-            atts.each_pair do |k, v|
-                set(k, v)
-            end
-        end
 
     end
 
