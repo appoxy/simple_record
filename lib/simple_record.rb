@@ -130,7 +130,7 @@ module SimpleRecord
                 # todo: should we init this only when needed?
             end
             s3_ops = {:connection_mode=>options[:connection_mode] || :default}
-            @@s3 = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, s3_ops)
+            @@s3   = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, s3_ops)
         end
 
         # Call this to close the connection to SimpleDB.
@@ -579,6 +579,17 @@ module SimpleRecord
             save(options) || raise(RecordNotSaved)
         end
 
+        def self.create(attributes={})
+#            puts "About to create in domain #{domain}"
+            super
+        end
+
+        def self.create!(attributes={})
+            item = self.new(attributes)
+            item.save!
+            item
+        end
+
         def save_with_validation!(options={})
             if valid?
                 save
@@ -798,11 +809,6 @@ module SimpleRecord
             end
         end
 
-        def self.create(attributes={})
-#            puts "About to create in domain #{domain}"
-            super
-        end
-
         @@regex_no_id = /.*Couldn't find.*with ID.*/
 
         #
@@ -856,7 +862,6 @@ module SimpleRecord
 
             ret = q_type == :all ? [] : nil
             begin
-
                 results=find_with_metadata(*params_dup)
 #                puts "RESULT=" + results.inspect
                 write_usage(:select, domain, q_type, options, results)
