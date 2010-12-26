@@ -1028,6 +1028,10 @@ module SimpleRecord
             return load[key]
         end
 
+        def first
+            load[0]
+        end
+
         def <<(ob)
             return load << ob
         end
