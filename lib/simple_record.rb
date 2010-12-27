@@ -494,7 +494,7 @@ module SimpleRecord
                     # using json for now, could change later
                     val = all_clobs.to_json
                     puts 'val=' + val.inspect
-                    put_lob(single_clob_id, val, :new_bucket=>true)
+                    put_lob(single_clob_id, val, :s3_bucket=>:new)
                 else
                     dirty_clobs.each_pair do |k, val|
                         put_lob(s3_lob_id(k), val)
@@ -507,7 +507,7 @@ module SimpleRecord
             defined_attributes_local.each_pair do |k, v|
                 if v.type == :clob
                     if self.class.get_sr_config[:single_clob]
-                        s3_bucket(false, :new_bucket=>true).delete_key(single_clob_id)
+                        s3_bucket(false, :s3_bucket=>:new).delete_key(single_clob_id)
                         SimpleRecord.stats.s3_deletes += 1
                         return
                     else
@@ -549,22 +549,26 @@ module SimpleRecord
         end
 
         # options:
-        #   :new_bucket => true/false. True if want to use new bucket. Defaults to false for backwards compatability.
+        #   :s3_bucket => :old/:new/"#{any_bucket_name}". :new if want to use new bucket. Defaults to :old for backwards compatability.
         def s3_bucket(create=false, options={})
-            s3.bucket(options[:new_bucket] || SimpleRecord.options[:new_bucket] ? s3_bucket_name2 : s3_bucket_name, create)
+            s3.bucket(s3_bucket_name(options[:s3_bucket]), create)
         end
 
-        # this is the bucket that will be used going forward for anything related to s3
-        def s3_bucket_name2
-            "simple_record_#{SimpleRecord.aws_access_key}"
-        end
-
-        def s3_bucket_name
-            SimpleRecord.aws_access_key + "_lobs"
+        def s3_bucket_name(s3_bucket_option=:old)
+            if s3_bucket_option == :new || SimpleRecord.options[:s3_bucket] == :new
+                # this is the bucket that will be used going forward for anything related to s3
+                ret = "simple_record_#{SimpleRecord.aws_access_key}"
+            elsif !SimpleRecord.options[:s3_bucket].nil? && SimpleRecord.options[:s3_bucket] != :old
+                ret = SimpleRecord.options[:s3_bucket]
+            else
+                ret = SimpleRecord.aws_access_key + "_lobs"
+            end
+            ret
         end
 
         def s3_lob_id(name)
-            if SimpleRecord.options[:new_bucket]
+            # if s3_bucket is not nil and not :old, then we use the new key.
+            if !SimpleRecord.options[:s3_bucket].nil? && SimpleRecord.options[:s3_bucket] != :old
                 "lobs/#{self.id}_#{name}"
             else
                 self.id + "_" + name.to_s

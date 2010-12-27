@@ -167,6 +167,30 @@ For rails, be sure to add this to your Application controller if using per_threa
         SimpleRecord.close_connection
     end
 
+### LOB and any other S3 Storage
+
+    :s3_bucket=>...
+
+* :old (default) will use the existing lob location of "#{aws_access_key}_lobs", but any new features will use the :new bucket.
+* :new will use the new and recommended s3 bucket location of "simple_record_#{aws_access_key}".
+* Any string value will use that value as the bucket name.
+
+
+NOTE: All projects should set this as we may make this default in a future major version (v3?). Existing projects should use
+:s3_bucket=>:
+
+### Created and Updated At Columns
+
+The default uses the columns "created" and "updated" which unfortunately are not the same as ActiveRecord, which
+uses created_at and updated_at. Although you can use created_at and updated_at methods, you may still want the columns in
+SimpleDB to be created_at and updated_at.
+
+    :created_col=>"created", :updated_col=>"updated"
+
+NOTE: All projects should set these as we may make the "_at" postfix default in a future major version (v3?). Existing
+projects should set :created_col=>"created", :updated_col=>"updated" (default) so if it changes in a future version,
+there won't be any issues.
+
 ## SimpleRecord on Rails
 
 You don't really have to do anything except have your models extends SimpleRecord::Base instead of ActiveRecord::Base, but here are some tips you can use.
@@ -200,7 +224,7 @@ string value. There is no support for blobs yet.
     has_clobs :my_clob
 
 These clob values will be stored in s3 under a bucket named "#{aws_access_key}_lobs"
-OR "simple_record_#{aws_access_key}/lobs" if you set :new_bucket=>true in establish_connection (RECOMMENDED).
+OR "simple_record_#{aws_access_key}/lobs" if you set :s3_bucket=>:new in establish_connection (RECOMMENDED).
 
 If you have more than one clob on an object and if it makes sense for performance reasons, you can set a configuration option on the class to store all clobs
 as one item on s3 which means it will do a single put to s3 and a single get for all the clobs on the object.
@@ -209,7 +233,7 @@ all the clobs on the object.
 
     sr_config :single_clob=>true
 
-Setting this will automatically use :new_bucket=>true as well.
+Setting this will automatically use :s3_bucket=>:new as well.
 
 ## Tips and Tricks and Things to Know
 
