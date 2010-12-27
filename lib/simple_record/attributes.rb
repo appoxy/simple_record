@@ -51,6 +51,8 @@ module SimpleRecord
                         # then attribute may have extra options
                         arg_options = arg
                         arg         = arg_options[:name].to_sym
+                    else
+                        arg = arg.to_sym
                     end
                     type = options_for_all[:type] || :string
                     attr = Attribute.new(type, arg_options)
@@ -119,26 +121,26 @@ module SimpleRecord
             def are_ints(*args)
                 #    puts 'calling are_ints: ' + args.inspect
                 args.each do |arg|
-                    defined_attributes[arg].type = :int
+                    defined_attributes[arg.to_sym].type = :int
                 end
             end
 
             def are_floats(*args)
                 #    puts 'calling are_ints: ' + args.inspect
                 args.each do |arg|
-                    defined_attributes[arg].type = :float
+                    defined_attributes[arg.to_sym].type = :float
                 end
             end
 
             def are_dates(*args)
                 args.each do |arg|
-                    defined_attributes[arg].type = :date
+                    defined_attributes[arg.to_sym].type = :date
                 end
             end
 
             def are_booleans(*args)
                 args.each do |arg|
-                    defined_attributes[arg].type = :boolean
+                    defined_attributes[arg.to_sym].type = :boolean
                 end
             end
 

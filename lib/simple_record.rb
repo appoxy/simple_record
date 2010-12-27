@@ -131,6 +131,15 @@ module SimpleRecord
             end
             s3_ops = {:connection_mode=>options[:connection_mode] || :default}
             @@s3   = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, s3_ops)
+
+            if options[:created_col]
+                SimpleRecord::Base.has_dates options[:created_col]
+            end
+            if options[:updated_col]
+                SimpleRecord::Base.has_dates options[:updated_col]
+            end
+
+
         end
 
         # Call this to close the connection to SimpleDB.
@@ -221,7 +230,7 @@ module SimpleRecord
 
 
         def self.inherited(base)
-            #puts 'SimpleRecord::Base is inherited by ' + base.inspect
+            puts 'SimpleRecord::Base is inherited by ' + base.inspect
             Callbacks.setup_callbacks(base)
 
 #            base.has_strings :id
@@ -364,11 +373,11 @@ module SimpleRecord
 
 
         def set_created
-            set(:created, Time.now)
+            set(SimpleRecord.options[:created_col] || :created, Time.now)
         end
 
         def set_updated
-            set(:updated, Time.now)
+            set(SimpleRecord.options[:updated_col] || :updated, Time.now)
         end
 
         # an aliased method since many people use created_at/updated_at naming convention
