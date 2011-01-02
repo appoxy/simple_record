@@ -22,6 +22,17 @@ module SimpleRecord
         module ClassMethods
 
 
+            # Add configuration to this particular class.
+            #   :single_clob=> true/false. If true will store all clobs as a single object in s3. Default is false.
+            def sr_config(options={})
+                get_sr_config
+                @sr_config.merge!(options)
+            end
+
+            def get_sr_config
+                @sr_config ||= {}
+            end
+
             def defined_attributes
                 @attributes ||= {}
                 @attributes
@@ -40,6 +51,8 @@ module SimpleRecord
                         # then attribute may have extra options
                         arg_options = arg
                         arg         = arg_options[:name].to_sym
+                    else
+                        arg = arg.to_sym
                     end
                     type = options_for_all[:type] || :string
                     attr = Attribute.new(type, arg_options)
@@ -108,26 +121,26 @@ module SimpleRecord
             def are_ints(*args)
                 #    puts 'calling are_ints: ' + args.inspect
                 args.each do |arg|
-                    defined_attributes[arg].type = :int
+                    defined_attributes[arg.to_sym].type = :int
                 end
             end
 
             def are_floats(*args)
                 #    puts 'calling are_ints: ' + args.inspect
                 args.each do |arg|
-                    defined_attributes[arg].type = :float
+                    defined_attributes[arg.to_sym].type = :float
                 end
             end
 
             def are_dates(*args)
                 args.each do |arg|
-                    defined_attributes[arg].type = :date
+                    defined_attributes[arg.to_sym].type = :date
                 end
             end
 
             def are_booleans(*args)
                 args.each do |arg|
-                    defined_attributes[arg].type = :boolean
+                    defined_attributes[arg.to_sym].type = :boolean
                 end
             end
 
@@ -135,8 +148,6 @@ module SimpleRecord
                 has_attributes2(args, :type=>:clob)
 
             end
-
-            @@virtuals=[]
 
             def has_virtuals(*args)
                 @@virtuals = args
@@ -224,15 +235,17 @@ module SimpleRecord
             end
 
 
-            def self.handle_virtuals(attrs)
-                @@virtuals.each do |virtual|
-                    #we first copy the information for the virtual to an instance variable of the same name
-                    eval("@#{virtual}=attrs['#{virtual}']")
-                    #and then remove the parameter before it is passed to initialize, so that it is NOT sent to SimpleDB
-                    eval("attrs.delete('#{virtual}')")
-                end
-            end
+        end
 
+        @@virtuals=[]
+
+        def self.handle_virtuals(attrs)
+            @@virtuals.each do |virtual|
+                #we first copy the information for the virtual to an instance variable of the same name
+                eval("@#{virtual}=attrs['#{virtual}']")
+                #and then remove the parameter before it is passed to initialize, so that it is NOT sent to SimpleDB
+                eval("attrs.delete('#{virtual}')")
+            end
         end
 
 
@@ -301,6 +314,88 @@ module SimpleRecord
             @attributes[sdb_att_name(name)] = val
         end
 
+
+        def get_attribute_sdb(name)
+            name = name.to_sym
+            ret  = strip_array(@attributes[sdb_att_name(name)])
+            return ret
+        end
+
+        # Since SimpleDB supports multiple attributes per value, the values are an array.
+        # This method will return the value unwrapped if it's the only, otherwise it will return the array.
+        def get_attribute(name)
+#            puts "get_attribute #{name}"
+            # Check if this arg is already converted
+            name_s   = name.to_s
+            name     = name.to_sym
+            att_meta = get_att_meta(name)
+#            puts "att_meta for #{name}: " + att_meta.inspect
+            if att_meta && att_meta.type == :clob
+                ret = @lobs[name]
+#                puts 'get_attribute clob ' + ret.inspect
+                if ret
+                    if ret.is_a? RemoteNil
+                        return nil
+                    else
+                        return ret
+                    end
+                end
+                # get it from s3
+                unless new_record?
+                    if self.class.get_sr_config[:single_clob]
+                        begin
+                            single_clob = s3_bucket(false, :s3_bucket=>:new).get(single_clob_id)
+                            single_clob = JSON.parse(single_clob)
+                            puts "single_clob=" + single_clob.inspect
+                            single_clob.each_pair do |name2,val|
+                                @lobs[name2.to_sym] = val
+                            end
+                            ret = @lobs[name]
+                            SimpleRecord.stats.s3_gets += 1
+                        rescue Aws::AwsError => ex
+                            if ex.include? /NoSuchKey/
+                                ret = nil
+                            else
+                                raise ex
+                            end
+                        end
+                    else
+                        begin
+                            ret = s3_bucket.get(s3_lob_id(name))
+                            # puts 'got from s3 ' + ret.inspect
+                            SimpleRecord.stats.s3_gets += 1
+                        rescue Aws::AwsError => ex
+                            if ex.include? /NoSuchKey/
+                                ret = nil
+                            else
+                                raise ex
+                            end
+                        end
+                    end
+
+                    if ret.nil?
+                        ret = RemoteNil.new
+                    end
+                end
+                @lobs[name] = ret
+                return nil if ret.is_a? RemoteNil
+                return ret
+            else
+                @attributes_rb = {} unless @attributes_rb # was getting errors after upgrade.
+                ret = @attributes_rb[name_s] # instance_variable_get(instance_var)
+                return ret unless ret.nil?
+                return nil if ret.is_a? RemoteNil
+                ret                    = get_attribute_sdb(name)
+#                p ret
+                ret                    = sdb_to_ruby(name, ret)
+#                p ret
+                @attributes_rb[name_s] = ret
+                return ret
+            end
+
+        end
+
+
         private
         def set_attributes(atts)
             atts.each_pair do |k, v|
@@ -323,7 +418,11 @@ module SimpleRecord
                 ret = value
                 case self.type
                     when :int
-                        ret = value.to_i
+                        if value.is_a? Array
+                            ret = value.collect { |x| x.to_i }
+                        else
+                            ret = value.to_i
+                        end
                 end
                 ret
             end

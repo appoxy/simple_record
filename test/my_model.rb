@@ -8,7 +8,7 @@ class MyModel < MyBaseModel
     has_booleans :cool
     has_dates :birthday, :date1, :date2, :date3
 
-    has_clobs :clob1
+    has_clobs :clob1, :clob2
 
     #callbacks
     before_create :set_nickname
@@ -46,4 +46,15 @@ class MyModel < MyBaseModel
         @@attributes
     end
 
+end
+
+
+
+class SingleClobClass < SimpleRecord::Base
+
+    sr_config :single_clob=>true
+
+    has_strings :name
+
+    has_clobs :clob1, :clob2
 end
