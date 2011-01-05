@@ -32,7 +32,6 @@ require File.expand_path(File.dirname(__FILE__) + "/simple_record/attributes")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/active_sdb")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/callbacks")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/encryptor")
-require File.expand_path(File.dirname(__FILE__) + "/simple_record/exceptions")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/errors")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/json")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/logging")
@@ -602,7 +601,12 @@ module SimpleRecord
     end
 
     def save!(options={})
-      save(options) || raise(RecordNotSaved)
+      save(options) || raise(RecordNotSaved.new(nil, self))
+    end
+
+    # this is a bit wonky, save! should call this, not sure why it's here.
+    def save_with_validation!(options={})
+      save!
     end
 
     def self.create(attributes={})
@@ -614,14 +618,6 @@ module SimpleRecord
       item = self.new(attributes)
       item.save!
       item
-    end
-
-    def save_with_validation!(options={})
-      if valid?
-        save
-      else
-        raise RecordInvalid.new(self)
-      end
     end
 
 

@@ -1,18 +1,22 @@
 module SimpleRecord
 
     class SimpleRecordError < StandardError
-        
+
     end
 
 
-    class RecordInvalid < SimpleRecordError
+    class RecordNotSaved < SimpleRecordError
         attr_accessor :record
 
-        def initialize(record)
+        def initialize(record=nil)
             @record = record
+            super("Validation failed: #{@record.errors.full_messages.join(", ")}")
         end
     end
 
+    class RecordNotFound < SimpleRecordError
+
+    end
 
     class Error
         attr_accessor :base, :attribute, :type, :message, :options
