@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "2.0.4"
+  s.version = "2.0.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
-  s.date = %q{2010-12-28}
-  s.description = %q{Drop in replacement for ActiveRecord to Amazon SimpleDB instead.}
+  s.date = %q{2011-01-05}
+  s.description = %q{ActiveRecord like interface for Amazon SimpleDB. Store, query, shard, etc. By http://www.appoxy.com}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
     "README.markdown"
@@ -22,7 +22,6 @@ Gem::Specification.new do |s|
     "lib/simple_record/callbacks.rb",
     "lib/simple_record/encryptor.rb",
     "lib/simple_record/errors.rb",
-    "lib/simple_record/exceptions.rb",
     "lib/simple_record/json.rb",
     "lib/simple_record/logging.rb",
     "lib/simple_record/password.rb",
@@ -35,7 +34,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/appoxy/simple_record/}
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
-  s.summary = %q{Drop in replacement for ActiveRecord to Amazon SimpleDB instead.}
+  s.summary = %q{ActiveRecord like interface for Amazon SimpleDB. By http://www.appoxy.com}
   s.test_files = [
     "test/conversions_test.rb",
     "test/model_with_enc.rb",
