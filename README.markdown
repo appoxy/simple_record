@@ -70,6 +70,11 @@ This is required because SimpleDB only has strings so SimpleRecord needs to know
       has_booleans :is_nerd
     end
 
+### Multi-value attributes
+
+SimpleDB supports having multiple values for the same attribute so to use this feature, simply set an attribute to an
+array of values.
+
 ### belongs_to
 
 Creates a many-to-one relationship. Can only have one per belongs_to call.
