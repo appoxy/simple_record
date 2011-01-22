@@ -1,5 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
 require_relative 'my_base_model'
+require_relative 'my_sharded_model'
 
 class MyModel < MyBaseModel
 
@@ -7,6 +8,8 @@ class MyModel < MyBaseModel
     has_ints :age, :save_count
     has_booleans :cool
     has_dates :birthday, :date1, :date2, :date3
+
+    belongs_to :my_sharded_model
 
     has_clobs :clob1, :clob2
 

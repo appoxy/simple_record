@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
     "lib/simple_record/json.rb",
     "lib/simple_record/logging.rb",
     "lib/simple_record/password.rb",
-    "lib/simple_record/rails2.rb",
+    "lib/simple_record/validation.rb",
     "lib/simple_record/results_array.rb",
     "lib/simple_record/sharding.rb",
     "lib/simple_record/stats.rb",

@@ -28,6 +28,12 @@ require 'aws'
 require 'base64'
 require 'active_support'
 require 'active_support/core_ext'
+begin
+  require 'active_model'
+rescue LoadError => ex
+  puts "ActiveModel not available, falling back."
+end
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/validation")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/attributes")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/active_sdb")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/callbacks")
@@ -36,7 +42,6 @@ require File.expand_path(File.dirname(__FILE__) + "/simple_record/errors")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/json")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/logging")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/password")
-require File.expand_path(File.dirname(__FILE__) + "/simple_record/rails2")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/results_array")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/stats")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/translations")
@@ -170,15 +175,17 @@ module SimpleRecord
 
 
 #        puts 'Is ActiveModel defined? ' + defined?(ActiveModel).inspect
+
+
     if defined?(ActiveModel)
       extend ActiveModel::Naming
       include ActiveModel::Conversion
       include ActiveModel::Validations
     else
       attr_accessor :errors
-      include SimpleRecord::Rails2
     end
 
+    include SimpleRecord::Validation
     include SimpleRecord::Translations
 #        include SimpleRecord::Attributes
     extend SimpleRecord::Attributes::ClassMethods
@@ -362,11 +369,10 @@ module SimpleRecord
     end
 
     def clear_errors
-#      @errors=SimpleRecord_errors.new
-      if not (defined?(ActiveModel))
-        @errors=SimpleRecord_errors.new
-      else
+      if defined?(ActiveModel)
         @errors = ActiveModel::Errors.new(self)
+      else
+        @errors=SimpleRecord_errors.new
       end
     end
 
@@ -398,9 +404,6 @@ module SimpleRecord
       self.updated
     end
 
-    def read_attribute_for_validation(key)
-      @attributes[key.to_s]
-    end
 
     def cache_store
       @@cache_store
@@ -471,22 +474,9 @@ module SimpleRecord
             return false
           end
         rescue Aws::AwsError => ex
-          # puts "RESCUED in save: " + $!
-          # Domain is created in aws lib now using :create_domain=>true
-#                    if (domain_ok(ex, options))
-#                        if !@create_domain_called
-#                            @create_domain_called = true
-#                            save(options)
-#                        else
-#                            raise $!
-#                        end
-#                    else
-#                        raise $!
-#                    end
           raise ex
         end
       else
-        #@debug = "not saved"
         return false
       end
     end
@@ -629,19 +619,6 @@ module SimpleRecord
 #            end
       return key
     end
-
-    def validate
-      true
-    end
-
-    def validate_on_create
-      true
-    end
-
-    def validate_on_update
-      true
-    end
-
 
     def pre_save(options)
 
@@ -863,7 +840,7 @@ module SimpleRecord
       end
       conditions = options[:conditions]
       if conditions && conditions.is_a?(String)
-        conditions = [conditions]
+        conditions           = [conditions]
         options[:conditions] = conditions
       end
 
