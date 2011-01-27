@@ -4,60 +4,86 @@ require_relative 'my_sharded_model'
 
 class MyModel < MyBaseModel
 
-    has_strings :name, :nickname, :s1, :s2
-    has_ints :age, :save_count
-    has_booleans :cool
-    has_dates :birthday, :date1, :date2, :date3
+  has_strings :name, :nickname, :s1, :s2
+  has_ints :age, :save_count
+  has_booleans :cool
+  has_dates :birthday, :date1, :date2, :date3
 
-    belongs_to :my_sharded_model
+#    validates_presence_of :name
 
-    has_clobs :clob1, :clob2
+#  validate :validate
+#  before_create :validate_on_create
+#  before_update :validate_on_update
 
-    #callbacks
-    before_create :set_nickname
+  belongs_to :my_sharded_model
 
-    before_save :bump_save_count
+  has_clobs :clob1, :clob2
 
-    def set_nickname
-        self.nickname = name if self.nickname.blank?
+  attr_accessor :after_create, :after_save, :before_create
+  #callbacks
+  before_create :set_nickname
+  after_create :after_create
+
+  before_save :bump_save_count
+
+  after_save :after_save
+
+  def set_nickname
+    puts 'before_create set nickname'
+    @before_create = true
+    self.nickname = name if self.nickname.blank?
+  end
+
+  def after_create
+    puts 'after_create'
+    @after_create = true
+  end
+  
+  def after_save
+    puts "after_save"
+    @after_save = true
+  end
+
+  def bump_save_count
+    puts 'before_save bump save_count=' + save_count.to_s
+    if save_count.nil?
+      self.save_count = 1
+    else
+      self.save_count += 1
     end
-
-    def bump_save_count
-#        puts 'save_count=' + save_count.to_s
-        if save_count.nil?
-            self.save_count = 1
-        else
-            self.save_count += 1
-        end
 #         puts 'save_count=' + self.save_count.to_s
-    end
+  end
 
-    def validate
-        errors.add("name", "can't be empty.") if name.blank?
-    end
+  def validate
+    puts 'MyModel.validate'
+    errors.add("name", "can't be empty.") if name.blank?
+#    errors.add("nickname", "can't be empty.") if nickname.blank?
+  end
 
-    def validate_on_create
-        errors.add("save_count", "should be zero.") if !save_count.blank? && save_count > 0
-    end
+  def validate_on_create
+    puts 'MyModel.validate_on_create'
+    errors.add("save_count", "should be zero.") if !save_count.blank? && save_count > 0
+  end
 
-    def validate_on_update
+  def validate_on_update
+    puts 'MyModel.validate_on_update'
 #        puts 'save_count = ' + save_count.to_s
-        errors.add("save_count", "should not be zero.") if save_count.blank? || save_count == 0
-    end
+    errors.add("save_count", "should not be zero.") if save_count.blank? || save_count == 0
+  end
 
-    def atts
-        @@attributes
-    end
+  def atts
+    @@attributes
+  end
+
 
 end
 
 
-
 class SingleClobClass < SimpleRecord::Base
 
-    sr_config :single_clob=>true
+  sr_config :single_clob=>true
 
-    has_strings :name
+  has_strings :name
 
-    has_clobs :clob1, :clob2
+  has_clobs :clob1, :clob2
 end
