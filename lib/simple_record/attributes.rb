@@ -346,7 +346,7 @@ module SimpleRecord
                         begin
                             single_clob = s3_bucket(false, :s3_bucket=>:new).get(single_clob_id)
                             single_clob = JSON.parse(single_clob)
-                            puts "single_clob=" + single_clob.inspect
+#                            puts "single_clob=" + single_clob.inspect
                             single_clob.each_pair do |name2,val|
                                 @lobs[name2.to_sym] = val
                             end

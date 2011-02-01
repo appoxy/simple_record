@@ -861,6 +861,11 @@ module SimpleRecord
       if params.size > 1
         options = params[1]
       end
+      conditions = options[:conditions]
+      if conditions && conditions.is_a?(String)
+        conditions = [conditions]
+        options[:conditions] = conditions
+      end
 
       if !options[:shard_find] && is_sharded?
         # then break off and get results across all shards
@@ -958,7 +963,8 @@ module SimpleRecord
     def self.convert_condition_params(options)
       return if options.nil?
       conditions = options[:conditions]
-      if !conditions.nil? && conditions.size > 1
+      return if conditions.nil?
+      if conditions.size > 1
         # all after first are values
         conditions.collect! { |x|
           Translations.pad_and_offset(x)
