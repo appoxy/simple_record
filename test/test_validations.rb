@@ -33,6 +33,7 @@ class TestSimpleRecord < TestBase
     assert mm.valid?
     assert mm.save, mm.errors.inspect
 
+    p mm
     assert mm.attr_after_save
     assert mm.attr_after_create
 

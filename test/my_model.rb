@@ -19,7 +19,7 @@ class MyModel < MyBaseModel
 
   has_clobs :clob1, :clob2
 
-  attr_accessor :attr_before_save, :attr_after_save, :attr_before_create, :attr_after_create,
+  attr_accessor :attr_before_save, :attr_after_save, :attr_before_create, :attr_after_create
 
   #callbacks
   before_create :set_nickname
