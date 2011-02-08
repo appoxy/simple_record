@@ -365,7 +365,7 @@ module SimpleRecord
                             # puts 'got from s3 ' + ret.inspect
                             SimpleRecord.stats.s3_gets += 1
                         rescue Aws::AwsError => ex
-                            if ex.include? /NoSuchKey/
+                            if ex.include?(/NoSuchKey/) || ex.include?(/NoSuchBucket/)
                                 ret = nil
                             else
                                 raise ex
