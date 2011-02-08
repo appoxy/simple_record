@@ -503,30 +503,36 @@ module SimpleRecord
 
     def create_or_update #:nodoc:
       puts 'create_or_update'
+      ret = true
       _run_save_callbacks do
         result = new_record? ? create : update
         puts 'save_callbacks result=' + result.inspect
-        return result
+        ret = result
       end
+      ret
     end
 
     def create #:nodoc:
       puts '3 create'
+      ret = true
       _run_create_callbacks do
         x = old_save
         puts 'create old_save result=' + x.to_s
-        return x
+        ret = x
       end
+      ret
     end
 
 #
     def update(*) #:nodoc:
       puts '3 update'
+      ret = true
       _run_update_callbacks do
         x = old_save
         puts 'update old_save result=' + x.to_s
-        return x
+        ret = x
       end
+      ret
     end
 
 
