@@ -42,6 +42,7 @@ Gem::Specification.new do |s|
     "test/my_child_model.rb",
     "test/my_model.rb",
     "test/my_sharded_model.rb",
+    "test/my_simple_model.rb",
     "test/paging_array_test.rb",
     "test/temp.rb",
     "test/temp_test.rb",
