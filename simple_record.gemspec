@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "2.0.5"
+  s.version = "2.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
-  s.date = %q{2011-01-05}
+  s.date = %q{2011-02-08}
   s.description = %q{ActiveRecord like interface for Amazon SimpleDB. Store, query, shard, etc. By http://www.appoxy.com}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -25,15 +25,15 @@ Gem::Specification.new do |s|
     "lib/simple_record/json.rb",
     "lib/simple_record/logging.rb",
     "lib/simple_record/password.rb",
-    "lib/simple_record/validations.rb",
     "lib/simple_record/results_array.rb",
     "lib/simple_record/sharding.rb",
     "lib/simple_record/stats.rb",
-    "lib/simple_record/translations.rb"
+    "lib/simple_record/translations.rb",
+    "lib/simple_record/validations.rb"
   ]
   s.homepage = %q{http://github.com/appoxy/simple_record/}
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.7}
+  s.rubygems_version = %q{1.5.0}
   s.summary = %q{ActiveRecord like interface for Amazon SimpleDB. By http://www.appoxy.com}
   s.test_files = [
     "test/conversions_test.rb",
@@ -58,11 +58,11 @@ Gem::Specification.new do |s|
     "test/test_results_array.rb",
     "test/test_shards.rb",
     "test/test_simple_record.rb",
-    "test/test_usage.rb"
+    "test/test_usage.rb",
+    "test/test_validations.rb"
   ]
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
