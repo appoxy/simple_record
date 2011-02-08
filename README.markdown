@@ -212,13 +212,34 @@ Use per_thread connection mode and close the connection after each request.
 
 ### Disable ActiveRecord so you don't have to setup another database
 
-This is most helpful on windows so Rails doesn't need sqlite or mysql gems/drivers installed which are painful to install on windows. In environment.rb, add 'config.frameworks -= [ :active_record ]', should look something like:
+#### Rails 2
+
+This is most helpful on windows so Rails doesn't need sqlite or mysql gems/drivers installed which are painful to install on windows.
+In environment.rb, add 'config.frameworks -= [ :active_record ]', so it should look something like:
 
     Rails::Initializer.run do |config|
       config.frameworks -= [ :active_record ]
       ....
     end
 
+#### Rails 3
+
+At the top of application.rb, comment out `require 'rails/all` and add the following:
+
+    #require 'rails/all'
+    %w(
+      action_controller
+      action_mailer
+      active_resource
+      rails/test_unit
+    ).each do |framework|
+      begin
+        require "#{framework}/railtie"
+      rescue LoadError
+      end
+    end
+
+This is the same as rails/all minus active_record.
 
 ## Large Objects (LOBS)
 
