@@ -7,6 +7,7 @@ require 'aws'
 require_relative 'my_model'
 require_relative 'my_child_model'
 require_relative 'model_with_enc'
+require_relative 'my_simple_model'
 
 # Tests for SimpleRecord
 #
@@ -50,7 +51,7 @@ class TestSimpleRecord < TestBase
         sleep 1
         mm2 = MyModel.find(id)
         puts mm2.inspect
-        assert mm2.age.nil?, "doh, age is " + mm2.age.inspect
+        assert mm2.age.nil?, "doh, age should be nil, but it's " + mm2.age.inspect
     end
 
 
@@ -79,7 +80,7 @@ class TestSimpleRecord < TestBase
         assert mm.s1 == "", "mm.s1 is not empty string, it is " + mm.s1.inspect
 
         mm = MyModel.find(id)
-        assert mm.name == "Travis2"
+        assert mm.name == "Travis2", "Name was not Travis2, it was #{mm.name}"
         assert mm.age == 10
         assert mm.cool == false
         assert mm.s1 == "", "mm.s1 is not empty string, it is #{mm.s1.inspect}"
@@ -268,13 +269,14 @@ class TestSimpleRecord < TestBase
 
     # http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html#M002136
     def test_changed
-        mm = MyModel.new
+        mm = MySimpleModel.new
         mm.name = "Travis"
         mm.age = 32
         mm.cool = true
         mm.save
 
         puts 'changed?=' + mm.changed?.to_s
+        p mm.changed
         assert !mm.changed?
         assert mm.changed.size == 0
         assert mm.changes.size == 0

@@ -75,7 +75,7 @@ class MyModel < MyBaseModel
   def validate_on_update
     puts 'MyModel.validate_on_update'
 #        puts 'save_count = ' + save_count.to_s
-    errors.add("save_count", "should not be zero.") if save_count.blank? || save_count == 0
+#    errors.add("save_count", "should not be zero.") if save_count.blank? || save_count == 0
   end
 
   def atts

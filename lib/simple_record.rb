@@ -457,7 +457,7 @@ module SimpleRecord
       is_create = self[:id].nil?
       ok        = pre_save(options) # Validates and sets ID
       if ok
-        puts 'ok'
+#        puts 'ok'
         begin
           dirty = @dirty
 #                    puts 'dirty before=' + @dirty.inspect
@@ -475,17 +475,17 @@ module SimpleRecord
 
           if @@active_model
             x = save_super(dirty, is_create, options, to_delete)
-            puts 'save_super result = ' + x.to_s
+#            puts 'save_super result = ' + x.to_s
             return x
           else
-            puts 'not activemodel callbacks'
+#            puts 'not activemodel callbacks'
             return save_super(dirty, is_create, options, to_delete)
           end
         rescue Aws::AwsError => ex
           raise ex
         end
       else
-        puts 'returning false'
+#        puts 'returning false'
         return false
       end
     end
@@ -494,19 +494,19 @@ module SimpleRecord
       alias_method :old_save, :save
 
       def save(options={})
-        puts 'extended save'
+#        puts 'extended save'
         x = create_or_update
-        puts 'save x=' + x.to_s
+#        puts 'save x=' + x.to_s
         x
       end
     end
 
     def create_or_update #:nodoc:
-      puts 'create_or_update'
+#      puts 'create_or_update'
       ret = true
       _run_save_callbacks do
         result = new_record? ? create : update
-        puts 'save_callbacks result=' + result.inspect
+#        puts 'save_callbacks result=' + result.inspect
         ret = result
       end
       ret
@@ -517,7 +517,7 @@ module SimpleRecord
       ret = true
       _run_create_callbacks do
         x = old_save
-        puts 'create old_save result=' + x.to_s
+#        puts 'create old_save result=' + x.to_s
         ret = x
       end
       ret
@@ -529,7 +529,7 @@ module SimpleRecord
       ret = true
       _run_update_callbacks do
         x = old_save
-        puts 'update old_save result=' + x.to_s
+#        puts 'update old_save result=' + x.to_s
         ret = x
       end
       ret
