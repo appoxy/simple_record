@@ -15,19 +15,29 @@ class TestSimpleRecord < TestBase
 
   def test_validations
     mm = MyModel.new()
-    assert mm.invalid?
+    puts 'invalid? ' + mm.invalid?.to_s
+    assert mm.invalid?, "mm is valid. invalid? returned #{mm.invalid?}"
     assert mm.errors.size == 1
+    assert !mm.attr_before_create
+    assert !mm.valid?
     assert mm.save == false, mm.errors.inspect
+    assert mm.attr_before_create
+    assert !mm.attr_after_save
+    assert !mm.attr_after_create
     mm.name = "abcd"
-    assert mm.valid?
+    assert mm.valid?, mm.errors.inspect
     assert mm.errors.size == 0
 
     mm.save_count = 2
     assert mm.invalid?
 
     mm.save_count = nil
-
+    assert mm.valid?
     assert mm.save, mm.errors.inspect
+
+    p mm
+    assert mm.attr_after_save
+    assert mm.attr_after_create
 
     assert mm.valid?, mm.errors.inspect
     assert mm.save_count == 1

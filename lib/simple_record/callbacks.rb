@@ -1,4 +1,31 @@
-module SimpleRecord::Callbacks
+module SimpleRecord
+
+  # For Rails3 support
+  module Callbacks3
+
+#    def destroy #:nodoc:
+#      _run_destroy_callbacks { super }
+#    end
+#
+#    private
+#
+#    def create_or_update #:nodoc:
+#      puts '3 create_or_update'
+#      _run_save_callbacks { super }
+#    end
+#
+#    def create #:nodoc:
+#      puts '3 create'
+#      _run_create_callbacks { super }
+#    end
+#
+#    def update(*) #:nodoc:
+#      puts '3 update'
+#      _run_update_callbacks { super }
+#    end
+  end
+
+  module Callbacks
     #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
     #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides
     #basically, this is how we recreate the callback functions
@@ -9,10 +36,10 @@ module SimpleRecord::Callbacks
                  "after_destroy"]
 
     def self.included(base)
-        #puts 'Callbacks included in ' + base.inspect
+      #puts 'Callbacks included in ' + base.inspect
 
 #        puts "setup callbacks #{base.inspect}"
-        base.instance_eval <<-endofeval
+      base.instance_eval <<-endofeval
 
             def callbacks
                 @callbacks ||= {}
@@ -20,18 +47,18 @@ module SimpleRecord::Callbacks
             end
 
 
-        endofeval
+      endofeval
 
-        @@callbacks.each do |callback|
-            base.class_eval <<-endofeval
+      @@callbacks.each do |callback|
+        base.class_eval <<-endofeval
 
          def run_#{callback}
-#                puts 'CLASS CALLBACKS for ' + self.inspect + ' = ' + self.class.callbacks.inspect
+            # puts 'CLASS CALLBACKS for ' + self.inspect + ' = ' + self.class.callbacks.inspect
             return true if self.class.callbacks.nil?
             cnames = self.class.callbacks['#{callback}']
             cnames = [] if cnames.nil?
-            #cnames += super.class.callbacks['#{callback}'] unless super.class.callbacks.nil?
-#                 puts 'cnames for #{callback} = ' + cnames.inspect
+            # cnames += super.class.callbacks['#{callback}'] unless super.class.callbacks.nil?
+            # puts 'cnames for #{callback} = ' + cnames.inspect
             return true if cnames.nil?
             cnames.each { |name|
                 #puts 'run_  #{name}'
@@ -39,16 +66,16 @@ module SimpleRecord::Callbacks
                 return false
               end
           }
-            #super.run_#{callback}
+          # super.run_#{callback}
           return true
         end
 
-            endofeval
+        endofeval
 
-            #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
-            #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides
-            #basically, this is how we recreate the callback functions
-            base.instance_eval <<-endofeval
+        #this bit of code creates a "run_blank" function for everything value in the @@callbacks array.
+        #this function can then be inserted in the appropriate place in the save, new, destroy, etc overrides
+        #basically, this is how we recreate the callback functions
+        base.instance_eval <<-endofeval
 
 #            puts 'defining callback=' + callback + ' for ' + self.inspect
             #we first have to make an initialized array for each of the callbacks, to prevent problems if they are not called
@@ -69,8 +96,8 @@ module SimpleRecord::Callbacks
                 end
             end
 
-            endofeval
-        end
+        endofeval
+      end
     end
 
     def before_destroy()
@@ -84,4 +111,5 @@ module SimpleRecord::Callbacks
 
     end
 
+  end
 end

@@ -29,11 +29,12 @@ require 'base64'
 require 'active_support'
 require 'active_support/core_ext'
 begin
+  # comment out line below to test rails2 validations
   require 'active_model'
 rescue LoadError => ex
   puts "ActiveModel not available, falling back."
 end
-require File.expand_path(File.dirname(__FILE__) + "/simple_record/validation")
+require File.expand_path(File.dirname(__FILE__) + "/simple_record/validations")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/attributes")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/active_sdb")
 require File.expand_path(File.dirname(__FILE__) + "/simple_record/callbacks")
@@ -178,21 +179,32 @@ module SimpleRecord
 
 
     if defined?(ActiveModel)
+      @@active_model = true
       extend ActiveModel::Naming
       include ActiveModel::Conversion
       include ActiveModel::Validations
-    else
-      attr_accessor :errors
-    end
+      extend ActiveModel::Callbacks # for ActiveRecord like callbacks
+      include ActiveModel::Validations::Callbacks
+      define_model_callbacks :save, :create, :update, :destroy
+      include SimpleRecord::Callbacks3
+      alias_method :am_valid?, :valid?
 
-    include SimpleRecord::Validation
+
+    else
+      @@active_model = false
+      puts "using rails2 validations."
+      attr_accessor :errors
+      include SimpleRecord::Callbacks
+    end
+    include SimpleRecord::Validations
+
+
     include SimpleRecord::Translations
 #        include SimpleRecord::Attributes
     extend SimpleRecord::Attributes::ClassMethods
     include SimpleRecord::Attributes
     extend SimpleRecord::Sharding::ClassMethods
     include SimpleRecord::Sharding
-    include SimpleRecord::Callbacks
     include SimpleRecord::Json
     include SimpleRecord::Logging
     extend SimpleRecord::Logging::ClassMethods
@@ -432,8 +444,9 @@ module SimpleRecord
     #   - :dirty => true - Will only store attributes that were modified. To make it save regardless and have it update the :updated value, include this and set it to false.
     #   - :domain => Explicitly define domain to use.
     #
+
     def save(options={})
-#            puts 'SAVING: ' + self.inspect if SimpleRecord.logging?
+      puts 'SAVING: ' + self.inspect if SimpleRecord.logging?
       # todo: Clean out undefined values in @attributes (in case someone set the attributes hash with values that they hadn't defined)
       clear_errors
       # todo: decide whether this should go before pre_save or after pre_save? pre_save dirties "updated" and perhaps other items due to callbacks
@@ -444,6 +457,7 @@ module SimpleRecord
       is_create = self[:id].nil?
       ok        = pre_save(options) # Validates and sets ID
       if ok
+        puts 'ok'
         begin
           dirty = @dirty
 #                    puts 'dirty before=' + @dirty.inspect
@@ -452,34 +466,118 @@ module SimpleRecord
             return true if @dirty.size == 0 # This should probably never happen because after pre_save, created/updated dates are changed
             options[:dirty_atts] = @dirty
           end
-          to_delete                = get_atts_to_delete
-          SimpleRecord.stats.saves += 1
+          to_delete = get_atts_to_delete
+
 
           if self.class.is_sharded?
             options[:domain] = sharded_domain
           end
 
-          if super(options)
-            self.class.cache_results(self)
-            delete_niled(to_delete)
-            save_lobs(dirty)
-            after_save_cleanup
-            if (is_create ? run_after_create : run_after_update) && run_after_save
-#                            puts 'all good?'
-              return true
-            else
-              return false
-            end
+          if @@active_model
+            x = save_super(dirty, is_create, options, to_delete)
+            puts 'save_super result = ' + x.to_s
+            return x
           else
-            return false
+            puts 'not activemodel callbacks'
+            return save_super(dirty, is_create, options, to_delete)
           end
         rescue Aws::AwsError => ex
           raise ex
         end
       else
+        puts 'returning false'
         return false
       end
     end
+
+    if @@active_model
+      alias_method :old_save, :save
+
+      def save(options={})
+        puts 'extended save'
+        x = create_or_update
+        puts 'save x=' + x.to_s
+        x
+      end
+    end
+
+    def create_or_update #:nodoc:
+      puts 'create_or_update'
+      ret = true
+      _run_save_callbacks do
+        result = new_record? ? create : update
+        puts 'save_callbacks result=' + result.inspect
+        ret = result
+      end
+      ret
+    end
+
+    def create #:nodoc:
+      puts '3 create'
+      ret = true
+      _run_create_callbacks do
+        x = old_save
+        puts 'create old_save result=' + x.to_s
+        ret = x
+      end
+      ret
+    end
+
+#
+    def update(*) #:nodoc:
+      puts '3 update'
+      ret = true
+      _run_update_callbacks do
+        x = old_save
+        puts 'update old_save result=' + x.to_s
+        ret = x
+      end
+      ret
+    end
+
+
+    def save!(options={})
+      save(options) || raise(RecordNotSaved.new(self))
+    end
+
+    # this is a bit wonky, save! should call this, not sure why it's here.
+    def save_with_validation!(options={})
+      save!
+    end
+
+    def self.create(attributes={})
+#            puts "About to create in domain #{domain}"
+      super
+    end
+
+    def self.create!(attributes={})
+      item = self.new(attributes)
+      item.save!
+      item
+    end
+
+
+    def save_super(dirty, is_create, options, to_delete)
+      SimpleRecord.stats.saves += 1
+      if save2(options)
+        self.class.cache_results(self)
+        delete_niled(to_delete)
+        save_lobs(dirty)
+        after_save_cleanup
+        unless @@active_model
+          if (is_create ? run_after_create : run_after_update) && run_after_save
+#                            puts 'all good?'
+            return true
+          else
+            return false
+          end
+        end
+        return true
+      else
+        return false
+      end
+    end
+
 
     def save_lobs(dirty=nil)
 #            puts 'dirty.inspect=' + dirty.inspect
@@ -590,26 +688,6 @@ module SimpleRecord
       "lobs/#{self.id}_single_clob"
     end
 
-    def save!(options={})
-      save(options) || raise(RecordNotSaved.new(nil, self))
-    end
-
-    # this is a bit wonky, save! should call this, not sure why it's here.
-    def save_with_validation!(options={})
-      save!
-    end
-
-    def self.create(attributes={})
-#            puts "About to create in domain #{domain}"
-      super
-    end
-
-    def self.create!(attributes={})
-      item = self.new(attributes)
-      item.save!
-      item
-    end
-
 
     def self.get_encryption_key()
       key = SimpleRecord.options[:encryption_key]
@@ -622,13 +700,18 @@ module SimpleRecord
 
     def pre_save(options)
 
+
+      ok        = true
       is_create = self[:id].nil?
-      ok        = run_before_validation && (is_create ? run_before_validation_on_create : run_before_validation_on_update)
-      return false unless ok
+      unless @@active_model
+        ok = run_before_validation && (is_create ? run_before_validation_on_create : run_before_validation_on_update)
+        return false unless ok
+      end
 
 #      validate()
 #      is_create ? validate_on_create : validate_on_update
       if !valid?
+        puts 'not valid'
         return false
       end
 #
@@ -638,23 +721,26 @@ module SimpleRecord
 #        return false
 #      end
 
-      ok = run_after_validation && (is_create ? run_after_validation_on_create : run_after_validation_on_update)
-      return false unless ok
+      unless @@active_model
+        ok = run_after_validation && (is_create ? run_after_validation_on_create : run_after_validation_on_update)
+        return false unless ok
+      end
 
-      ok = respond_to?('before_save') ? before_save : true
-      if ok
-        if is_create && respond_to?('before_create')
-          ok = before_create
-        elsif !is_create && respond_to?('before_update')
-          ok = before_update
+      # Now for callbacks
+      unless @@active_model
+        ok = respond_to?('before_save') ? before_save : true
+        if ok
+          if is_create && respond_to?('before_create')
+            ok = before_create
+          elsif !is_create && respond_to?('before_update')
+            ok = before_update
+          end
         end
-      end
-      if ok
-        ok = run_before_save && (is_create ? run_before_create : run_before_update)
-      end
-      if ok
-        # Now translate all fields into SimpleDB friendly strings
-#                convert_all_atts_to_sdb()
+        if ok
+          ok = run_before_save && (is_create ? run_before_create : run_before_update)
+        end
+      else
+
       end
       prepare_for_update
       ok
@@ -756,9 +842,14 @@ module SimpleRecord
     end
 
     def destroy
-      return run_before_destroy && delete && run_after_destroy
+      if @@active_model
+        _run_destroy_callbacks do
+          delete
+        end
+      else
+        return run_before_destroy && delete && run_after_destroy
+      end
     end
-
 
     def delete_niled(to_delete)
 #            puts 'to_delete=' + to_delete.inspect

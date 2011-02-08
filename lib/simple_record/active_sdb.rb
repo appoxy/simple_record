@@ -856,7 +856,7 @@ module SimpleRecord
             #   - :except => Array of attributes to NOT save
             #
             # compare to +put+ method
-            def save(options={})
+            def save2(options={})
                 options[:create_domain] = true if options[:create_domain].nil?
                 pre_save2
                 atts_to_save = @attributes.dup
