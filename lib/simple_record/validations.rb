@@ -18,10 +18,10 @@ module SimpleRecord
     end
 
     def valid?
-      puts 'in rails2 valid?'
+#      puts 'in rails2 valid?'
       errors.clear
 
-      if defined?(:am_valid?)
+      if respond_to?(:am_valid?)
         # And now ActiveModel validations too
         am_valid?
       end

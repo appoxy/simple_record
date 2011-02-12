@@ -21,7 +21,7 @@ class TestSimpleRecord < TestBase
     assert !mm.attr_before_create
     assert !mm.valid?
     assert mm.save == false, mm.errors.inspect
-    assert mm.attr_before_create
+    assert !mm.attr_before_create # should not get called if not valid
     assert !mm.attr_after_save
     assert !mm.attr_after_create
     mm.name = "abcd"
@@ -36,10 +36,20 @@ class TestSimpleRecord < TestBase
     assert mm.save, mm.errors.inspect
 
     p mm
+    assert mm.attr_before_create
     assert mm.attr_after_save
     assert mm.attr_after_create
+    assert !mm.attr_after_update
 
     assert mm.valid?, mm.errors.inspect
     assert mm.save_count == 1
+
+    mm.name = "abc123"
+    assert mm.save
+
+    assert mm.attr_after_update
+
+
+
   end
 end

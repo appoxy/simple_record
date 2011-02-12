@@ -19,7 +19,7 @@ class MyModel < MyBaseModel
 
   has_clobs :clob1, :clob2
 
-  attr_accessor :attr_before_save, :attr_after_save, :attr_before_create, :attr_after_create
+  attr_accessor :attr_before_save, :attr_after_save, :attr_before_create, :attr_after_create, :attr_after_update
 
   #callbacks
   before_create :set_nickname
@@ -28,6 +28,7 @@ class MyModel < MyBaseModel
   before_save :before_save
 
   after_save :after_save
+  after_update :after_update
 
   def set_nickname
     puts 'before_create set nickname'
@@ -49,6 +50,10 @@ class MyModel < MyBaseModel
     puts "after_save"
     @attr_after_save = true
     bump_save_count
+  end
+    def after_update
+    puts "after_update"
+    @attr_after_update = true
   end
 
   def bump_save_count

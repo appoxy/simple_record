@@ -179,6 +179,7 @@ module SimpleRecord
 
 
     if defined?(ActiveModel)
+      puts "Using ActiveModel validations."
       @@active_model = true
       extend ActiveModel::Naming
       include ActiveModel::Conversion
@@ -188,11 +189,9 @@ module SimpleRecord
       define_model_callbacks :save, :create, :update, :destroy
       include SimpleRecord::Callbacks3
       alias_method :am_valid?, :valid?
-
-
     else
       @@active_model = false
-      puts "using rails2 validations."
+      puts "NOT using ActiveModel validations."
       attr_accessor :errors
       include SimpleRecord::Callbacks
     end
@@ -454,69 +453,68 @@ module SimpleRecord
 #                puts '@dirtyA=' + @dirty.inspect
         return true if @dirty.size == 0 # Nothing to save so skip it
       end
-      is_create = self[:id].nil?
-      ok        = pre_save(options) # Validates and sets ID
+
+      ok = pre_save(options) # Validates and sets ID
       if ok
-#        puts 'ok'
-        begin
-          dirty = @dirty
-#                    puts 'dirty before=' + @dirty.inspect
-          if options[:dirty]
-#                        puts '@dirty=' + @dirty.inspect
-            return true if @dirty.size == 0 # This should probably never happen because after pre_save, created/updated dates are changed
-            options[:dirty_atts] = @dirty
-          end
-          to_delete = get_atts_to_delete
-
-
-          if self.class.is_sharded?
-            options[:domain] = sharded_domain
-          end
-
-          if @@active_model
-            x = save_super(dirty, is_create, options, to_delete)
-#            puts 'save_super result = ' + x.to_s
-            return x
-          else
-#            puts 'not activemodel callbacks'
-            return save_super(dirty, is_create, options, to_delete)
-          end
-        rescue Aws::AwsError => ex
-          raise ex
+        if @@active_model
+          ok = create_or_update(options)
+        else
+          ok = do_actual_save(options)
         end
-      else
-#        puts 'returning false'
-        return false
       end
+      return ok
     end
 
-    if @@active_model
-      alias_method :old_save, :save
+    def do_actual_save(options)
+      begin
+        is_create = new_record? # self[:id].nil?
 
-      def save(options={})
-#        puts 'extended save'
-        x = create_or_update
-#        puts 'save x=' + x.to_s
-        x
+        dirty     = @dirty
+#                    puts 'dirty before=' + @dirty.inspect
+        if options[:dirty]
+#                        puts '@dirty=' + @dirty.inspect
+          return true if @dirty.size == 0 # This should probably never happen because after pre_save, created/updated dates are changed
+          options[:dirty_atts] = @dirty
+        end
+        to_delete = get_atts_to_delete
+
+        if self.class.is_sharded?
+          options[:domain] = sharded_domain
+        end
+        return save_super(dirty, is_create, options, to_delete)
+      rescue Aws::AwsError => ex
+        raise ex
       end
+
     end
 
-    def create_or_update #:nodoc:
+#    if @@active_model
+#      alias_method :old_save, :save
+#
+#      def save(options={})
+##        puts 'extended save'
+#        x = create_or_update
+##        puts 'save x=' + x.to_s
+#        x
+#      end
+#    end
+
+    def create_or_update(options) #:nodoc:
 #      puts 'create_or_update'
       ret = true
       _run_save_callbacks do
-        result = new_record? ? create : update
+        result = new_record? ? create(options) : update(options)
 #        puts 'save_callbacks result=' + result.inspect
-        ret = result
+        ret    = result
       end
       ret
     end
 
-    def create #:nodoc:
+    def create(options) #:nodoc:
       puts '3 create'
       ret = true
       _run_create_callbacks do
-        x = old_save
+        x   = do_actual_save(options)
 #        puts 'create old_save result=' + x.to_s
         ret = x
       end
@@ -524,11 +522,11 @@ module SimpleRecord
     end
 
 #
-    def update(*) #:nodoc:
+    def update(options) #:nodoc:
       puts '3 update'
       ret = true
       _run_update_callbacks do
-        x = old_save
+        x   = do_actual_save(options)
 #        puts 'update old_save result=' + x.to_s
         ret = x
       end
@@ -700,6 +698,7 @@ module SimpleRecord
 
     def pre_save(options)
 
+#      puts '@@active_model ? ' + @@active_model.inspect
 
       ok        = true
       is_create = self[:id].nil?
@@ -728,11 +727,13 @@ module SimpleRecord
 
       # Now for callbacks
       unless @@active_model
-        ok = respond_to?('before_save') ? before_save : true
+        ok = respond_to?(:before_save) ? before_save : true
         if ok
-          if is_create && respond_to?('before_create')
+#          puts 'ok'
+          if is_create && respond_to?(:before_create)
+#            puts 'responsds to before_create'
             ok = before_create
-          elsif !is_create && respond_to?('before_update')
+          elsif !is_create && respond_to?(:before_update)
             ok = before_update
           end
         end
