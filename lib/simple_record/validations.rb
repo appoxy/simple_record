@@ -9,7 +9,7 @@ module SimpleRecord
 #    end
 
     def self.included(base)
-      puts 'Validations included ' + base.inspect
+#      puts 'Validations included ' + base.inspect
 #      if defined?(ActiveModel)
 #        base.class_eval do
 #          alias_method :am_valid?, :valid?
