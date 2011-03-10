@@ -9,7 +9,7 @@ class MyShardedModel < SimpleRecord::Base
   has_strings :name
 
   def self.num_shards
-    4
+    10
   end
 
   def self.my_shards

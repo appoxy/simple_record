@@ -12,8 +12,8 @@ class TestShards < TestBase
 
   def setup
     super
-    delete_all MyShardedModel
-    delete_all MyShardedByFieldModel
+#    delete_all MyShardedModel
+#    delete_all MyShardedByFieldModel
   end
 
   def teardown
@@ -24,6 +24,9 @@ class TestShards < TestBase
   # We'll want to shard based on ID's, user decides how many shards and some mapping function will
   # be used to select the shard.
   def test_id_sharding
+
+    puts 'test_id_sharding start'
+    ob_count = 1000
 
     mm = MyShardedModel.new(:name=>"single")
     mm.save
@@ -38,31 +41,56 @@ class TestShards < TestBase
     mm3 = MyShardedModel.find(mm.id)
     assert_nil mm3
 
-    puts "saving 20 now"
+    puts "saving #{ob_count} now"
     saved = []
-    20.times do |i|
+    ob_count.times do |i|
       mm = MyShardedModel.new(:name=>"name #{i}")
       mm.save
       saved << mm
     end
+    sleep 2
 
     # todo: assert that we're actually sharding
 
-    puts "finding them all"
+    puts "finding them all sequentially"
+    start_time = Time.now
     found = []
-    rs    = MyShardedModel.find(:all)
+    rs = MyShardedModel.find(:all, :per_token=>2500)
     rs.each do |m|
-      p m
+#      p m
       found << m
     end
+    duration = Time.now.to_f - start_time.to_f
+    puts 'Find sequential duration=' + duration.to_s
+    puts 'size=' + found.size.to_s
     saved.each do |so|
       assert(found.find { |m1| m1.id == so.id })
     end
+
+
+    puts "Now let's try concurrently"
+    start_time = Time.now
+    found = []
+    rs = MyShardedModel.find(:all, :concurrent=>true, :per_token=>2500)
+    rs.each do |m|
+#      p m
+      found << m
+    end
+    concurrent_duration = Time.now.to_f - start_time.to_f
+    puts 'Find concurrent duration=' + concurrent_duration .to_s
+    puts 'size=' + found.size.to_s
+    saved.each do |so|
+      assert(found.find { |m1| m1.id == so.id })
+    end
+
+    assert concurrent_duration < duration
 
     puts "deleting all of them"
     found.each do |fo|
       fo.delete
     end
+
+    sleep 2
 
     puts "Now ensure that all are deleted"
     rs = MyShardedModel.find(:all)
@@ -70,8 +98,8 @@ class TestShards < TestBase
 
     puts "Testing belongs_to sharding"
 
-
   end
+
 
   def test_field_sharding
 
@@ -105,7 +133,7 @@ class TestShards < TestBase
 
     puts "finding them all"
     found = []
-    rs    = MyShardedByFieldModel.find(:all)
+    rs = MyShardedByFieldModel.find(:all)
     rs.each do |m|
       p m
       found << m
@@ -124,7 +152,7 @@ class TestShards < TestBase
     end
 
     # Try to find on a specific known shard
-    selects     = SimpleRecord.stats.selects
+    selects = SimpleRecord.stats.selects
     cali_models = MyShardedByFieldModel.find(:all, :shard => "CA")
     puts 'cali_models=' + cali_models.inspect
     assert_equal(5, cali_models.size)

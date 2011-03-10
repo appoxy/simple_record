@@ -1,3 +1,5 @@
+require 'concur'
+
 module SimpleRecord
 
   module Sharding
@@ -26,7 +28,7 @@ module SimpleRecord
         options = params.size > 1 ? params[1] : {}
 
         if options[:shard] # User specified shard.
-          shard   = options[:shard]
+          shard = options[:shard]
           domains = shard.is_a?(Array) ? (shard.collect { |x| prefix_shard_name(x) }) : [prefix_shard_name(shard)]
         else
           domains = sharded_domains
@@ -45,21 +47,32 @@ module SimpleRecord
             end
         end
 
+        # todo: should we have a global executor?
+        executor = options[:concurrent] ? Concur::Executor.new_multi_threaded_executor : Concur::Executor.new_single_threaded_executor
         results = ShardedResults.new(params)
+        futures = []
         domains.each do |d|
-          p2               = params.dup
-          op2              = options.dup
-          op2[:from]       = d
+          p2 = params.dup
+          op2 = options.dup
+          op2[:from] = d
           op2[:shard_find] = true
-          p2[1]            = op2
-          rs               = find(*p2)
-          if params.first == :first || single
-            return rs if rs
-          else
-            results.add_results rs
+          p2[1] = op2
+
+          futures << executor.execute do
+            puts 'executing... '
+            rs = find(*p2)
           end
         end
-        puts 'results=' + results.inspect
+        futures.each do |f|
+          puts 'getting future ' + f.inspect
+          if params.first == :first || single
+            return f.get if f.get
+          else
+            results.add_results f.get
+          end
+        end
+        executor.shutdown
+#        puts 'results=' + results.inspect
         if params.first == :first || single
           # Then we found nothing by this point so return nil
           return nil
@@ -81,7 +94,7 @@ module SimpleRecord
 
       def sharded_domains
         sharded_domains = []
-        shard_names     = shards
+        shard_names = shards
         shard_names.each do |s|
           sharded_domains << prefix_shard_name(s)
         end
@@ -91,7 +104,7 @@ module SimpleRecord
 
     def sharded_domain
 #            puts 'getting sharded_domain'
-      options        = self.class.sharding_options
+      options = self.class.sharding_options
 #            val = self.send(options[:on])
 #            puts "val=" + val.inspect
 #            shards = options[:shards] # is user passed in static array of shards
@@ -107,8 +120,8 @@ module SimpleRecord
       include Enumerable
 
       def initialize(params)
-        @params         = params
-        @options        = params.size > 1 ? params[1] : {}
+        @params = params
+        @options = params.size > 1 ? params[1] : {}
         @results_arrays = []
       end
 
@@ -146,9 +159,9 @@ module SimpleRecord
           return element_at(index)
         else
           offset = i[0]
-          rows   = i[1]
-          ret    = []
-          x      = offset
+          rows = i[1]
+          ret = []
+          x = offset
           while x < (offset+rows)
             ret << element_at(x)
             x+=1
@@ -268,9 +281,9 @@ module SimpleRecord
 #                puts 'sdbm_hash ' + str.inspect
         hash = 0
         len.times { |i|
-          c    = str[i]
+          c = str[i]
 #                    puts "c=" + c.class.name + "--" + c.inspect + " -- " + c.ord.inspect
-          c    = c.ord
+          c = c.ord
           hash = c + (hash << 6) + (hash << 16) - hash
         }
 #                puts "hash=" + hash.inspect

@@ -39,12 +39,12 @@ class TestBase < Test::Unit::TestCase
 
         SimpleRecord::Base.set_domain_prefix("simplerecord_tests_")
         SimpleRecord.establish_connection(@config['amazon']['access_key'], @config['amazon']['secret_key'],
-                                          {:connection_mode=>:single}.merge(options))
+                                          {:connection_mode=>:per_thread}.merge(options))
 
 
         # Establish AWS connection directly
         @@sdb = Aws::SdbInterface.new(@config['amazon']['access_key'], @config['amazon']['secret_key'],
-                                      {:connection_mode => :single}.merge(options))
+                                      {:connection_mode => :per_thread}.merge(options))
 
     end
 

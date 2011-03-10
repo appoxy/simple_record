@@ -366,9 +366,21 @@ The :map function should return which shard name the object should be stored to.
 When executing a find() operation, you can explicitly specify the shard(s) you'd like to find on. This is
 particularly useful if you know in advance which shard the data will be in.
 
-    MyClass.find(:all, :conditions=>....., :shard=>["CA", "FL"])
+    MyShardedClass.find(:all, :conditions=>....., :shard=>["CA", "FL"])
 
 You can see some [example classes here](https://github.com/appoxy/simple_record/blob/master/test/my_sharded_model.rb).
+
+## Concurrency
+
+**Subject to change**
+
+This was brought on as a way to query across shards in parallel. Not being able to find a good generic concurrency library,
+I ended up rolling my own called [concur](https://github.com/appoxy/concur).
+
+    MyShardedClass.find(:all, :concurrent=>true)
+
+We may enable a global [Executor](https://github.com/appoxy/concur/blob/master/lib/executor.rb) so you can have a fixed
+thread pool across your app, but for now, it will fire up a thread per shard. 
 
 ## Kudos
 
