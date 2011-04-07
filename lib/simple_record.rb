@@ -810,7 +810,7 @@ module SimpleRecord
     end
 
     # Pass in the same OPTIONS you'd pass into a find(:all, OPTIONS)
-    def self.delete_all(options)
+    def self.delete_all(options={})
       # could make this quicker by just getting item_names and deleting attributes rather than creating objects
       obs = self.find(:all, options)
       i   = 0
@@ -822,7 +822,7 @@ module SimpleRecord
     end
 
     # Pass in the same OPTIONS you'd pass into a find(:all, OPTIONS)
-    def self.destroy_all(options)
+    def self.destroy_all(options={})
       obs = self.find(:all, options)
       i   = 0
       obs.each do |a|

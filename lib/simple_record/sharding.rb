@@ -47,7 +47,7 @@ module SimpleRecord
             end
         end
 
-        # todo: should we have a global executor?
+        # todo: should have a global executor
         executor = options[:concurrent] ? Concur::Executor.new_multi_threaded_executor : Concur::Executor.new_single_threaded_executor
         results = ShardedResults.new(params)
         futures = []
