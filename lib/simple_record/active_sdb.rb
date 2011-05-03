@@ -408,7 +408,12 @@ module SimpleRecord
                     select_expression = build_select(options)
                     logger.debug 'SELECT=' + select_expression
                     # request items
-                    query_result      = self.connection.select(select_expression, options)
+                    executor = Concur::Executor.new_eventmachine_executor
+                    future   = executor.execute do
+                      self.connection.select(select_expression, options)
+                    end
+                    query_result = future.get
+                    executor.shutdown
                     # puts 'QR=' + query_result.inspect
                     @next_token       = query_result[:next_token]
                     ret               = {}
@@ -874,7 +879,11 @@ module SimpleRecord
                 end
                 dom          = options[:domain] || domain
                 #puts 'atts_to_save2=' + atts_to_save.inspect
+                executor = Concur::Executor.new_eventmachine_executor
+                future   = executor.execute do
                 connection.put_attributes(dom, id, atts_to_save, :replace, options)
+                end
+                #executor.shutdown
                 apres_save2
                 @attributes
             end

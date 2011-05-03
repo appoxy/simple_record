@@ -565,7 +565,7 @@ class TestSimpleRecord < TestBase
         assert mm.name == "name2", "Name is #{mm.name}"
         assert mm.age == 21
 #        assert mm.date2.to_time.utc == now.utc, "#{mm.date2.class.name} #{mm.date2.to_time.inspect} != #{now.inspect}"
-        sleep 1
+        sleep 10
 
         mm = MyModel.find(mm.id)
         assert mm.name == "name2", "Name is #{mm.name}"
