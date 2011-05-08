@@ -51,20 +51,20 @@ require_relative 'simple_record/sharding'
 
 module SimpleRecord
 
-  @@options       = {}
-  @@stats         = SimpleRecord::Stats.new
-  @@logging       = false
-  @@s3            = nil
+  @@options = {}
+  @@stats = SimpleRecord::Stats.new
+  @@logging = false
+  @@s3 = nil
   @@auto_close_s3 = false
-  @@logger        = Logger.new(STDOUT)
-  @@logger.level  = Logger::INFO
+  @@logger = Logger.new(STDOUT)
+  @@logger.level = Logger::INFO
 
   class << self;
     attr_accessor :aws_access_key, :aws_secret_key
 
     # Deprecated
     def enable_logging
-      @@logging      = true
+      @@logging = true
       @@logger.level = Logger::DEBUG
     end
 
@@ -135,7 +135,7 @@ module SimpleRecord
         # todo: should we init this only when needed?
       end
       s3_ops = {:connection_mode=>options[:connection_mode] || :default}
-      @@s3   = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, s3_ops)
+      @@s3 = Aws::S3.new(SimpleRecord.aws_access_key, SimpleRecord.aws_secret_key, s3_ops)
 
       if options[:created_col]
         SimpleRecord::Base.has_dates options[:created_col]
@@ -230,12 +230,12 @@ module SimpleRecord
 
       clear_errors
 
-      @dirty         = {}
+      @dirty = {}
 
-      @attributes    = {} # sdb values
+      @attributes = {} # sdb values
       @attributes_rb = {} # ruby values
-      @lobs          = {}
-      @new_record    = true
+      @lobs = {}
+      @new_record = true
 
     end
 
@@ -333,7 +333,7 @@ module SimpleRecord
     end
 
     def get_att_meta(name)
-      name_s   = name.to_s
+      name_s = name.to_s
       att_meta = defined_attributes_local[name.to_sym]
       if att_meta.nil? && has_id_on_end(name_s)
         att_meta = defined_attributes_local[name_s[0..-4].to_sym]
@@ -365,7 +365,7 @@ module SimpleRecord
 
     def make_dirty(arg, value)
       sdb_att_name = sdb_att_name(arg)
-      arg          = arg.to_s
+      arg = arg.to_s
 
 #            puts "Marking #{arg} dirty with #{value}" if SimpleRecord.logging?
       if @dirty.include?(sdb_att_name)
@@ -469,7 +469,7 @@ module SimpleRecord
       begin
         is_create = new_record? # self[:id].nil?
 
-        dirty     = @dirty
+        dirty = @dirty
 #                    puts 'dirty before=' + @dirty.inspect
         if options[:dirty]
 #                        puts '@dirty=' + @dirty.inspect
@@ -505,7 +505,7 @@ module SimpleRecord
       _run_save_callbacks do
         result = new_record? ? create(options) : update(options)
 #        puts 'save_callbacks result=' + result.inspect
-        ret    = result
+        ret = result
       end
       ret
     end
@@ -514,7 +514,7 @@ module SimpleRecord
       puts '3 create'
       ret = true
       _run_create_callbacks do
-        x   = do_actual_save(options)
+        x = do_actual_save(options)
 #        puts 'create old_save result=' + x.to_s
         ret = x
       end
@@ -526,7 +526,7 @@ module SimpleRecord
       puts '3 update'
       ret = true
       _run_update_callbacks do
-        x   = do_actual_save(options)
+        x = do_actual_save(options)
 #        puts 'update old_save result=' + x.to_s
         ret = x
       end
@@ -580,12 +580,12 @@ module SimpleRecord
     def save_lobs(dirty=nil)
 #            puts 'dirty.inspect=' + dirty.inspect
       dirty = @dirty if dirty.nil?
-      all_clobs   = {}
+      all_clobs = {}
       dirty_clobs = {}
       defined_attributes_local.each_pair do |k, v|
         # collect up the clobs in case it's a single put
         if v.type == :clob
-          val          = @lobs[k]
+          val = @lobs[k]
           all_clobs[k] = val
           if dirty.include?(k.to_s)
             dirty_clobs[k] = val
@@ -700,7 +700,7 @@ module SimpleRecord
 
 #      puts '@@active_model ? ' + @@active_model.inspect
 
-      ok        = true
+      ok = true
       is_create = self[:id].nil?
       unless @@active_model
         ok = run_before_validation && (is_create ? run_before_validation_on_create : run_before_validation_on_update)
@@ -813,7 +813,7 @@ module SimpleRecord
     def self.delete_all(options={})
       # could make this quicker by just getting item_names and deleting attributes rather than creating objects
       obs = self.find(:all, options)
-      i   = 0
+      i = 0
       obs.each do |a|
         a.delete
         i+=1
@@ -824,7 +824,7 @@ module SimpleRecord
     # Pass in the same OPTIONS you'd pass into a find(:all, OPTIONS)
     def self.destroy_all(options={})
       obs = self.find(:all, options)
-      i   = 0
+      i = 0
       obs.each do |a|
         a.destroy
         i+=1
@@ -921,7 +921,7 @@ module SimpleRecord
     def self.find(*params)
       #puts 'params=' + params.inspect
 
-      q_type           = :all
+      q_type = :all
       select_attributes=[]
       if params.size > 0
         q_type = params[0]
@@ -932,7 +932,7 @@ module SimpleRecord
       end
       conditions = options[:conditions]
       if conditions && conditions.is_a?(String)
-        conditions           = [conditions]
+        conditions = [conditions]
         options[:conditions] = conditions
       end
 
@@ -948,13 +948,13 @@ module SimpleRecord
         #puts 'options=' + options.inspect
         #puts 'after collect=' + options.inspect
         convert_condition_params(options)
-        per_token       = options[:per_token]
+        per_token = options[:per_token]
         consistent_read = options[:consistent_read]
         if per_token || consistent_read then
-          op_dup                   = options.dup
-          op_dup[:limit]           = per_token # simpledb uses Limit as a paging thing, not what is normal
+          op_dup = options.dup
+          op_dup[:limit] = per_token # simpledb uses Limit as a paging thing, not what is normal
           op_dup[:consistent_read] = consistent_read
-          params_dup[1]            = op_dup
+          params_dup[1] = op_dup
         end
       end
 #            puts 'params2=' + params.inspect
@@ -962,7 +962,7 @@ module SimpleRecord
       ret = q_type == :all ? [] : nil
       begin
         results=find_with_metadata(*params_dup)
-#                puts "RESULT=" + results.inspect
+        puts "RESULT=" + results.inspect
         write_usage(:select, domain, q_type, options, results)
         #puts 'params3=' + params.inspect
         SimpleRecord.stats.selects += 1
@@ -972,22 +972,25 @@ module SimpleRecord
           ret = results[:items].first
           # todo: we should store request_id and box_usage with the object maybe?
           cache_results(ret)
-        elsif results[:single]
+        elsif results[:single_only]
           ret = results[:single]
+          puts 'results[:single] ' + ret.inspect
           cache_results(ret)
         else
+          puts 'last step items = ' + results.inspect
           if results[:items] #.is_a?(Array)
             cache_results(results[:items])
             ret = SimpleRecord::ResultsArray.new(self, params, results, next_token)
           end
         end
       rescue Aws::AwsError, SimpleRecord::ActiveSdb::ActiveSdbError => ex
-#                puts "RESCUED: " + ex.message
+        puts "RESCUED: " + ex.message
         if (ex.message().index("NoSuchDomain") != nil)
           # this is ok
-        elsif (ex.message() =~ @@regex_no_id)
-          ret = nil
+#        elsif (ex.message() =~ @@regex_no_id) This is RecordNotFound now
+#          ret = nil
         else
+          puts 're-raising'
           raise ex
         end
       end
@@ -1016,14 +1019,14 @@ module SimpleRecord
     def self.paginate(options={})
 #            options = args.pop
 #            puts 'paginate options=' + options.inspect if SimpleRecord.logging?
-      page               = options[:page] || 1
-      per_page           = options[:per_page] || 50
+      page = options[:page] || 1
+      per_page = options[:per_page] || 50
 #            total    = options[:total_entries].to_i
-      options[:page]     = page.to_i # makes sure it's to_i
+      options[:page] = page.to_i # makes sure it's to_i
       options[:per_page] = per_page.to_i
-      options[:limit]    = options[:page] * options[:per_page]
+      options[:limit] = options[:page] * options[:per_page]
 #            puts 'paging options=' + options.inspect
-      fr                 = find(:all, options)
+      fr = find(:all, options)
       return fr
 
     end
@@ -1048,15 +1051,15 @@ module SimpleRecord
           # todo: cache each result
           results.each do |item|
             class_name = item.class.name
-            id         = item.id
-            cache_key  = self.cache_key(class_name, id)
+            id = item.id
+            cache_key = self.cache_key(class_name, id)
             #puts 'caching result at ' + cache_key + ': ' + results.inspect
             cache_store.write(cache_key, item, :expires_in =>30)
           end
         else
           class_name = results.class.name
-          id         = results.id
-          cache_key  = self.cache_key(class_name, id)
+          id = results.id
+          cache_key = self.cache_key(class_name, id)
           #puts 'caching result at ' + cache_key + ': ' + results.inspect
           cache_store.write(cache_key, results, :expires_in =>30)
         end
@@ -1111,7 +1114,7 @@ module SimpleRecord
 
   class Activerecordtosdb_subrecord_array
     def initialize(subname, referencename, referencevalue)
-      @subname       =subname.classify
+      @subname =subname.classify
       @referencename =referencename.tableize.singularize + "_id"
       @referencevalue=referencevalue
     end
@@ -1168,7 +1171,7 @@ module SimpleRecord
 
     def create(*params)
       params[0][@referencename]=@referencevalue
-      record                   = eval(@subname).new(*params)
+      record = eval(@subname).new(*params)
       record.save
     end
 

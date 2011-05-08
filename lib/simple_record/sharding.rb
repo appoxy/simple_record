@@ -36,20 +36,29 @@ module SimpleRecord
 #                puts "sharded_domains=" + domains.inspect
 
         single = false
+        by_ids = false
         case params.first
           when nil then
             raise "Invalid parameters passed to find: nil."
           when :all, :first, :count
             # nada
           else # single id
+            by_ids = true
             unless params.first.is_a?(Array)
               single = true
             end
         end
+        puts 'single? ' + single.inspect
+        puts 'by_ids? ' + by_ids.inspect
 
         # todo: should have a global executor
         executor = options[:concurrent] ? Concur::Executor.new_multi_threaded_executor : Concur::Executor.new_single_threaded_executor
-        results = ShardedResults.new(params)
+        results = nil
+        if by_ids
+          results = []
+        else
+          results = ShardedResults.new(params)
+        end
         futures = []
         domains.each do |d|
           p2 = params.dup
@@ -59,14 +68,20 @@ module SimpleRecord
           p2[1] = op2
 
           futures << executor.execute do
-            puts 'executing... '
+            puts 'executing=' + p2.inspect
+            # todo: catch RecordNotFound errors and throw later if there really isn't any record found.
             rs = find(*p2)
+            puts 'rs=' + rs.inspect
+            rs
           end
         end
         futures.each do |f|
           puts 'getting future ' + f.inspect
           if params.first == :first || single
+            puts 'f.get=' + f.get.inspect
             return f.get if f.get
+          elsif by_ids
+            results << f.get if f.get
           else
             results.add_results f.get
           end
