@@ -13,7 +13,7 @@ begin
     gemspec.description = "ActiveRecord like interface for Amazon SimpleDB. Store, query, shard, etc. By http://www.appoxy.com"
     gemspec.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
     gemspec.files = FileList['lib/**/*.rb']
-    gemspec.add_dependency 'aws'
+    gemspec.add_dependency 'aws', '>= 3.0.0.beta'
     gemspec.add_dependency 'concur'
   end
   Jeweler::GemcutterTasks.new
