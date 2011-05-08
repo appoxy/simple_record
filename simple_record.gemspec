@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "2.1.4"
+  s.version = "2.1.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
-  s.date = %q{2011-04-07}
+  s.date = %q{2011-05-08}
   s.description = %q{ActiveRecord like interface for Amazon SimpleDB. Store, query, shard, etc. By http://www.appoxy.com}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -35,33 +35,6 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.7.2}
   s.summary = %q{ActiveRecord like interface for Amazon SimpleDB. By http://www.appoxy.com}
-  s.test_files = [
-    "test/conversions_test.rb",
-    "test/model_with_enc.rb",
-    "test/my_base_model.rb",
-    "test/my_child_model.rb",
-    "test/my_model.rb",
-    "test/my_sharded_model.rb",
-    "test/my_simple_model.rb",
-    "test/paging_array_test.rb",
-    "test/temp.rb",
-    "test/temp_test.rb",
-    "test/test_base.rb",
-    "test/test_dirty.rb",
-    "test/test_encodings.rb",
-    "test/test_global_options.rb",
-    "test/test_helpers.rb",
-    "test/test_json.rb",
-    "test/test_lobs.rb",
-    "test/test_marshalled.rb",
-    "test/test_pagination.rb",
-    "test/test_rails3.rb",
-    "test/test_results_array.rb",
-    "test/test_shards.rb",
-    "test/test_simple_record.rb",
-    "test/test_usage.rb",
-    "test/test_validations.rb"
-  ]
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
