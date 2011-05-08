@@ -2,7 +2,7 @@
 
 An ActiveRecord interface for SimpleDB.  Can be used as a drop in replacement for ActiveRecord in rails.
 
-Brought to you by: [![Appoxy](http://www.simpledeployr.com/images/global/appoxy-small.png)](http://www.appoxy.com)
+Brought to you by: [![Appoxy](https://lh5.googleusercontent.com/_-J9DSaseOX8/TX2Bq564w-I/AAAAAAAAxYU/xjeReyoxa8o/s800/appoxy-small%20%282%29.png)](http://www.appoxy.com)
 
 ## Discussion Group
 
@@ -260,6 +260,15 @@ all the clobs on the object.
     sr_config :single_clob=>true
 
 Setting this will automatically use :s3_bucket=>:new as well.
+
+## JSON Support
+
+You can easily marshal and unmarshal SimpleRecord objects and results by calling `to_json` on them. The default
+serialization will include a `json_class` value which will be used when deserializing to find the class. If you're using
+the results in an API though, you may not want to include json_class because the receiving end may not have that class
+around, so you can pass in `:exclude_json_class` option to to_json, eg:
+
+    my_ob.to_json(:exclude_json_class=>true)
 
 ## Tips and Tricks and Things to Know
 
