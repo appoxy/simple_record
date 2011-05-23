@@ -31,7 +31,7 @@ module SimpleRecord
       result = {
           'id' => self.id
       }
-      result['json_class'] = self.class.name unless options[:exclude_json_class]
+      result['json_class'] = self.class.name unless options && options[:exclude_json_class]
       defined_attributes_local.each_pair do |name, val|
 #                puts name.to_s + "=" + val.inspect
         if val.type == :belongs_to
