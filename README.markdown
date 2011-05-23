@@ -398,4 +398,4 @@ http://activrecord2sdb.rubyforge.org/
 
 ## License
 
-SimpleRecord is release under the MIT License.
+SimpleRecord is released under the MIT License.
