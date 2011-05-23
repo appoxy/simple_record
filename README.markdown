@@ -395,3 +395,7 @@ thread pool across your app, but for now, it will fire up a thread per shard.
 
 Special thanks to Garrett Cox for creating Activerecord2sdb which SimpleRecord is based on:
 http://activrecord2sdb.rubyforge.org/
+
+## License
+
+SimpleRecord is release under the MIT License.
