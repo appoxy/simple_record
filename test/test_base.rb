@@ -1,3 +1,4 @@
+gem 'test-unit'
 require 'test/unit'
 require File.join(File.dirname(__FILE__), "/../lib/simple_record")
 require File.join(File.dirname(__FILE__), "./test_helpers")
@@ -5,7 +6,7 @@ require "yaml"
 require 'aws'
 require_relative 'my_model'
 require_relative 'my_child_model'
-require 'active_support'
+#require 'active_support'
 
 class TestBase < Test::Unit::TestCase
 
