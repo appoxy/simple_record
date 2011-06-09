@@ -633,7 +633,7 @@ module SimpleRecord
 
         # This will currently return and's, or's and betweens. Doesn't hurt anything, but could remove.
         def parse_condition_fields(conditions)
-          return nil unless conditions && conditions.present?
+          return nil unless conditions && conditions.present? && conditions.is_a?(Array)
           rx = /\b(\w*)[\s|>=|<=|!=|=|>|<|like|between]/
           fields = conditions[0].scan(rx)
 #                    puts 'condition_fields = ' + fields.inspect
