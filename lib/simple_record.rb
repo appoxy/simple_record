@@ -974,23 +974,23 @@ module SimpleRecord
           cache_results(ret)
         elsif results[:single_only]
           ret = results[:single]
-          puts 'results[:single] ' + ret.inspect
+          #puts 'results[:single] ' + ret.inspect
           cache_results(ret)
         else
-          puts 'last step items = ' + results.inspect
+          #puts 'last step items = ' + results.inspect
           if results[:items] #.is_a?(Array)
             cache_results(results[:items])
             ret = SimpleRecord::ResultsArray.new(self, params, results, next_token)
           end
         end
       rescue Aws::AwsError, SimpleRecord::ActiveSdb::ActiveSdbError => ex
-        puts "RESCUED: " + ex.message
+        #puts "RESCUED: " + ex.message
         if (ex.message().index("NoSuchDomain") != nil)
           # this is ok
 #        elsif (ex.message() =~ @@regex_no_id) This is RecordNotFound now
 #          ret = nil
         else
-          puts 're-raising'
+          #puts 're-raising'
           raise ex
         end
       end
