@@ -15,19 +15,10 @@ require_relative 'my_simple_model'
 
 class TestSimpleRecord < TestBase
 
-  def test_custom_id
-    puts 'test_custom_id...'
-    custom_id = "id-travis"
-    mm = MyModel.new
-    mm.id = custom_id
-    mm.name = "Travis"
-    mm.age = 32
-    mm.cool = true
-    mm.save
-    sleep 1
-    mm2 = MyModel.find(custom_id)
-    puts 'mm2=' + mm2.inspect
-    assert mm2.id == mm.id
+  def test_virtuals
+    model = MyBaseModel.new(:v1=>'abc', :base_string=>'what')
+    assert model.v1 == 'abc', "model.v1=" + model.v1.inspect
+
   end
 
 end

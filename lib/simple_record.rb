@@ -226,7 +226,7 @@ module SimpleRecord
     def initialize_base(attrs={})
 
       #we have to handle the virtuals.
-      Attributes.handle_virtuals(attrs)
+      handle_virtuals(attrs)
 
       clear_errors
 

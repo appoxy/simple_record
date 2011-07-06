@@ -58,14 +58,14 @@ module SimpleRecord
           attr = Attribute.new(type, arg_options)
           defined_attributes[arg] = attr if defined_attributes[arg].nil?
 
-          # define reader method
+            # define reader method
           arg_s = arg.to_s # to get rid of all the to_s calls
           send(:define_method, arg) do
             ret = get_attribute(arg)
             return ret
           end
 
-          # define writer method
+            # define writer method
           send(:define_method, arg_s+"=") do |value|
             set(arg, value)
           end
@@ -81,13 +81,13 @@ module SimpleRecord
           @dirty.has_key?(sdb_att_name(arg_s))
         end
 
-        # define change method
+          # define change method
         send(:define_method, arg_s + "_change") do
           old_val = @dirty[sdb_att_name(arg_s)]
           [old_val, get_attribute(arg_s)]
         end
 
-        # define was method
+          # define was method
         send(:define_method, arg_s + "_was") do
           old_val = @dirty[sdb_att_name(arg_s)]
           old_val
@@ -149,21 +149,26 @@ module SimpleRecord
 
       end
 
+      def virtuals
+        @virtuals ||= []
+        @virtuals
+      end
+
       def has_virtuals(*args)
-        @@virtuals = args
+        virtuals.concat(args)
         args.each do |arg|
           #we just create the accessor functions here, the actual instance variable is created during initialize
           attr_accessor(arg)
         end
       end
 
-      # One belongs_to association per call. Call multiple times if there are more than one.
-      #
-      # This method will also create an {association)_id method that will return the ID of the foreign object
-      # without actually materializing it.
-      #
-      # options:
-      #     :class_name=>"User" - to change the default class to use
+        # One belongs_to association per call. Call multiple times if there are more than one.
+        #
+        # This method will also create an {association)_id method that will return the ID of the foreign object
+        # without actually materializing it.
+        #
+        # options:
+        #     :class_name=>"User" - to change the default class to use
       def belongs_to(association_id, options = {})
         arg = association_id
         arg_s = arg.to_s
@@ -171,29 +176,29 @@ module SimpleRecord
         attribute = Attribute.new(:belongs_to, options)
         defined_attributes[arg] = attribute
 
-        # todo: should also handle foreign_key http://74.125.95.132/search?q=cache:KqLkxuXiBBQJ:wiki.rubyonrails.org/rails/show/belongs_to+rails+belongs_to&hl=en&ct=clnk&cd=1&gl=us
-        #    puts "arg_id=#{arg}_id"
-        #        puts "is defined? " + eval("(defined? #{arg}_id)").to_s
-        #        puts 'atts=' + @attributes.inspect
+          # todo: should also handle foreign_key http://74.125.95.132/search?q=cache:KqLkxuXiBBQJ:wiki.rubyonrails.org/rails/show/belongs_to+rails+belongs_to&hl=en&ct=clnk&cd=1&gl=us
+          #    puts "arg_id=#{arg}_id"
+          #        puts "is defined? " + eval("(defined? #{arg}_id)").to_s
+          #        puts 'atts=' + @attributes.inspect
 
-        # Define reader method
+          # Define reader method
         send(:define_method, arg) do
           return get_attribute(arg)
         end
 
 
-        # Define writer method
+          # Define writer method
         send(:define_method, arg.to_s + "=") do |value|
           set(arg, value)
         end
 
 
-        # Define ID reader method for reading the associated objects id without getting the entire object
+          # Define ID reader method for reading the associated objects id without getting the entire object
         send(:define_method, arg_id) do
           get_attribute_sdb(arg_s)
         end
 
-        # Define writer method for setting the _id directly without the associated object
+          # Define writer method for setting the _id directly without the associated object
         send(:define_method, arg_id + "=") do |value|
 #                rb_att_name = arg_s # n2 = name.to_s[0, name.length-3]
           set(arg_id, value)
@@ -237,14 +242,16 @@ module SimpleRecord
 
     end
 
-    @@virtuals=[]
-
-    def self.handle_virtuals(attrs)
-      @@virtuals.each do |virtual|
-        #we first copy the information for the virtual to an instance variable of the same name
-        eval("@#{virtual}=attrs['#{virtual}']")
-        #and then remove the parameter before it is passed to initialize, so that it is NOT sent to SimpleDB
-        eval("attrs.delete('#{virtual}')")
+    def handle_virtuals(attrs)
+      puts 'handle_virtuals'
+      self.class.virtuals.each do |virtual|
+        puts 'virtual=' + virtual.inspect
+          #we first copy the information for the virtual to an instance variable of the same name
+        send("#{virtual}=", attrs[virtual])
+        #eval("@#{virtual}=attrs['#{virtual}']")
+          #and then remove the parameter before it is passed to initialize, so that it is NOT sent to SimpleDB
+        attrs.delete(virtual)
+        #eval("attrs.delete('#{virtual}')")
       end
     end
 
@@ -289,17 +296,17 @@ module SimpleRecord
           attname = name.to_s
           attvalue = att_meta.init_value(value)
 #                  attvalue = value
-          #puts 'converted ' + value.inspect + ' to ' + attvalue.inspect
+#puts 'converted ' + value.inspect + ' to ' + attvalue.inspect
         end
       end
       attvalue = strip_array(attvalue)
       make_dirty(name, attvalue) if dirtify
-#            puts "ARG=#{attname.to_s} setting to #{attvalue}"
+                          #            puts "ARG=#{attname.to_s} setting to #{attvalue}"
       sdb_val = ruby_to_sdb(name, attvalue)
-#            puts "sdb_val=" + sdb_val.to_s
+                          #            puts "sdb_val=" + sdb_val.to_s
       @attributes[attname] = sdb_val
-#            attvalue = wrap_if_required(name, attvalue, sdb_val)
-#            puts 'attvalue2=' + attvalue.to_s
+                          #            attvalue = wrap_if_required(name, attvalue, sdb_val)
+                          #            puts 'attvalue2=' + attvalue.to_s
 
       if store_rb_val
         @attributes_rb[name.to_s] = value
@@ -321,11 +328,11 @@ module SimpleRecord
       return ret
     end
 
-    # Since SimpleDB supports multiple attributes per value, the values are an array.
-    # This method will return the value unwrapped if it's the only, otherwise it will return the array.
+      # Since SimpleDB supports multiple attributes per value, the values are an array.
+      # This method will return the value unwrapped if it's the only, otherwise it will return the array.
     def get_attribute(name)
 #            puts "get_attribute #{name}"
-      # Check if this arg is already converted
+# Check if this arg is already converted
       name_s = name.to_s
       name = name.to_sym
       att_meta = get_att_meta(name)
@@ -340,7 +347,7 @@ module SimpleRecord
             return ret
           end
         end
-        # get it from s3
+# get it from s3
         unless new_record?
           if self.class.get_sr_config[:single_clob]
             begin
@@ -362,7 +369,7 @@ module SimpleRecord
           else
             begin
               ret = s3_bucket.get(s3_lob_id(name))
-                            # puts 'got from s3 ' + ret.inspect
+                # puts 'got from s3 ' + ret.inspect
               SimpleRecord.stats.s3_gets += 1
             rescue Aws::AwsError => ex
               if ex.include?(/NoSuchKey/) || ex.include?(/NoSuchBucket/)
@@ -386,9 +393,9 @@ module SimpleRecord
         return ret unless ret.nil?
         return nil if ret.is_a? RemoteNil
         ret = get_attribute_sdb(name)
-#                p ret
+                                                  #                p ret
         ret = sdb_to_ruby(name, ret)
-#                p ret
+                                                  #                p ret
         @attributes_rb[name_s] = ret
         return ret
       end
@@ -404,7 +411,7 @@ module SimpleRecord
     end
 
 
-    # Holds information about an attribute
+      # Holds information about an attribute
     class Attribute
       attr_accessor :type, :options
 

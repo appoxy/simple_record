@@ -15,7 +15,6 @@ require_relative 'my_simple_model'
 
 class TestSimpleRecord < TestBase
 
-
   def test_save_get
     mm = MyModel.new
     mm.name = "Travis"
