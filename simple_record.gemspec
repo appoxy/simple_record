@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_record}
-  s.version = "2.1.8"
+  s.version = "2.1.10"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
-  s.date = %q{2011-06-10}
+  s.authors = [%q{Travis Reeder}, %q{Chad Arimura}, %q{RightScale}]
+  s.date = %q{2011-07-04}
   s.description = %q{ActiveRecord like interface for Amazon SimpleDB. Store, query, shard, etc. By http://www.appoxy.com}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -33,8 +33,8 @@ Gem::Specification.new do |s|
     "lib/simple_record/validations.rb"
   ]
   s.homepage = %q{http://github.com/appoxy/simple_record/}
-  s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.7.2}
+  s.require_paths = [%q{lib}]
+  s.rubygems_version = %q{1.8.5}
   s.summary = %q{ActiveRecord like interface for Amazon SimpleDB. By http://www.appoxy.com}
 
   if s.respond_to? :specification_version then
