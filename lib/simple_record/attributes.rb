@@ -243,9 +243,9 @@ module SimpleRecord
     end
 
     def handle_virtuals(attrs)
-      puts 'handle_virtuals'
+      #puts 'handle_virtuals'
       self.class.virtuals.each do |virtual|
-        puts 'virtual=' + virtual.inspect
+       # puts 'virtual=' + virtual.inspect
           #we first copy the information for the virtual to an instance variable of the same name
         send("#{virtual}=", attrs[virtual])
         #eval("@#{virtual}=attrs['#{virtual}']")
