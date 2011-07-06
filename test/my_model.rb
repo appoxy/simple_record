@@ -1,6 +1,7 @@
 require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
 require_relative 'my_base_model'
 require_relative 'my_sharded_model'
+require 'active_model'
 
 class MyModel < MyBaseModel
 
@@ -11,9 +12,12 @@ class MyModel < MyBaseModel
 
 #    validates_presence_of :name
 
+
 #  validate :validate
 #  before_create :validate_on_create
 #  before_update :validate_on_update
+
+  validates_uniqueness_of :name
 
   belongs_to :my_sharded_model
 

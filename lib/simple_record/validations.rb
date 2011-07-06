@@ -17,6 +17,20 @@ module SimpleRecord
 #      end
     end
 
+    module ClassMethods
+
+      def uniques
+        @uniques ||= {}
+        @uniques
+      end
+
+        # only supporting single attr name right now
+      def validates_uniqueness_of(attr)
+        uniques[attr] = true
+      end
+
+    end
+
     def valid?
 #      puts 'in rails2 valid?'
       errors.clear
@@ -26,9 +40,9 @@ module SimpleRecord
         am_valid?
       end
 
-      #            run_callbacks(:validate)
+        #            run_callbacks(:validate)
       validate
-
+      validate_uniques
 
       if new_record?
         #                run_callbacks(:validate_on_create)
@@ -49,6 +63,21 @@ module SimpleRecord
 
     def read_attribute_for_validation(key)
       @attributes[key.to_s]
+    end
+
+    def validate_uniques
+      puts 'uniques=' + self.class.uniques.inspect
+      self.class.uniques.each_pair do |k, v|
+        val = self.send(k)
+        puts 'val=' + val.inspect
+        if val
+          ret = self.class.find(:first, :conditions=>["#{k}=?", val])
+          puts 'ret=' + ret.inspect
+          if ret
+            errors.add(k, "must be unique.")
+          end
+        end
+      end
     end
 
     def validate
