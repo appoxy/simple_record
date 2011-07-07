@@ -418,7 +418,7 @@ module SimpleRecord
             total_count = 0
             total_box_usage = 0
             query_result = self.connection.select(select_expression, options) do |result|
-              puts 'result=' + result.inspect
+              #puts 'result=' + result.inspect
               total_count += result[:items][0]["Domain"]["Count"][0].to_i # result.delete(:items)[0]["Domain"]["Count"][0].to_i
               total_box_usage += result[:box_usage].to_i
               true #continue loop
