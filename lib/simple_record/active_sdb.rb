@@ -99,23 +99,23 @@ module SimpleRecord
         @connection || raise(ActiveSdbError.new('Connection to SDB is not established'))
       end
 
-      # Create a new handle to an Sdb account. All handles share the same per process or per thread
-      # HTTP connection to Amazon Sdb. Each handle is for a specific account.
-      # The +params+ are passed through as-is to Aws::SdbInterface.new
-      # Params:
-      #    { :server       => 'sdb.amazonaws.com'  # Amazon service host: 'sdb.amazonaws.com'(default)
-      #      :port         => 443                  # Amazon service port: 80 or 443(default)
-      #      :protocol     => 'https'              # Amazon service protocol: 'http' or 'https'(default)
-      #      :signature_version => '2'             # The signature version : '0', '1' or '2' (default)
-      #      DEPRECATED :multi_thread => true|false           # Multi-threaded (connection per each thread): true or false(default)
-      #      :connection_mode  => :default         # options are :default (will use best known option, may change in the future)
-      #                                                  :per_request (opens and closes a connection on every request to SDB)
-      #                                                  :single (same as old multi_thread=>false)
-      #                                                  :per_thread (same as old multi_thread=>true)
-      #                                                  :pool (uses a connection pool with a maximum number of connections - NOT IMPLEMENTED YET)
-      #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
-      #      :nil_representation => 'mynil'}       # interpret Ruby nil as this string value; i.e. use this string in SDB to represent Ruby nils (default is the string 'nil')
-      #      :service_endpoint	=> '/'		 # Set this to /mdb/request.mgwsi for usage with M/DB
+        # Create a new handle to an Sdb account. All handles share the same per process or per thread
+        # HTTP connection to Amazon Sdb. Each handle is for a specific account.
+        # The +params+ are passed through as-is to Aws::SdbInterface.new
+        # Params:
+        #    { :server       => 'sdb.amazonaws.com'  # Amazon service host: 'sdb.amazonaws.com'(default)
+        #      :port         => 443                  # Amazon service port: 80 or 443(default)
+        #      :protocol     => 'https'              # Amazon service protocol: 'http' or 'https'(default)
+        #      :signature_version => '2'             # The signature version : '0', '1' or '2' (default)
+        #      DEPRECATED :multi_thread => true|false           # Multi-threaded (connection per each thread): true or false(default)
+        #      :connection_mode  => :default         # options are :default (will use best known option, may change in the future)
+        #                                                  :per_request (opens and closes a connection on every request to SDB)
+        #                                                  :single (same as old multi_thread=>false)
+        #                                                  :per_thread (same as old multi_thread=>true)
+        #                                                  :pool (uses a connection pool with a maximum number of connections - NOT IMPLEMENTED YET)
+        #      :logger       => Logger Object        # Logger instance: logs to STDOUT if omitted
+        #      :nil_representation => 'mynil'}       # interpret Ruby nil as this string value; i.e. use this string in SDB to represent Ruby nils (default is the string 'nil')
+        #      :service_endpoint	=> '/'		 # Set this to /mdb/request.mgwsi for usage with M/DB
 
       def establish_connection(aws_access_key_id=nil, aws_secret_access_key=nil, params={})
         @connection = Aws::SdbInterface.new(aws_access_key_id, aws_secret_access_key, params)
@@ -132,28 +132,28 @@ module SimpleRecord
     class << self
       include ActiveSdbConnect
 
-      # Retreive a list of domains.
-      #
-      #  put Aws::ActiveSdb.domains #=> ['co-workers','family','friends','clients']
-      #
+        # Retreive a list of domains.
+        #
+        #  put Aws::ActiveSdb.domains #=> ['co-workers','family','friends','clients']
+        #
       def domains
         connection.list_domains[:domains]
       end
 
-      # Create new domain.
-      # Raises no errors if the domain already exists.
-      #
-      #  Aws::ActiveSdb.create_domain('alpha')  #=> {:request_id=>"6fc652a0-0000-41d5-91f4-3ed390a3d3b2", :box_usage=>"0.0055590278"}
-      #
+        # Create new domain.
+        # Raises no errors if the domain already exists.
+        #
+        #  Aws::ActiveSdb.create_domain('alpha')  #=> {:request_id=>"6fc652a0-0000-41d5-91f4-3ed390a3d3b2", :box_usage=>"0.0055590278"}
+        #
       def create_domain(domain_name)
         connection.create_domain(domain_name)
       end
 
-      # Remove domain from SDB.
-      # Raises no errors if the domain does not exist.
-      #
-      #  Aws::ActiveSdb.create_domain('alpha')  #=> {:request_id=>"6fc652a0-0000-41c6-91f4-3ed390a3d3b2", :box_usage=>"0.0055590001"}
-      #
+        # Remove domain from SDB.
+        # Raises no errors if the domain does not exist.
+        #
+        #  Aws::ActiveSdb.create_domain('alpha')  #=> {:request_id=>"6fc652a0-0000-41c6-91f4-3ed390a3d3b2", :box_usage=>"0.0055590001"}
+        #
       def delete_domain(domain_name)
         connection.delete_domain(domain_name)
       end
@@ -164,54 +164,54 @@ module SimpleRecord
       class << self
         include ActiveSdbConnect
 
-        # next_token value returned by last find: is useful to continue finding
+          # next_token value returned by last find: is useful to continue finding
         attr_accessor :next_token
 
-        # Returns a Aws::SdbInterface object
-        #
-        #  class A < Aws::ActiveSdb::Base
-        #  end
-        #
-        #  class B < Aws::ActiveSdb::Base
-        #  end
-        #
-        #  class C < Aws::ActiveSdb::Base
-        #  end
-        #
-        #  Aws::ActiveSdb.establish_connection 'key_id_1', 'secret_key_1'
-        #
-        #  C.establish_connection 'key_id_2', 'secret_key_2'
-        #
-        #  # A and B uses the default connection, C - uses its own
-        #  puts A.connection  #=> #<Aws::SdbInterface:0xb76d6d7c>
-        #  puts B.connection  #=> #<Aws::SdbInterface:0xb76d6d7c>
-        #  puts C.connection  #=> #<Aws::SdbInterface:0xb76d6ca0>
-        #
+          # Returns a Aws::SdbInterface object
+          #
+          #  class A < Aws::ActiveSdb::Base
+          #  end
+          #
+          #  class B < Aws::ActiveSdb::Base
+          #  end
+          #
+          #  class C < Aws::ActiveSdb::Base
+          #  end
+          #
+          #  Aws::ActiveSdb.establish_connection 'key_id_1', 'secret_key_1'
+          #
+          #  C.establish_connection 'key_id_2', 'secret_key_2'
+          #
+          #  # A and B uses the default connection, C - uses its own
+          #  puts A.connection  #=> #<Aws::SdbInterface:0xb76d6d7c>
+          #  puts B.connection  #=> #<Aws::SdbInterface:0xb76d6d7c>
+          #  puts C.connection  #=> #<Aws::SdbInterface:0xb76d6ca0>
+          #
         def connection
           @connection || ActiveSdb::connection
         end
 
         @domain = nil
 
-        # Current domain name.
-        #
-        #  # if 'ActiveSupport' is not loaded then class name converted to downcase
-        #  class Client < Aws::ActiveSdb::Base
-        #  end
-        #  puts Client.domain  #=> 'client'
-        #
-        #  # if 'ActiveSupport' is loaded then class name being tableized
-        #  require 'activesupport'
-        #  class Client < Aws::ActiveSdb::Base
-        #  end
-        #  puts Client.domain  #=> 'clients'
-        #
-        #  # Explicit domain name definition
-        #  class Client < Aws::ActiveSdb::Base
-        #    set_domain_name :foreign_clients
-        #  end
-        #  puts Client.domain  #=> 'foreign_clients'
-        #
+          # Current domain name.
+          #
+          #  # if 'ActiveSupport' is not loaded then class name converted to downcase
+          #  class Client < Aws::ActiveSdb::Base
+          #  end
+          #  puts Client.domain  #=> 'client'
+          #
+          #  # if 'ActiveSupport' is loaded then class name being tableized
+          #  require 'activesupport'
+          #  class Client < Aws::ActiveSdb::Base
+          #  end
+          #  puts Client.domain  #=> 'clients'
+          #
+          #  # Explicit domain name definition
+          #  class Client < Aws::ActiveSdb::Base
+          #    set_domain_name :foreign_clients
+          #  end
+          #  puts Client.domain  #=> 'foreign_clients'
+          #
         def domain
           unless @domain
             if defined? ActiveSupport::CoreExtensions::String::Inflections
@@ -223,45 +223,45 @@ module SimpleRecord
           @domain
         end
 
-        # Change the default domain name to user defined.
-        #
-        #  class Client < Aws::ActiveSdb::Base
-        #    set_domain_name :foreign_clients
-        #  end
-        #
+          # Change the default domain name to user defined.
+          #
+          #  class Client < Aws::ActiveSdb::Base
+          #    set_domain_name :foreign_clients
+          #  end
+          #
         def set_domain_name(domain)
           @domain = domain.to_s
         end
 
-        # Create domain at SDB.
-        # Raises no errors if the domain already exists.
-        #
-        #  class Client < Aws::ActiveSdb::Base
-        #  end
-        #  Client.create_domain  #=> {:request_id=>"6fc652a0-0000-41d5-91f4-3ed390a3d3b2", :box_usage=>"0.0055590278"}
-        #
+          # Create domain at SDB.
+          # Raises no errors if the domain already exists.
+          #
+          #  class Client < Aws::ActiveSdb::Base
+          #  end
+          #  Client.create_domain  #=> {:request_id=>"6fc652a0-0000-41d5-91f4-3ed390a3d3b2", :box_usage=>"0.0055590278"}
+          #
         def create_domain(dom=nil)
           dom = domain if dom.nil?
           puts "Creating new SimpleDB Domain: " + dom
           connection.create_domain(dom)
         end
 
-        # Remove domain from SDB.
-        # Raises no errors if the domain does not exist.
-        #
-        #  class Client < Aws::ActiveSdb::Base
-        #  end
-        #  Client.delete_domain  #=> {:request_id=>"e14d90d3-0000-4898-9995-0de28cdda270", :box_usage=>"0.0055590278"}
-        #
+          # Remove domain from SDB.
+          # Raises no errors if the domain does not exist.
+          #
+          #  class Client < Aws::ActiveSdb::Base
+          #  end
+          #  Client.delete_domain  #=> {:request_id=>"e14d90d3-0000-4898-9995-0de28cdda270", :box_usage=>"0.0055590278"}
+          #
         def delete_domain(dom=nil)
           dom = domain if dom.nil?
           puts "!!! DELETING SimpleDB Domain: " + dom
           connection.delete_domain(dom)
         end
 
-        #
-        # See select(), original find with QUERY syntax is deprecated so now find and select are synonyms.
-        #
+          #
+          # See select(), original find with QUERY syntax is deprecated so now find and select are synonyms.
+          #
         def find(*args)
           options = args.last.is_a?(Hash) ? args.pop : {}
           case args.first
@@ -281,9 +281,9 @@ module SimpleRecord
           end
         end
 
-        #
-        # Same as find, but will return SimpleDB metadata like :request_id and :box_usage
-        #
+          #
+          # Same as find, but will return SimpleDB metadata like :request_id and :box_usage
+          #
         def find_with_metadata(*args)
           options = args.last.is_a?(Hash) ? args.pop : {}
           case args.first
@@ -301,55 +301,55 @@ module SimpleRecord
           end
         end
 
-        # Perform a SQL-like select request.
-        #
-        # Single record:
-        #
-        #  Client.select(:first)
-        #  Client.select(:first, :conditions=> [ "name=? AND wife=?", "Jon", "Sandy"])
-        #  Client.select(:first, :conditions=> { :name=>"Jon", :wife=>"Sandy" }, :select => :girfriends)
-        #
-        # Bunch of records:
-        #
-        #  Client.select(:all)
-        #  Client.select(:all, :limit => 10)
-        #  Client.select(:all, :conditions=> [ "name=? AND 'girlfriend'=?", "Jon", "Judy"])
-        #  Client.select(:all, :conditions=> { :name=>"Sandy" }, :limit => 3)
-        #
-        # Records by ids:
-        #
-        #  Client.select('1')
-        #  Client.select('1234987b4583475347523948')
-        #  Client.select('1','2','3','4', :conditions=> ["toys=?", "beer"])
-        #
-        # Find helpers: Aws::ActiveSdb::Base.select_by_... and Aws::ActiveSdb::Base.select_all_by_...
-        #
-        #  Client.select_by_name('Matias Rust')
-        #  Client.select_by_name_and_city('Putin','Moscow')
-        #  Client.select_by_name_and_city_and_post('Medvedev','Moscow','president')
-        #
-        #  Client.select_all_by_author('G.Bush jr')
-        #  Client.select_all_by_age_and_gender_and_ethnicity('34','male','russian')
-        #  Client.select_all_by_gender_and_country('male', 'Russia', :order => 'name')
-        #
-        # Continue listing:
-        #
-        #  # initial listing
-        #  Client.select(:all, :limit => 10)
-        #  # continue listing
-        #  begin
-        #    Client.select(:all, :limit => 10, :next_token => Client.next_token)
-        #  end while Client.next_token
-        #
-        #  Sort oder:
-        #  If :order=>'attribute' option is specified then result response (ordered by 'attribute') will contain only items where attribute is defined (is not null).
-        #
-        #    Client.select(:all)                         # returns all records
-        #    Client.select(:all, :order => 'gender')     # returns all records ordered by gender where gender attribute exists
-        #    Client.select(:all, :order => 'name desc')  # returns all records ordered by name in desc order where name attribute exists
-        #
-        # see http://docs.amazonwebservices.com/AmazonSimpleDB/2007-11-07/DeveloperGuide/index.html?UsingSelect.html
-        #
+          # Perform a SQL-like select request.
+          #
+          # Single record:
+          #
+          #  Client.select(:first)
+          #  Client.select(:first, :conditions=> [ "name=? AND wife=?", "Jon", "Sandy"])
+          #  Client.select(:first, :conditions=> { :name=>"Jon", :wife=>"Sandy" }, :select => :girfriends)
+          #
+          # Bunch of records:
+          #
+          #  Client.select(:all)
+          #  Client.select(:all, :limit => 10)
+          #  Client.select(:all, :conditions=> [ "name=? AND 'girlfriend'=?", "Jon", "Judy"])
+          #  Client.select(:all, :conditions=> { :name=>"Sandy" }, :limit => 3)
+          #
+          # Records by ids:
+          #
+          #  Client.select('1')
+          #  Client.select('1234987b4583475347523948')
+          #  Client.select('1','2','3','4', :conditions=> ["toys=?", "beer"])
+          #
+          # Find helpers: Aws::ActiveSdb::Base.select_by_... and Aws::ActiveSdb::Base.select_all_by_...
+          #
+          #  Client.select_by_name('Matias Rust')
+          #  Client.select_by_name_and_city('Putin','Moscow')
+          #  Client.select_by_name_and_city_and_post('Medvedev','Moscow','president')
+          #
+          #  Client.select_all_by_author('G.Bush jr')
+          #  Client.select_all_by_age_and_gender_and_ethnicity('34','male','russian')
+          #  Client.select_all_by_gender_and_country('male', 'Russia', :order => 'name')
+          #
+          # Continue listing:
+          #
+          #  # initial listing
+          #  Client.select(:all, :limit => 10)
+          #  # continue listing
+          #  begin
+          #    Client.select(:all, :limit => 10, :next_token => Client.next_token)
+          #  end while Client.next_token
+          #
+          #  Sort oder:
+          #  If :order=>'attribute' option is specified then result response (ordered by 'attribute') will contain only items where attribute is defined (is not null).
+          #
+          #    Client.select(:all)                         # returns all records
+          #    Client.select(:all, :order => 'gender')     # returns all records ordered by gender where gender attribute exists
+          #    Client.select(:all, :order => 'name desc')  # returns all records ordered by name in desc order where name attribute exists
+          #
+          # see http://docs.amazonwebservices.com/AmazonSimpleDB/2007-11-07/DeveloperGuide/index.html?UsingSelect.html
+          #
         def select(*args)
           find(*args)
         end
@@ -364,28 +364,28 @@ module SimpleRecord
           SimpleRecord.logger
         end
 
-        # Select
+          # Select
 
         def select_from_ids(args, options) # :nodoc:
           cond = []
-          # detect amount of records requested
+            # detect amount of records requested
           bunch_of_records_requested = args.size > 1 || args.first.is_a?(Array)
-          # flatten ids
+            # flatten ids
           args = args.to_a.flatten
           args.each { |id| cond << "itemName() = #{self.connection.escape(id)}" }
           ids_cond = "(#{cond.join(' OR ')})"
-          # user defined :conditions to string (if it was defined)
+            # user defined :conditions to string (if it was defined)
           options[:conditions] = build_conditions(options[:conditions])
-          # join ids condition and user defined conditions
+            # join ids condition and user defined conditions
           options[:conditions] = options[:conditions].blank? ? ids_cond : "(#{options[:conditions]}) AND #{ids_cond}"
-          #puts 'options=' + options.inspect
+            #puts 'options=' + options.inspect
           result = sql_select(options)
-          #puts 'select_from_ids result=' + result.inspect
-          # if one record was requested then return it
+            #puts 'select_from_ids result=' + result.inspect
+            # if one record was requested then return it
           unless bunch_of_records_requested
             result[:single_only] = true
             record = result[:items].first
-            # railse if nothing was found
+              # railse if nothing was found
             raise SimpleRecord::RecordNotFound.new("Couldn't find #{name} with ID #{args}") unless record || is_sharded?
             result[:single] = record
           else
@@ -405,21 +405,38 @@ module SimpleRecord
 
         def sql_select(options) # :nodoc:
           count = options[:count] || false
-          #puts 'count? ' + count.to_s
+            #puts 'count? ' + count.to_s
           @next_token = options[:next_token]
           @consistent_read = options[:consistent_read]
           select_expression = build_select(options)
           logger.debug 'SELECT=' + select_expression
-          # request items
-          query_result = self.connection.select(select_expression, options)
-          # puts 'QR=' + query_result.inspect
-          @next_token = query_result[:next_token]
+            # request items
+
           ret = {}
           if count
-            ret[:count] = query_result.delete(:items)[0]["Domain"]["Count"][0].to_i
-            ret.merge!(query_result)
+            # we'll keep going to get full count
+            total_count = 0
+            total_box_usage = 0
+            query_result = self.connection.select(select_expression, options) do |result|
+              puts 'result=' + result.inspect
+              total_count += result[:items][0]["Domain"]["Count"][0].to_i # result.delete(:items)[0]["Domain"]["Count"][0].to_i
+              total_box_usage += result[:box_usage].to_i
+              true #continue loop
+            end
+            ret[:count] = total_count
+            ret[:box_usage] = total_box_usage
             return ret
+          else
+            query_result = self.connection.select(select_expression, options)
+            @next_token = query_result[:next_token]
           end
+            # puts 'QR=' + query_result.inspect
+
+          #if count
+            #ret[:count] = query_result.delete(:items)[0]["Domain"]["Count"][0].to_i
+            #ret.merge!(query_result)
+            #return ret
+          #end
 
           items = query_result.delete(:items).map do |hash|
             id, attributes = hash.shift
@@ -433,7 +450,7 @@ module SimpleRecord
           ret
         end
 
-        # select_by helpers
+          # select_by helpers
         def select_all_by_(format_str, args, options) # :nodoc:
           fields = format_str.to_s.sub(/^select_(all_)?by_/, '').split('_and_')
           conditions = fields.map { |field| "#{field}=?" }.join(' AND ')
@@ -446,11 +463,11 @@ module SimpleRecord
           select_all_by_(format_str, args, options).first
         end
 
-        # Query
+          # Query
 
-        # Returns an array of query attributes.
-        # Query_expression must be a well formated SDB query string:
-        # query_attributes("['title' starts-with 'O\\'Reily'] intersection ['year' = '2007']") #=> ["title", "year"]
+          # Returns an array of query attributes.
+          # Query_expression must be a well formated SDB query string:
+          # query_attributes("['title' starts-with 'O\\'Reily'] intersection ['year' = '2007']") #=> ["title", "year"]
         def query_attributes(query_expression) # :nodoc:
           attrs = []
           array = query_expression.scan(/['"](.*?[^\\])['"]/).flatten
@@ -461,33 +478,33 @@ module SimpleRecord
           attrs
         end
 
-        # Returns an array of [attribute_name, 'asc'|'desc']
+          # Returns an array of [attribute_name, 'asc'|'desc']
         def sort_options(sort_string)
           sort_string[/['"]?(\w+)['"]? *(asc|desc)?/i]
           [$1, ($2 || 'asc')]
         end
 
-        # Perform a query request.
-        #
-        # Options
-        #  :query_expression     nil | string | array
-        #  :max_number_of_items  nil | integer
-        #  :next_token           nil | string
-        #  :sort_option          nil | string    "name desc|asc"
-        #
+          # Perform a query request.
+          #
+          # Options
+          #  :query_expression     nil | string | array
+          #  :max_number_of_items  nil | integer
+          #  :next_token           nil | string
+          #  :sort_option          nil | string    "name desc|asc"
+          #
         def query(options) # :nodoc:
           @next_token = options[:next_token]
           @consistent_read = options[:consistent_read]
           query_expression = build_conditions(options[:query_expression])
-          # add sort_options to the query_expression
+            # add sort_options to the query_expression
           if options[:sort_option]
             sort_by, sort_order = sort_options(options[:sort_option])
             sort_query_expression = "['#{sort_by}' starts-with '']"
             sort_by_expression = " sort '#{sort_by}' #{sort_order}"
-            # make query_expression to be a string (it may be null)
+              # make query_expression to be a string (it may be null)
             query_expression = query_expression.to_s
-            # quote from Amazon:
-            # The sort attribute must be present in at least one of the predicates of the query expression.
+              # quote from Amazon:
+              # The sort attribute must be present in at least one of the predicates of the query expression.
             if query_expression.blank?
               query_expression = sort_query_expression
             elsif !query_attributes(query_expression).include?(sort_by)
@@ -495,7 +512,7 @@ module SimpleRecord
             end
             query_expression += sort_by_expression
           end
-          # request items
+            # request items
           query_result = self.connection.query(domain, query_expression, options[:max_number_of_items], @next_token, @consistent_read)
           @next_token = query_result[:next_token]
           items = query_result[:items].map do |name|
@@ -507,7 +524,7 @@ module SimpleRecord
           items
         end
 
-        # reload a record unless it is nil
+          # reload a record unless it is nil
         def reload_if_exists(record) # :nodoc:
           record && record.reload
         end
@@ -533,21 +550,21 @@ module SimpleRecord
 
         def find_from_ids(args, options) # :nodoc:
           cond = []
-          # detect amount of records requested
+            # detect amount of records requested
           bunch_of_records_requested = args.size > 1 || args.first.is_a?(Array)
-          # flatten ids
+            # flatten ids
           args = args.to_a.flatten
           args.each { |id| cond << "'id'=#{self.connection.escape(id)}" }
           ids_cond = "[#{cond.join(' OR ')}]"
-          # user defined :conditions to string (if it was defined)
+            # user defined :conditions to string (if it was defined)
           options[:conditions] = build_conditions(options[:conditions])
-          # join ids condition and user defined conditions
+            # join ids condition and user defined conditions
           options[:conditions] = options[:conditions].blank? ? ids_cond : "#{options[:conditions]} intersection #{ids_cond}"
           result = find_every(options)
-          # if one record was requested then return it
+            # if one record was requested then return it
           unless bunch_of_records_requested
             record = result.first
-            # railse if nothing was found
+              # railse if nothing was found
             raise ActiveSdbError.new("Couldn't find #{name} with ID #{args}") unless record
             options[:auto_load] ? reload_all_records(record).first : record
           else
@@ -562,7 +579,7 @@ module SimpleRecord
           end
         end
 
-        # find_by helpers
+          # find_by helpers
         def find_all_by_(format_str, args, options) # :nodoc:
           fields = format_str.to_s.sub(/^find_(all_)?by_/, '').split('_and_')
           conditions = fields.map { |field| "['#{field}'=?]" }.join(' intersection ')
@@ -575,7 +592,7 @@ module SimpleRecord
           find_all_by_(format_str, args, options).first
         end
 
-        # Misc
+          # Misc
 
         def method_missing(method, *args) # :nodoc:
           if method.to_s[/^(find_all_by_|find_by_|select_all_by_|select_by_)/]
@@ -598,13 +615,13 @@ module SimpleRecord
         def build_select(options) # :nodoc:
           select = options[:select] || '*'
           select = options[:count] ? "count(*)" : select
-          #puts 'select=' + select.to_s
+            #puts 'select=' + select.to_s
           from = options[:from] || domain
           condition_fields = parse_condition_fields(options[:conditions])
           conditions = options[:conditions] ? "#{build_conditions(options[:conditions])}" : ''
           order = options[:order] ? " ORDER BY #{options[:order]}" : ''
           limit = options[:limit] ? " LIMIT #{options[:limit]}" : ''
-          # mix sort by argument (it must present in response)
+            # mix sort by argument (it must present in response)
           unless order.blank?
             sort_by, sort_order = sort_options(options[:order])
             if condition_fields.nil? || !condition_fields.include?(sort_by)
@@ -616,7 +633,7 @@ module SimpleRecord
 
           end
           conditions = conditions.blank? ? "" : " WHERE #{conditions}"
-#                    puts 'CONDITIONS=' + conditions
+            #                    puts 'CONDITIONS=' + conditions
           "SELECT #{select} FROM `#{from}`#{conditions}#{order}#{limit}"
         end
 
@@ -631,7 +648,7 @@ module SimpleRecord
           end
         end
 
-        # This will currently return and's, or's and betweens. Doesn't hurt anything, but could remove.
+          # This will currently return and's, or's and betweens. Doesn't hurt anything, but could remove.
         def parse_condition_fields(conditions)
           return nil unless conditions && conditions.present? && conditions.is_a?(Array)
           rx = /\b(\w*)[\s|>=|<=|!=|=|>|<|like|between]/
@@ -644,71 +661,71 @@ module SimpleRecord
 
       public
 
-      # instance attributes
+        # instance attributes
       attr_accessor :attributes
 
-      # item name
+        # item name
       attr_accessor :id
 
-      # Create new Item instance.
-      # +attrs+ is a hash: { attribute1 => values1, ..., attributeN => valuesN }.
-      #
-      #  item = Client.new('name' => 'Jon', 'toys' => ['girls', 'beer', 'pub'])
-      #  puts item.inspect   #=> #<Client:0xb77a2698 @new_record=true, @attributes={"name"=>["Jon"], "toys"=>["girls", "beer", "pub"]}>
-      #  item.save           #=> {"name"=>["Jon"], "id"=>"c03edb7e-e45c-11dc-bede-001bfc466dd7", "toys"=>["girls", "beer", "pub"]}
-      #  puts item.inspect   #=> #<Client:0xb77a2698 @new_record=false, @attributes={"name"=>["Jon"], "id"=>"c03edb7e-e45c-11dc-bede-001bfc466dd7", "toys"=>["girls", "beer", "pub"]}>
-      #
+        # Create new Item instance.
+        # +attrs+ is a hash: { attribute1 => values1, ..., attributeN => valuesN }.
+        #
+        #  item = Client.new('name' => 'Jon', 'toys' => ['girls', 'beer', 'pub'])
+        #  puts item.inspect   #=> #<Client:0xb77a2698 @new_record=true, @attributes={"name"=>["Jon"], "toys"=>["girls", "beer", "pub"]}>
+        #  item.save           #=> {"name"=>["Jon"], "id"=>"c03edb7e-e45c-11dc-bede-001bfc466dd7", "toys"=>["girls", "beer", "pub"]}
+        #  puts item.inspect   #=> #<Client:0xb77a2698 @new_record=false, @attributes={"name"=>["Jon"], "id"=>"c03edb7e-e45c-11dc-bede-001bfc466dd7", "toys"=>["girls", "beer", "pub"]}>
+        #
       def initialize(attrs={})
         @attributes = uniq_values(attrs)
         @new_record = true
       end
 
-      # This is to separate initialization from user vs coming from db (ie: find())
+        # This is to separate initialization from user vs coming from db (ie: find())
       def initialize_from_db(attrs={})
         initialize(attrs)
       end
 
-      # Create and save new Item instance.
-      # +Attributes+ is a hash: { attribute1 => values1, ..., attributeN => valuesN }.
-      #
-      #  item = Client.create('name' => 'Cat', 'toys' => ['Jons socks', 'mice', 'clew'])
-      #  puts item.inspect   #=> #<Client:0xb77a0a78 @new_record=false, @attributes={"name"=>["Cat"], "id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7", "toys"=>["Jons socks", "mice", "clew"]}>
-      #
+        # Create and save new Item instance.
+        # +Attributes+ is a hash: { attribute1 => values1, ..., attributeN => valuesN }.
+        #
+        #  item = Client.create('name' => 'Cat', 'toys' => ['Jons socks', 'mice', 'clew'])
+        #  puts item.inspect   #=> #<Client:0xb77a0a78 @new_record=false, @attributes={"name"=>["Cat"], "id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7", "toys"=>["Jons socks", "mice", "clew"]}>
+        #
       def self.create(attributes={})
         item = self.new(attributes)
         item.save
         item
       end
 
-      # Returns an item id. Same as: item['id'] or item.attributes['id']
+        # Returns an item id. Same as: item['id'] or item.attributes['id']
       def id
         @attributes['id']
       end
 
-      # Sets an item id.
+        # Sets an item id.
       def id=(id)
         @attributes['id'] = id.to_s
       end
 
-      # Returns a hash of all the attributes.
-      #
-      #  puts item.attributes.inspect #=> {"name"=>["Cat"], "id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7", "toys"=>["Jons socks", "clew", "mice"]}
-      #
+        # Returns a hash of all the attributes.
+        #
+        #  puts item.attributes.inspect #=> {"name"=>["Cat"], "id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7", "toys"=>["Jons socks", "clew", "mice"]}
+        #
       def attributes
         @attributes.dup
       end
 
-      # Allows one to set all the attributes at once by passing in a hash with keys matching the attribute names.
-      # if '+id+' attribute is not set in new attributes has then it being derived from old attributes.
-      #
-      #  puts item.attributes.inspect   #=> {"name"=>["Cat"], "id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7", "toys"=>["Jons socks", "clew", "mice"]}
-      #  # set new attributes ('id' is missed)
-      #  item.attributes = { 'name'=>'Dog', 'toys'=>['bones','cats'] }
-      #  puts item.attributes.inspect   #=> {"name"=>["Dog"], "id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7", "toys"=>["bones", "cats"]}
-      #  # set new attributes ('id' is set)
-      #  item.attributes = { 'id' => 'blah-blah', 'name'=>'Birds', 'toys'=>['seeds','dogs tail'] }
-      #  puts item.attributes.inspect   #=> {"name"=>["Birds"], "id"=>"blah-blah", "toys"=>["seeds", "dogs tail"]}
-      #
+        # Allows one to set all the attributes at once by passing in a hash with keys matching the attribute names.
+        # if '+id+' attribute is not set in new attributes has then it being derived from old attributes.
+        #
+        #  puts item.attributes.inspect   #=> {"name"=>["Cat"], "id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7", "toys"=>["Jons socks", "clew", "mice"]}
+        #  # set new attributes ('id' is missed)
+        #  item.attributes = { 'name'=>'Dog', 'toys'=>['bones','cats'] }
+        #  puts item.attributes.inspect   #=> {"name"=>["Dog"], "id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7", "toys"=>["bones", "cats"]}
+        #  # set new attributes ('id' is set)
+        #  item.attributes = { 'id' => 'blah-blah', 'name'=>'Birds', 'toys'=>['seeds','dogs tail'] }
+        #  puts item.attributes.inspect   #=> {"name"=>["Birds"], "id"=>"blah-blah", "toys"=>["seeds", "dogs tail"]}
+        #
       def attributes=(attrs)
         old_id = @attributes['id']
         @attributes = uniq_values(attrs)
@@ -720,36 +737,36 @@ module SimpleRecord
         self.class.connection
       end
 
-      # Item domain name.
+        # Item domain name.
       def domain
         self.class.domain
       end
 
-      # Returns the values of the attribute identified by +attribute+.
-      #
-      #  puts item['Cat'].inspect  #=> ["Jons socks", "clew", "mice"]
-      #
+        # Returns the values of the attribute identified by +attribute+.
+        #
+        #  puts item['Cat'].inspect  #=> ["Jons socks", "clew", "mice"]
+        #
       def [](attribute)
         @attributes[attribute.to_s]
       end
 
-      # Updates the attribute identified by +attribute+ with the specified +values+.
-      #
-      #  puts item['Cat'].inspect  #=> ["Jons socks", "clew", "mice"]
-      #  item['Cat'] = ["Whiskas", "chicken"]
-      #  puts item['Cat'].inspect  #=> ["Whiskas", "chicken"]
-      #
+        # Updates the attribute identified by +attribute+ with the specified +values+.
+        #
+        #  puts item['Cat'].inspect  #=> ["Jons socks", "clew", "mice"]
+        #  item['Cat'] = ["Whiskas", "chicken"]
+        #  puts item['Cat'].inspect  #=> ["Whiskas", "chicken"]
+        #
       def []=(attribute, values)
         attribute = attribute.to_s
         @attributes[attribute] = attribute == 'id' ? values.to_s : values.is_a?(Array) ? values.uniq : [values]
 
       end
 
-      # Reload attributes from SDB. Replaces in-memory attributes.
-      #
-      #  item = Client.find_by_name('Cat')  #=> #<Client:0xb77d0d40 @attributes={"id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7"}, @new_record=false>
-      #  item.reload                        #=> #<Client:0xb77d0d40 @attributes={"id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7", "name"=>["Cat"], "toys"=>["Jons socks", "clew", "mice"]}, @new_record=false>
-      #
+        # Reload attributes from SDB. Replaces in-memory attributes.
+        #
+        #  item = Client.find_by_name('Cat')  #=> #<Client:0xb77d0d40 @attributes={"id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7"}, @new_record=false>
+        #  item.reload                        #=> #<Client:0xb77d0d40 @attributes={"id"=>"2937601a-e45d-11dc-a75f-001bfc466dd7", "name"=>["Cat"], "toys"=>["Jons socks", "clew", "mice"]}, @new_record=false>
+        #
       def reload
         raise_on_id_absence
         old_id = id
@@ -763,16 +780,16 @@ module SimpleRecord
         @attributes
       end
 
-      # Reload a set of attributes from SDB. Adds the loaded list to in-memory data.
-      # +attrs_list+ is an array or comma separated list of attributes names.
-      # Returns a hash of loaded attributes.
-      #
-      # This is not the best method to get a bunch of attributes because
-      # a web service call is being performed for every attribute.
-      #
-      #  item = Client.find_by_name('Cat')
-      #  item.reload_attributes('toys', 'name')   #=> {"name"=>["Cat"], "toys"=>["Jons socks", "clew", "mice"]}
-      #
+        # Reload a set of attributes from SDB. Adds the loaded list to in-memory data.
+        # +attrs_list+ is an array or comma separated list of attributes names.
+        # Returns a hash of loaded attributes.
+        #
+        # This is not the best method to get a bunch of attributes because
+        # a web service call is being performed for every attribute.
+        #
+        #  item = Client.find_by_name('Cat')
+        #  item.reload_attributes('toys', 'name')   #=> {"name"=>["Cat"], "toys"=>["Jons socks", "clew", "mice"]}
+        #
       def reload_attributes(*attrs_list)
         raise_on_id_absence
         attrs_list = attrs_list.flatten.map { |attribute| attribute.to_s }
@@ -791,21 +808,21 @@ module SimpleRecord
         result
       end
 
-      # Stores in-memory attributes to SDB.
-      # Adds the attributes values to already stored at SDB.
-      # Returns a hash of stored attributes.
-      #
-      #  sandy = Client.new(:name => 'Sandy') #=> #<Client:0xb775a7a8 @attributes={"name"=>["Sandy"]}, @new_record=true>
-      #  sandy['toys'] = 'boys'
-      #  sandy.put
-      #  sandy['toys'] = 'patchwork'
-      #  sandy.put
-      #  sandy['toys'] = 'kids'
-      #  sandy.put
-      #  puts sandy.attributes.inspect        #=> {"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["kids"]}
-      #  sandy.reload                         #=> {"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["boys", "kids", "patchwork"]}
-      #
-      # compare to +save+ method
+        # Stores in-memory attributes to SDB.
+        # Adds the attributes values to already stored at SDB.
+        # Returns a hash of stored attributes.
+        #
+        #  sandy = Client.new(:name => 'Sandy') #=> #<Client:0xb775a7a8 @attributes={"name"=>["Sandy"]}, @new_record=true>
+        #  sandy['toys'] = 'boys'
+        #  sandy.put
+        #  sandy['toys'] = 'patchwork'
+        #  sandy.put
+        #  sandy['toys'] = 'kids'
+        #  sandy.put
+        #  puts sandy.attributes.inspect        #=> {"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["kids"]}
+        #  sandy.reload                         #=> {"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["boys", "kids", "patchwork"]}
+        #
+        # compare to +save+ method
       def put
         @attributes = uniq_values(@attributes)
         prepare_for_update
@@ -817,19 +834,19 @@ module SimpleRecord
         @attributes
       end
 
-      # Stores specified attributes.
-      # +attrs+ is a hash: { attribute1 => values1, ..., attributeN => valuesN }.
-      # Returns a hash of saved attributes.
-      #
-      # see to +put+ method
+        # Stores specified attributes.
+        # +attrs+ is a hash: { attribute1 => values1, ..., attributeN => valuesN }.
+        # Returns a hash of saved attributes.
+        #
+        # see to +put+ method
       def put_attributes(attrs)
         attrs = uniq_values(attrs)
         prepare_for_update
-        # if 'id' is present in attrs hash:
-        # replace internal 'id' attribute and remove it from the attributes to be sent
+          # if 'id' is present in attrs hash:
+          # replace internal 'id' attribute and remove it from the attributes to be sent
         @attributes['id'] = attrs['id'] unless attrs['id'].blank?
         attrs.delete('id')
-        # add new values to all attributes from list
+          # add new values to all attributes from list
         connection.put_attributes(domain, id, attrs) unless attrs.blank?
         connection.put_attributes(domain, id, {'id' => id}, :replace)
         attrs.each do |attribute, values|
@@ -841,42 +858,42 @@ module SimpleRecord
         attributes
       end
 
-      # Store in-memory attributes to SDB.
-      # Replaces the attributes values already stored at SDB by in-memory data.
-      # Returns a hash of stored attributes.
-      #
-      #  sandy = Client.new(:name => 'Sandy')  #=> #<Client:0xb775a7a8 @attributes={"name"=>["Sandy"]}, @new_record=true>
-      #  sandy['toys'] = 'boys'
-      #  sandy.save
-      #  sandy['toys'] = 'patchwork'
-      #  sandy.save
-      #  sandy['toys'] = 'kids'
-      #  sandy.save
-      #  puts sandy.attributes.inspect         #=> {"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["kids"]}
-      #  sandy.reload                          #=> {"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["kids"]}
-      #
-      # Options:
-      #   - :except => Array of attributes to NOT save
-      #
-      # compare to +put+ method
+        # Store in-memory attributes to SDB.
+        # Replaces the attributes values already stored at SDB by in-memory data.
+        # Returns a hash of stored attributes.
+        #
+        #  sandy = Client.new(:name => 'Sandy')  #=> #<Client:0xb775a7a8 @attributes={"name"=>["Sandy"]}, @new_record=true>
+        #  sandy['toys'] = 'boys'
+        #  sandy.save
+        #  sandy['toys'] = 'patchwork'
+        #  sandy.save
+        #  sandy['toys'] = 'kids'
+        #  sandy.save
+        #  puts sandy.attributes.inspect         #=> {"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["kids"]}
+        #  sandy.reload                          #=> {"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["kids"]}
+        #
+        # Options:
+        #   - :except => Array of attributes to NOT save
+        #
+        # compare to +put+ method
       def save2(options={})
         options[:create_domain] = true if options[:create_domain].nil?
         pre_save2
         atts_to_save = @attributes.dup
-        #puts 'atts_to_save=' + atts_to_save.inspect
-        #options = params.first.is_a?(Hash) ? params.pop : {}
+          #puts 'atts_to_save=' + atts_to_save.inspect
+          #options = params.first.is_a?(Hash) ? params.pop : {}
         if options[:except]
           options[:except].each do |e|
             atts_to_save.delete(e).inspect
           end
         end
         if options[:dirty] # Only used in simple_record right now
-          # only save if the attribute is dirty
+                           # only save if the attribute is dirty
           dirty_atts = options[:dirty_atts]
           atts_to_save.delete_if { |key, value| !dirty_atts.has_key?(key) }
         end
         dom = options[:domain] || domain
-        #puts 'atts_to_save2=' + atts_to_save.inspect
+          #puts 'atts_to_save2=' + atts_to_save.inspect
         connection.put_attributes(dom, id, atts_to_save, :replace, options)
         apres_save2
         @attributes
@@ -891,16 +908,16 @@ module SimpleRecord
         mark_as_old
       end
 
-      # Replaces the attributes at SDB by the given values.
-      # +Attrs+ is a hash: { attribute1 => values1, ..., attributeN => valuesN }.
-      # The other in-memory attributes are not being saved.
-      # Returns a hash of stored attributes.
-      #
-      # see +save+ method
+        # Replaces the attributes at SDB by the given values.
+        # +Attrs+ is a hash: { attribute1 => values1, ..., attributeN => valuesN }.
+        # The other in-memory attributes are not being saved.
+        # Returns a hash of stored attributes.
+        #
+        # see +save+ method
       def save_attributes(attrs)
         prepare_for_update
         attrs = uniq_values(attrs)
-        # if 'id' is present in attrs hash then replace internal 'id' attribute
+          # if 'id' is present in attrs hash then replace internal 'id' attribute
         unless attrs['id'].blank?
           @attributes['id'] = attrs['id']
         else
@@ -912,15 +929,15 @@ module SimpleRecord
         attrs
       end
 
-      # Remove specified values from corresponding attributes.
-      # +attrs+ is a hash: { attribute1 => values1, ..., attributeN => valuesN }.
-      #
-      #  sandy = Client.find_by_name 'Sandy'
-      #  sandy.reload
-      #  puts sandy.inspect                                #=> #<Client:0xb77b48fc @new_record=false, @attributes={"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["boys", "kids", "patchwork"]}>
-      #  puts sandy.delete_values('toys' => 'patchwork')   #=> { 'toys' => ['patchwork'] }
-      #  puts sandy.inspect                                #=> #<Client:0xb77b48fc @new_record=false, @attributes={"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["boys", "kids"]}>
-      #
+        # Remove specified values from corresponding attributes.
+        # +attrs+ is a hash: { attribute1 => values1, ..., attributeN => valuesN }.
+        #
+        #  sandy = Client.find_by_name 'Sandy'
+        #  sandy.reload
+        #  puts sandy.inspect                                #=> #<Client:0xb77b48fc @new_record=false, @attributes={"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["boys", "kids", "patchwork"]}>
+        #  puts sandy.delete_values('toys' => 'patchwork')   #=> { 'toys' => ['patchwork'] }
+        #  puts sandy.inspect                                #=> #<Client:0xb77b48fc @new_record=false, @attributes={"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["boys", "kids"]}>
+        #
       def delete_values(attrs)
         raise_on_id_absence
         attrs = uniq_values(attrs)
@@ -940,16 +957,16 @@ module SimpleRecord
         attrs
       end
 
-      # Removes specified attributes from the item.
-      # +attrs_list+ is an array or comma separated list of attributes names.
-      # Returns the list of deleted attributes.
-      #
-      #  sandy = Client.find_by_name 'Sandy'
-      #  sandy.reload
-      #  puts sandy.inspect                   #=> #<Client:0xb7761d28 @new_record=false, @attributes={"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["boys", "kids", "patchwork"}>
-      #  puts sandy.delete_attributes('toys') #=> ['toys']
-      #  puts sandy.inspect                   #=> #<Client:0xb7761d28 @new_record=false, @attributes={"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7"}>
-      #
+        # Removes specified attributes from the item.
+        # +attrs_list+ is an array or comma separated list of attributes names.
+        # Returns the list of deleted attributes.
+        #
+        #  sandy = Client.find_by_name 'Sandy'
+        #  sandy.reload
+        #  puts sandy.inspect                   #=> #<Client:0xb7761d28 @new_record=false, @attributes={"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["boys", "kids", "patchwork"}>
+        #  puts sandy.delete_attributes('toys') #=> ['toys']
+        #  puts sandy.inspect                   #=> #<Client:0xb7761d28 @new_record=false, @attributes={"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7"}>
+        #
       def delete_attributes(*attrs_list)
         raise_on_id_absence
         attrs_list = attrs_list.flatten.map { |attribute| attribute.to_s }
@@ -961,21 +978,21 @@ module SimpleRecord
         attrs_list
       end
 
-      # Delete the Item entirely from SDB.
-      #
-      #  sandy = Client.find_by_name 'Sandy'
-      #  sandy.reload
-      #  sandy.inspect       #=> #<Client:0xb7761d28 @new_record=false, @attributes={"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["boys", "kids", "patchwork"}>
-      #  puts sandy.delete
-      #  sandy.reload
-      #  puts sandy.inspect  #=> #<Client:0xb7761d28 @attributes={}, @new_record=false>
-      #
+        # Delete the Item entirely from SDB.
+        #
+        #  sandy = Client.find_by_name 'Sandy'
+        #  sandy.reload
+        #  sandy.inspect       #=> #<Client:0xb7761d28 @new_record=false, @attributes={"name"=>["Sandy"], "id"=>"b2832ce2-e461-11dc-b13c-001bfc466dd7", "toys"=>["boys", "kids", "patchwork"}>
+        #  puts sandy.delete
+        #  sandy.reload
+        #  puts sandy.inspect  #=> #<Client:0xb7761d28 @attributes={}, @new_record=false>
+        #
       def delete(options={})
         raise_on_id_absence
         connection.delete_attributes(options[:domain] || domain, id)
       end
 
-      # Returns true if this object hasn�t been saved yet.
+        # Returns true if this object hasn�t been saved yet.
       def new_record?
         @new_record
       end
