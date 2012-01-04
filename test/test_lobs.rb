@@ -12,16 +12,10 @@ require_relative 'model_with_enc'
 #
 
 class TestLobs < TestBase
-    def assert_puts(x)
-      assert_stat("puts",x)
-    end
-
-    def assert_gets(x)
-      assert_stat("gets",x)
-    end
-
-    def assert_deletes(x)
-      assert_stat("deletes",x)
+    ['puts','gets','deletes'].each do |stat|
+      eval "def assert_#{stat}(x)
+        assert_stat('#{stat}',x)
+      end"
     end
 
     def assert_stat(stat, x)
