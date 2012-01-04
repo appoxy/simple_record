@@ -19,7 +19,7 @@ class TestUsage < TestBase
     # ensures that it uses next token and what not
     def test_select_usage_logging
 
-        SimpleRecord.log_usage(:select=>{:filename=>"/mnt/selects.csv", :format=>:csv, :lines_between_flushes=>2})
+        SimpleRecord.log_usage(:select=>{:filename=>"/tmp/selects.csv", :format=>:csv, :lines_between_flushes=>2})
 
         num_made = 10
         num_made.times do |i|
