@@ -28,7 +28,7 @@ class TestEncodings < TestBase
     end
 
     def test_utf8_http_post
-        name = "jos\u00C9" + ("X" * 1000) # pad the field to help get the URL over the 2000 length limit so AWS uses a POST
+        name = "jos\u00E9" + ("X" * 1000) # pad the field to help get the URL over the 2000 length limit so AWS uses a POST
         nickname = "??" + ("X" * 1000) # pad the field to help get the URL over the 2000 length limit so AWS uses a POST
         mm = MyModel.create :name=>name, :nickname=>nickname
         mm.save
