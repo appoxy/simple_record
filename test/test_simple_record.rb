@@ -361,7 +361,7 @@ class TestSimpleRecord < TestBase
 
   def test_random_index
     create_my_models(120)
-    mms = MyModel.find(:all)
+    mms = MyModel.find(:all,:consistent_read=>true)
     o = mms[85]
     puts 'o=' + o.inspect
     assert !o.nil?

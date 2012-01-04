@@ -59,9 +59,6 @@ class TestBase < Test::Unit::TestCase
             batch << mm
         end
         MyModel.batch_save batch
-
-        sleep 2
-
     end
 
 
