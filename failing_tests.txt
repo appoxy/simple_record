@@ -1,0 +1,131 @@
+
+  1) Failure:
+test_json(TestJson) [/home/ubuntu/src/simple_record/test/test_json.rb:51]:
+Failed assertion, no message given.
+
+  2) Failure:
+test_clobs(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:45]:
+puts is 1, should be 3.
+
+  3) Failure:
+test_single_clob(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:87]:
+puts is 1, should be 0.
+
+  4) Failure:
+test_paginate(TestPagination) [/home/ubuntu/src/simple_record/test/test_pagination.rb:22]:
+models.size=0
+
+  5) Failure:
+test_big_result(TestResultsArray) [/home/ubuntu/src/simple_record/test/test_results_array.rb:27]:
+Failed assertion, no message given.
+
+  6) Failure:
+test_limit(TestResultsArray) [/home/ubuntu/src/simple_record/test/test_results_array.rb:51]:
+Failed assertion, no message given.
+
+  8) Error:
+test_base_attributes(TestSimpleRecord):
+SimpleRecord::RecordNotSaved: Validation failed: Name must be unique.
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:538:in `save!'
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:543:in `save_with_validation!'
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:459:in `test_base_attributes'
+
+  9) Error:
+test_batch_save(TestSimpleRecord):
+RuntimeError: Pre save failed on object [#<MyModel:0x9626534 @errors=#<ActiveModel::Errors:0x96264f8 @base=#<MyModel:0x9626534 ...>, @messages={:name=>["must be unique."]}>, @dirty={"name"=>nil, "age"=>nil, "cool"=>nil}, @attributes={"name"=>"Travis", "age"=>"09223372036854775840", "cool"=>"true"}, @attributes_rb={"name"=>"Travis", "save_count"=>nil}, @lobs={}, @new_record=true, @validation_context=nil>]
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:779:in `block (2 levels) in batch_save'
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:777:in `each'
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:777:in `block in batch_save'
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:776:in `each_slice'
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:776:in `batch_save'
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:140:in `test_batch_save'
+
+ 10) Failure:
+test_callbacks(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:189]:
+Failed assertion, no message given.
+
+ 11) Error:
+test_constructor_using_belongs_to_ids(TestSimpleRecord):
+NoMethodError: undefined method `name' for nil:NilClass
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:562:in `test_constructor_using_belongs_to_ids'
+
+ 12) Failure:
+test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:328]:
+should have been 3 select, but was actually 2
+
+ 13) Failure:
+test_create(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:119]:
+Failed assertion, no message given.
+
+ 14) Error:
+test_custom_id(TestSimpleRecord):
+SimpleRecord::RecordNotFound: Couldn't find MyModel with ID ["id-travis"]
+    /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:389:in `select_from_ids'
+    /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:300:in `find_with_metadata'
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:964:in `find'
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:67:in `test_custom_id'
+
+ 15) Failure:
+test_dates(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:481]:
+Failed assertion, no message given.
+
+ 16) Error:
+test_dirty(TestSimpleRecord):
+RuntimeError: Invalid parameters passed to find: nil.
+    /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:291:in `find_with_metadata'
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:964:in `find'
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:211:in `test_dirty'
+
+ 17) Error:
+test_explicit_class_name(TestSimpleRecord):
+NoMethodError: undefined method `id' for nil:NilClass
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:603:in `test_explicit_class_name'
+
+ 18) Failure:
+test_nil_attr_deletion(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:412]:
+Failed assertion, no message given.
+
+ 19) Failure:
+test_save_get(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:26]:
+Failed assertion, no message given.
+
+ 20) Error:
+test_storage_format(TestSimpleRecord):
+NoMethodError: undefined method `[]' for nil:NilClass
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:616:in `test_storage_format'
+
+ 21) Error:
+test_updates(TestSimpleRecord):
+RuntimeError: Invalid parameters passed to find: nil.
+    /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:291:in `find_with_metadata'
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:964:in `find'
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:82:in `test_updates'
+
+ 22) Error:
+test_more_validations(TestValidations):
+IOError: closed stream
+    /home/ubuntu/src/simple_record/lib/simple_record/logging.rb:23:in `write'
+    /home/ubuntu/src/simple_record/lib/simple_record/logging.rb:23:in `puts'
+    /home/ubuntu/src/simple_record/lib/simple_record/logging.rb:23:in `write_usage'
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:966:in `find'
+    /home/ubuntu/src/simple_record/lib/simple_record/validations.rb:74:in `block in validate_uniques'
+    /home/ubuntu/src/simple_record/lib/simple_record/validations.rb:70:in `each_pair'
+    /home/ubuntu/src/simple_record/lib/simple_record/validations.rb:70:in `validate_uniques'
+    /home/ubuntu/src/simple_record/lib/simple_record/validations.rb:45:in `valid?'
+    /home/ubuntu/src/simple_record/test/test_validations.rb:76:in `test_more_validations'
+
+ 23) Error:
+test_validations(TestValidations):
+IOError: closed stream
+    /home/ubuntu/src/simple_record/lib/simple_record/logging.rb:23:in `write'
+    /home/ubuntu/src/simple_record/lib/simple_record/logging.rb:23:in `puts'
+    /home/ubuntu/src/simple_record/lib/simple_record/logging.rb:23:in `write_usage'
+    /home/ubuntu/src/simple_record/lib/simple_record.rb:966:in `find'
+    /home/ubuntu/src/simple_record/lib/simple_record/validations.rb:74:in `block in validate_uniques'
+    /home/ubuntu/src/simple_record/lib/simple_record/validations.rb:70:in `each_pair'
+    /home/ubuntu/src/simple_record/lib/simple_record/validations.rb:70:in `validate_uniques'
+    /home/ubuntu/src/simple_record/lib/simple_record/validations.rb:45:in `valid?'
+    /home/ubuntu/src/simple_record/test/test_validations.rb:31:in `test_validations'
+
+60 tests, 2190 assertions, 12 failures, 11 errors, 0 skips
+
