@@ -29,14 +29,12 @@ class TestLobs < TestBase
     def test_clobs
         mm = MyModel.new
 
-        #puts mm.clob1.inspect
         assert mm.clob1.nil?
 
         mm.name  = "whatever"
         mm.age   = "1"
         mm.clob1 = "0" * 2000
         assert_puts(0)
-        #puts mm.inspect
         mm.save
 
         assert_puts(1)
@@ -48,8 +46,6 @@ class TestLobs < TestBase
 
         mm2 = MyModel.find(mm.id,:consistent_read=>true)
         assert mm.id == mm2.id
-        #puts 'mm.clob1=' + mm.clob1.to_s
-        #puts 'mm2.clob1=' + mm2.clob1.to_s
         assert mm.clob1 == mm2.clob1
         assert_puts(3)
         assert_gets(1)
@@ -83,22 +79,18 @@ class TestLobs < TestBase
     def test_single_clob
         mm = SingleClobClass.new
 
-        #puts mm.clob1.inspect
         assert mm.clob1.nil?
 
         mm.name  = "whatever"
         mm.clob1 = "0" * 2000
         mm.clob2 = "2" * 2000
         assert_puts(0)
-        #puts mm.inspect
         mm.save
 
         assert_puts(1)
 
         mm2 = SingleClobClass.find(mm.id,:consistent_read=>true)
         assert mm.id == mm2.id
-        #puts 'mm.clob1=' + mm.clob1.to_s
-        #puts 'mm2.clob1=' + mm2.clob1.to_s
         assert_equal mm.clob1, mm2.clob1
         assert_puts(1)
         assert_gets(1)
