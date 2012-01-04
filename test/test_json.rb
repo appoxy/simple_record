@@ -14,6 +14,9 @@ require 'active_support/core_ext'
 
 class TestJson < TestBase
 
+    def test_prep
+      MyModel.delete_domain
+    end
 
     def test_json
         mm = MyModel.new
@@ -71,6 +74,10 @@ class TestJson < TestBase
         puts 'unjsoned=' + unjsoned.inspect
         assert mcm.my_model.id == unjsoned.my_model.id
 
+    end
+
+    def test_cleanup
+      MyModel.delete_domain
     end
 
 end
