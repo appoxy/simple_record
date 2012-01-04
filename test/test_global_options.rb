@@ -2,8 +2,8 @@ require 'test/unit'
 require_relative "../lib/simple_record"
 require "yaml"
 require 'aws'
-require_relative 'my_model'
-require_relative 'my_child_model'
+require_relative 'models/my_model'
+require_relative 'models/my_child_model'
 require 'active_support/core_ext'
 require_relative 'test_base'
 

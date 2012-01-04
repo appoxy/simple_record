@@ -4,7 +4,7 @@ require File.join(File.dirname(__FILE__), "./test_helpers")
 require File.join(File.dirname(__FILE__), "./test_base")
 require "yaml"
 require 'aws'
-require_relative 'my_sharded_model'
+require_relative 'models/my_sharded_model'
 
 # Tests for SimpleRecord
 #

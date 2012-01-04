@@ -2,7 +2,7 @@ require 'test/unit'
 require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
 require "yaml"
 require 'aws'
-require 'my_simple_model'
+require_relative 'models/my_simple_model'
 require 'active_support'
 require 'test_base'
 

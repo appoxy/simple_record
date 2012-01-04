@@ -6,8 +6,8 @@ require File.join(File.dirname(__FILE__), "./test_helpers")
 require File.join(File.dirname(__FILE__), "./test_base")
 require "yaml"
 require 'aws'
-require 'my_model'
-require 'my_child_model'
+require_relative 'models/my_model'
+require_relative 'models/my_child_model'
 require 'active_support'
 
 # Tests for SimpleRecord

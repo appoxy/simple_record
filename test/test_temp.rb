@@ -5,10 +5,10 @@ require File.join(File.dirname(__FILE__), "./test_helpers")
 require_relative "test_base"
 require "yaml"
 require 'aws'
-require_relative 'my_model'
-require_relative 'my_child_model'
-require_relative 'model_with_enc'
-require_relative 'my_simple_model'
+require_relative 'models/my_model'
+require_relative 'models/my_child_model'
+require_relative 'models/model_with_enc'
+require_relative 'models/my_simple_model'
 
 # Tests for SimpleRecord
 #

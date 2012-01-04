@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
+require File.expand_path(File.dirname(__FILE__) + "/../../lib/simple_record")
 
 class MyBaseModel < SimpleRecord::Base
 

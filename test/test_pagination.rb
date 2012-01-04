@@ -4,9 +4,9 @@ require File.join(File.dirname(__FILE__), "./test_helpers")
 require File.join(File.dirname(__FILE__), "./test_base")
 require "yaml"
 require 'aws'
-require 'my_model'
-require 'my_child_model'
-require 'model_with_enc'
+require_relative 'models/my_model'
+require_relative 'models/my_child_model'
+require_relative 'models/model_with_enc'
 require 'active_support'
 
 

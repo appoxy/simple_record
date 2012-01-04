@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
+require File.expand_path(File.dirname(__FILE__) + "/../../lib/simple_record")
 require_relative 'my_model'
 
 class MyChildModel < SimpleRecord::Base
