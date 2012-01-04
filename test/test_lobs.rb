@@ -40,14 +40,13 @@ class TestLobs < TestBase
         mm.save
 
         assert_puts(1)
-        sleep 2
 
         mm.clob1 = "1" * 2000
         mm.clob2 = "2" * 2000
         mm.save
         assert_puts(3)
 
-        mm2 = MyModel.find(mm.id)
+        mm2 = MyModel.find(mm.id,:consistent_read=>true)
         assert mm.id == mm2.id
         #puts 'mm.clob1=' + mm.clob1.to_s
         #puts 'mm2.clob1=' + mm2.clob1.to_s
@@ -96,9 +95,7 @@ class TestLobs < TestBase
 
         assert_puts(1)
 
-        sleep 2
-
-        mm2 = SingleClobClass.find(mm.id)
+        mm2 = SingleClobClass.find(mm.id,:consistent_read=>true)
         assert mm.id == mm2.id
         #puts 'mm.clob1=' + mm.clob1.to_s
         #puts 'mm2.clob1=' + mm2.clob1.to_s
