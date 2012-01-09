@@ -59,7 +59,7 @@ class TestSimpleRecord < TestBase
     custom_id = "id-travis"
     mm = MyModel.new
     mm.id = custom_id
-    mm.name = "Travis"
+    mm.name = "Marvin"
     mm.age = 32
     mm.cool = true
     mm.save
@@ -71,29 +71,26 @@ class TestSimpleRecord < TestBase
 
   def test_updates
     mm = MyModel.new
-    mm.name = "Travis"
+    mm.name = "Angela"
     mm.age = 32
     mm.cool = true
     mm.s1 = "Initial value"
     mm.save
     id = mm.id
-    sleep 1
 
-    mm = MyModel.find(id)
-    mm.name = "Travis2"
+    mm = MyModel.find(id, :persistent_read=>true)
+    mm.name = "Angela2"
     mm.age = 10
     mm.cool = false
     mm.s1 = "" # test blank string
 
     puts 'mm=' + mm.inspect
     mm.save
-    sleep 1
-
     puts 'mm2=' + mm.inspect
 
     assert mm.s1 == "", "mm.s1 is not empty string, it is " + mm.s1.inspect
 
-    mm = MyModel.find(id)
+    mm = MyModel.find(id, :persistent_read=>true)
     assert mm.name == "Travis2", "Name was not Travis2, it was #{mm.name}"
     assert mm.age == 10
     assert mm.cool == false
@@ -114,7 +111,7 @@ class TestSimpleRecord < TestBase
 
 
   def test_create
-    mm = MyModel.create(:name=>"Travis", :age=>32, :cool=>true)
+    mm = MyModel.create(:name=>"Craven", :age=>32, :cool=>true)
     puts 'mm=' + mm.inspect
     assert !mm.id.nil?
   end
@@ -128,12 +125,12 @@ class TestSimpleRecord < TestBase
   def test_batch_save
     items = []
     mm = MyModel.new
-    mm.name = "Travis"
+    mm.name = "Beavis"
     mm.age = 32
     mm.cool = true
     items << mm
     mm = MyModel.new
-    mm.name = "Tritt"
+    mm.name = "Butthead"
     mm.age = 44
     mm.cool = false
     items << mm
@@ -185,13 +182,12 @@ class TestSimpleRecord < TestBase
     assert mm.errors.count == 1 # name is required
 
     # test queued callback before_create
-    mm.name = "Travis"
+    mm.name = "Oresund"
     assert mm.save
-    sleep 1
     # now nickname should be set on before_create
     assert mm.nickname == mm.name
 
-    mm2 = MyModel.find(mm.id)
+    mm2 = MyModel.find(mm.id,:persistent_read=>true)
     assert_equal mm2.nickname, mm.nickname
     assert_equal mm2.name, mm.name
 
@@ -200,7 +196,7 @@ class TestSimpleRecord < TestBase
 
   def test_dirty
     mm = MyModel.new
-    mm.name = "Travis"
+    mm.name = "Persephone"
     mm.age = 32
     mm.cool = true
     mm.save
@@ -215,7 +211,7 @@ class TestSimpleRecord < TestBase
     assert mm2.age == mm.age
     assert mm2.cool == mm.cool
 
-    mm2.name = "Travis 2"
+    mm2.name = "Persephone 2"
     mm2.save(:dirty=>true)
 
     # todo: how do we assert this?  perhaps change a value directly in sdb and see that it doesn't get overwritten.
@@ -284,7 +280,7 @@ class TestSimpleRecord < TestBase
   # http://api.rubyonrails.org/classes/ActiveRecord/Dirty.html#M002136
   def test_changed
     mm = MySimpleModel.new
-    mm.name = "Travis"
+    mm.name = "Horace"
     mm.age = 32
     mm.cool = true
     mm.save
@@ -303,12 +299,12 @@ class TestSimpleRecord < TestBase
 
     assert mm.changes.size == 1
     puts 'CHANGES=' + mm.changes.inspect
-    assert mm.changes["name"][0] == "Travis"
+    assert mm.changes["name"][0] == "Horace"
     assert mm.changes["name"][1] == "Jim"
 
     assert mm.name_changed?
-    assert mm.name_was == "Travis", "was #{mm.name_was}"
-    assert mm.name_change[0] == "Travis"
+    assert mm.name_was == "Horace", "was #{mm.name_was}"
+    assert mm.name_change[0] == "Horace"
     assert mm.name_change[1] == "Jim"
 
   end
