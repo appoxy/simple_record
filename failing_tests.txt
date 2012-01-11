@@ -1,4 +1,4 @@
-Finished tests in 342.810461s, 0.1750 tests/s, 6.4525 assertions/s.
+Finished tests in 1063.030396s, 0.0583 tests/s, 2.1100 assertions/s.
 
   1) Failure:
 test_json(TestJson) [/home/ubuntu/src/simple_record/test/test_json.rb:51]:
@@ -12,22 +12,9 @@ puts is 1, should be 3.
 test_single_clob(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:87]:
 puts is 1, should be 0.
 
-  4) Error:
-test_paginate(TestPagination):
-Aws::AwsError: NoSuchDomain: The specified domain does not exist.
-REQUEST=sdb.amazonaws.com:443/ 
-REQUEST ID=0b716f33-d0cb-5452-c3d9-aa0c33f9197b 
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/awsbase/awsbase.rb:572:in `request_info_impl'
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/awsbase/awsbase.rb:316:in `request_info2'
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/sdb/sdb_interface.rb:106:in `request_info'
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/sdb/sdb_interface.rb:407:in `batch_put_attributes'
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/sdb/sdb_interface.rb:412:in `rescue in batch_put_attributes'
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/sdb/sdb_interface.rb:406:in `batch_put_attributes'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:785:in `block in batch_save'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:776:in `each_slice'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:776:in `batch_save'
-    /home/ubuntu/src/simple_record/test/test_base.rb:61:in `create_my_models'
-    /home/ubuntu/src/simple_record/test/test_pagination.rb:17:in `test_paginate'
+  4) Failure:
+test_paginate(TestPagination) [/home/ubuntu/src/simple_record/test/test_pagination.rb:22]:
+models.size=0
 
   5) Failure:
 test_big_result(TestResultsArray) [/home/ubuntu/src/simple_record/test/test_results_array.rb:27]:
@@ -38,72 +25,27 @@ test_limit(TestResultsArray) [/home/ubuntu/src/simple_record/test/test_results_a
 Failed assertion, no message given.
 
   7) Failure:
-test_id_sharding(TestShards) [/home/ubuntu/src/simple_record/test/test_shards.rb:86]:
-Failed assertion, no message given.
-
-  8) Error:
-test_base_attributes(TestSimpleRecord):
-SimpleRecord::RecordNotSaved: Validation failed: Name must be unique.
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:538:in `save!'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:543:in `save_with_validation!'
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:455:in `test_base_attributes'
-
-  9) Error:
-test_callbacks(TestSimpleRecord):
-SimpleRecord::RecordNotFound: Couldn't find MyModel with ID ["3066e278-3ae6-11e1-a6e3-080027c736d0"]
-    /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:389:in `select_from_ids'
-    /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:300:in `find_with_metadata'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:964:in `find'
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:190:in `test_callbacks'
-
- 10) Error:
-test_constructor_using_belongs_to_ids(TestSimpleRecord):
-NoMethodError: undefined method `name' for nil:NilClass
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:558:in `test_constructor_using_belongs_to_ids'
-
- 11) Failure:
-test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:324]:
+test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:325]:
 should have been 3 select, but was actually 2
 
- 12) Failure:
-test_dates(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:477]:
+  8) Failure:
+test_nil_attr_deletion(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:397]:
+hmmm, not size 1: 0
+
+  9) Failure:
+test_null(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:422]:
 Failed assertion, no message given.
 
- 13) Failure:
-test_dirty(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:225]:
+ 10) Failure:
+test_save_get(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:33]:
 Failed assertion, no message given.
 
- 14) Error:
-test_explicit_class_name(TestSimpleRecord):
-NoMethodError: undefined method `id' for nil:NilClass
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:599:in `test_explicit_class_name'
-
- 15) Error:
-test_funky_values(TestSimpleRecord):
-SimpleRecord::RecordNotFound: Couldn't find MyModel with ID ["382c257c-3ae6-11e1-a6e3-080027c736d0"]
-    /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:389:in `select_from_ids'
-    /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:300:in `find_with_metadata'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:964:in `find'
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:107:in `test_funky_values'
-
- 16) Failure:
-test_nil_attr_deletion(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:408]:
-Failed assertion, no message given.
-
- 17) Failure:
-test_save_get(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:26]:
-Failed assertion, no message given.
-
- 18) Error:
+ 11) Error:
 test_storage_format(TestSimpleRecord):
 NoMethodError: undefined method `[]' for nil:NilClass
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:612:in `test_storage_format'
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:599:in `test_storage_format'
 
- 19) Failure:
-test_updates(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:94]:
-Name was not Travis2, it was Angela
-
- 20) Error:
+ 12) Error:
 test_more_validations(TestValidations):
 IOError: closed stream
     /home/ubuntu/src/simple_record/lib/simple_record/logging.rb:23:in `write'
@@ -113,7 +55,7 @@ IOError: closed stream
     /home/ubuntu/src/simple_record/lib/simple_record.rb:815:in `delete_all'
     /home/ubuntu/src/simple_record/test/test_validations.rb:62:in `test_more_validations'
 
- 21) Error:
+ 13) Error:
 test_validations(TestValidations):
 IOError: closed stream
     /home/ubuntu/src/simple_record/lib/simple_record/logging.rb:23:in `write'
@@ -126,4 +68,4 @@ IOError: closed stream
     /home/ubuntu/src/simple_record/lib/simple_record/validations.rb:45:in `valid?'
     /home/ubuntu/src/simple_record/test/test_validations.rb:31:in `test_validations'
 
-60 tests, 2212 assertions, 12 failures, 9 errors, 0 skips
+62 tests, 2243 assertions, 10 failures, 3 errors, 0 skips

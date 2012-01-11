@@ -30,15 +30,13 @@ class TestShards < TestBase
 
     mm = MyShardedModel.new(:name=>"single")
     mm.save
-    sleep 1
     puts 'finding by id'
-    mm2 = MyShardedModel.find(mm.id)
+    mm2 = MyShardedModel.find(mm.id,:consistent_read=>true)
     p mm2
     assert_equal mm.id, mm2.id
     puts 'deleting'
     mm2.delete
-    sleep 1
-    mm3 = MyShardedModel.find(mm.id)
+    mm3 = MyShardedModel.find(mm.id,:consistent_read=>true)
     assert_nil mm3
 
     puts "saving #{ob_count} now"
@@ -48,14 +46,13 @@ class TestShards < TestBase
       mm.save
       saved << mm
     end
-    sleep 2
 
     # todo: assert that we're actually sharding
 
     puts "finding them all sequentially"
     start_time = Time.now
     found = []
-    rs = MyShardedModel.find(:all, :per_token=>2500)
+    rs = MyShardedModel.find(:all, :per_token=>2500,:consistent_read=>true)
     rs.each do |m|
 #      p m
       found << m
@@ -71,7 +68,7 @@ class TestShards < TestBase
     puts "Now let's try concurrently"
     start_time = Time.now
     found = []
-    rs = MyShardedModel.find(:all, :concurrent=>true, :per_token=>2500)
+    rs = MyShardedModel.find(:all, :concurrent=>true, :per_token=>2500,:consistent_read=>true)
     rs.each do |m|
 #      p m
       found << m
@@ -90,10 +87,8 @@ class TestShards < TestBase
       fo.delete
     end
 
-    sleep 2
-
     puts "Now ensure that all are deleted"
-    rs = MyShardedModel.find(:all)
+    rs = MyShardedModel.find(:all,:consistent_read=>true)
     assert rs.size == 0
 
     puts "Testing belongs_to sharding"
@@ -108,15 +103,13 @@ class TestShards < TestBase
 
     mm = MyShardedByFieldModel.new(:name=>"single", :state=>"CA")
     mm.save
-    sleep 1
     puts 'finding by id'
-    mm2 = MyShardedByFieldModel.find(mm.id)
+    mm2 = MyShardedByFieldModel.find(mm.id,:consistent_read=>true)
     p mm2
     assert_equal mm.id, mm2.id
     puts 'deleting'
     mm2.delete
-    sleep 1
-    mm3 = MyShardedByFieldModel.find(mm.id)
+    mm3 = MyShardedByFieldModel.find(mm.id,:consistent_read=>true)
     assert_nil mm3
 
     puts "saving 20 now"
@@ -128,12 +121,11 @@ class TestShards < TestBase
       saved << mm
     end
 
-    sleep 1
     # todo: assert that we're actually sharding
 
     puts "finding them all"
     found = []
-    rs = MyShardedByFieldModel.find(:all)
+    rs = MyShardedByFieldModel.find(:all,:consistent_read=>true)
     rs.each do |m|
       p m
       found << m
@@ -142,7 +134,7 @@ class TestShards < TestBase
       assert(found.find { |m1| m1.id == so.id })
     end
 
-    rs = MyShardedByFieldModel.find(:all)
+    rs = MyShardedByFieldModel.find(:all,:consistent_read=>true)
     rs.each do |m|
       p m
       found << m
@@ -153,7 +145,7 @@ class TestShards < TestBase
 
     # Try to find on a specific known shard
     selects = SimpleRecord.stats.selects
-    cali_models = MyShardedByFieldModel.find(:all, :shard => "CA")
+    cali_models = MyShardedByFieldModel.find(:all, :shard => "CA",:consistent_read=>true)
     puts 'cali_models=' + cali_models.inspect
     assert_equal(5, cali_models.size)
     assert_equal(selects + 1, SimpleRecord.stats.selects)
@@ -162,10 +154,9 @@ class TestShards < TestBase
     found.each do |fo|
       fo.delete
     end
-    sleep 1
 
     puts "Now ensure that all are deleted"
-    rs = MyShardedByFieldModel.find(:all)
+    rs = MyShardedByFieldModel.find(:all,:consistent_read=>true)
     assert rs.size == 0
   end
 
