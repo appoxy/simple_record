@@ -5,6 +5,9 @@ source "http://rubygems.org"
 # development dependencies will be added by default to the :development group.
 gemspec
 
+group :development do
+  gem 'jeweler', :git => 'git://github.com/technicalpickles/jeweler.git'
+end
 group :test do
   gem 'test-unit'
 end
