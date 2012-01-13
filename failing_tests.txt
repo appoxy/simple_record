@@ -1,4 +1,4 @@
-Finished tests in 634.219880s, 0.0978 tests/s, 3.5051 assertions/s.
+Finished tests in 550.431757s, 0.1126 tests/s, 4.0732 assertions/s.
 
   1) Failure:
 test_json(TestJson) [/home/ubuntu/src/simple_record/test/test_json.rb:51]:
@@ -12,42 +12,25 @@ puts is 1, should be 3.
 test_single_clob(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:87]:
 puts is 1, should be 0.
 
-  4) Error:
-test_paginate(TestPagination):
-Aws::AwsError: NoSuchDomain: The specified domain does not exist.
-REQUEST=sdb.amazonaws.com:443/ 
-REQUEST ID=d0ae2839-366d-9bb5-c558-9040f4690769 
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/awsbase/awsbase.rb:572:in `request_info_impl'
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/awsbase/awsbase.rb:316:in `request_info2'
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/sdb/sdb_interface.rb:106:in `request_info'
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/sdb/sdb_interface.rb:407:in `batch_put_attributes'
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/sdb/sdb_interface.rb:412:in `rescue in batch_put_attributes'
-    /home/ubuntu/.rbenv/versions/1.9.3-p0/lib/ruby/gems/1.9.1/gems/aws-2.5.6/lib/sdb/sdb_interface.rb:406:in `batch_put_attributes'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:785:in `block in batch_save'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:776:in `each_slice'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:776:in `batch_save'
-    /home/ubuntu/src/simple_record/test/test_base.rb:61:in `create_my_models'
-    /home/ubuntu/src/simple_record/test/test_pagination.rb:17:in `test_paginate'
-
-  5) Failure:
+  4) Failure:
 test_big_result(TestResultsArray) [/home/ubuntu/src/simple_record/test/test_results_array.rb:27]:
 Failed assertion, no message given.
 
-  6) Failure:
+  5) Failure:
 test_limit(TestResultsArray) [/home/ubuntu/src/simple_record/test/test_results_array.rb:51]:
 Failed assertion, no message given.
 
-  7) Failure:
-test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:326]:
+  6) Failure:
+test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:325]:
 should have been 3 select, but was actually 2
 
-  8) Failure:
-test_dirty(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:231]:
+  7) Failure:
+test_dirty(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:230]:
 Failed assertion, no message given.
 
-  9) Error:
+  8) Error:
 test_explicit_class_name(TestSimpleRecord):
-SimpleRecord::RecordNotFound: Couldn't find MyModel with ID ["8aa0f23c-3d0d-11e1-8102-080027b920a5"]
+SimpleRecord::RecordNotFound: Couldn't find MyModel with ID ["b6ba1d58-3de9-11e1-b3fa-080027c736d0"]
     /home/ubuntu/src/simple_record/lib/simple_record/translations.rb:93:in `eval'
     /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:300:in `find_with_metadata'
     /home/ubuntu/src/simple_record/lib/simple_record.rb:964:in `find'
@@ -56,20 +39,24 @@ SimpleRecord::RecordNotFound: Couldn't find MyModel with ID ["8aa0f23c-3d0d-11e1
     /home/ubuntu/src/simple_record/lib/simple_record/translations.rb:93:in `sdb_to_ruby'
     /home/ubuntu/src/simple_record/lib/simple_record/attributes.rb:397:in `get_attribute'
     /home/ubuntu/src/simple_record/lib/simple_record/attributes.rb:186:in `block in belongs_to'
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:587:in `test_explicit_class_name'
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:586:in `test_explicit_class_name'
+
+  9) Failure:
+test_nil_attr_deletion(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:397]:
+hmmm, not size 1: 0
 
  10) Failure:
-test_null(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:423]:
+test_null(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:422]:
 Failed assertion, no message given.
 
  11) Failure:
-test_save_get(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:34]:
+test_save_get(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:33]:
 Failed assertion, no message given.
 
  12) Error:
 test_storage_format(TestSimpleRecord):
 NoMethodError: undefined method `[]' for nil:NilClass
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:600:in `test_storage_format'
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:599:in `test_storage_format'
 
  13) Error:
 test_more_validations(TestValidations):
@@ -94,4 +81,4 @@ IOError: closed stream
     /home/ubuntu/src/simple_record/lib/simple_record/validations.rb:45:in `valid?'
     /home/ubuntu/src/simple_record/test/test_validations.rb:31:in `test_validations'
 
-62 tests, 2223 assertions, 9 failures, 5 errors, 0 skips
+62 tests, 2242 assertions, 10 failures, 4 errors, 0 skips
