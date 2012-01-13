@@ -7,7 +7,9 @@ gemspec
 
 group :development do
   gem 'jeweler', :git => 'git://github.com/technicalpickles/jeweler.git'
+  gem 'pry'
 end
 group :test do
   gem 'test-unit'
+  gem 'activemodel'
 end

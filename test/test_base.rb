@@ -54,7 +54,7 @@ class TestBase < Test::Unit::TestCase
     def create_my_models(count)
         batch = []
         count.times do |i|
-            mm = MyModel.new(:name=>"model_" + i.to_s)
+            mm = MyModel.new(:name=>"model_#{i}")
             mm.age = i
             batch << mm
         end
