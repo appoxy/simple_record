@@ -21,20 +21,14 @@ class TestBase < Test::Unit::TestCase
     end
 
     def delete_all(clz)
-        puts 'delete_all ' + clz.name
         obs = clz.find(:all)
         obs.each do |o|
             o.delete
         end
-#        @@sdb.select("select * from #{domain}") do |o|
-#            o.delete
-#        end
     end
 
     def reset_connection(options={})
-        puts 'reset_connection'
         @config = YAML::load(File.open(File.expand_path("~/.test_configs/simple_record.yml")))
-        #puts 'inspecting config = ' + @config.inspect
 
         SimpleRecord.enable_logging
 

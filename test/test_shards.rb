@@ -25,21 +25,19 @@ class TestShards < TestBase
   # be used to select the shard.
   def test_id_sharding
 
-    puts 'test_id_sharding start'
+    # test_id_sharding start
     ob_count = 1000
 
     mm = MyShardedModel.new(:name=>"single")
     mm.save
-    puts 'finding by id'
+    # finding by id
     mm2 = MyShardedModel.find(mm.id,:consistent_read=>true)
-    p mm2
     assert_equal mm.id, mm2.id
-    puts 'deleting'
+    # deleting
     mm2.delete
     mm3 = MyShardedModel.find(mm.id,:consistent_read=>true)
     assert_nil mm3
 
-    puts "saving #{ob_count} now"
     saved = []
     ob_count.times do |i|
       mm = MyShardedModel.new(:name=>"name #{i}")
@@ -49,49 +47,44 @@ class TestShards < TestBase
 
     # todo: assert that we're actually sharding
 
-    puts "finding them all sequentially"
+    # finding them all sequentially
     start_time = Time.now
     found = []
     rs = MyShardedModel.find(:all, :per_token=>2500,:consistent_read=>true)
     rs.each do |m|
-#      p m
       found << m
     end
     duration = Time.now.to_f - start_time.to_f
-    puts 'Find sequential duration=' + duration.to_s
-    puts 'size=' + found.size.to_s
+    # Find sequential duration
     saved.each do |so|
       assert(found.find { |m1| m1.id == so.id })
     end
 
 
-    puts "Now let's try concurrently"
+    # Now let's try concurrently
     start_time = Time.now
     found = []
     rs = MyShardedModel.find(:all, :concurrent=>true, :per_token=>2500,:consistent_read=>true)
     rs.each do |m|
-#      p m
       found << m
     end
     concurrent_duration = Time.now.to_f - start_time.to_f
-    puts 'Find concurrent duration=' + concurrent_duration .to_s
-    puts 'size=' + found.size.to_s
     saved.each do |so|
       assert(found.find { |m1| m1.id == so.id })
     end
 
     assert concurrent_duration < duration
 
-    puts "deleting all of them"
+    # deleting all of them
     found.each do |fo|
       fo.delete
     end
 
-    puts "Now ensure that all are deleted"
+    # Now ensure that all are deleted
     rs = MyShardedModel.find(:all,:consistent_read=>true)
     assert rs.size == 0
 
-    puts "Testing belongs_to sharding"
+    # Testing belongs_to sharding
 
   end
 
@@ -99,35 +92,29 @@ class TestShards < TestBase
   def test_field_sharding
 
     states = MyShardedByFieldModel.shards
-    puts "states=" + states.inspect
 
     mm = MyShardedByFieldModel.new(:name=>"single", :state=>"CA")
     mm.save
-    puts 'finding by id'
     mm2 = MyShardedByFieldModel.find(mm.id,:consistent_read=>true)
-    p mm2
     assert_equal mm.id, mm2.id
-    puts 'deleting'
     mm2.delete
     mm3 = MyShardedByFieldModel.find(mm.id,:consistent_read=>true)
     assert_nil mm3
 
-    puts "saving 20 now"
+    # saving 20 now
     saved = []
     20.times do |i|
       mm = MyShardedByFieldModel.new(:name=>"name #{i}", :state=>states[i % states.size])
       mm.save
-      p mm
       saved << mm
     end
 
     # todo: assert that we're actually sharding
 
-    puts "finding them all"
+    # finding them all
     found = []
     rs = MyShardedByFieldModel.find(:all,:consistent_read=>true)
     rs.each do |m|
-      p m
       found << m
     end
     saved.each do |so|
@@ -136,7 +123,6 @@ class TestShards < TestBase
 
     rs = MyShardedByFieldModel.find(:all,:consistent_read=>true)
     rs.each do |m|
-      p m
       found << m
     end
     saved.each do |so|
@@ -146,18 +132,17 @@ class TestShards < TestBase
     # Try to find on a specific known shard
     selects = SimpleRecord.stats.selects
     cali_models = MyShardedByFieldModel.find(:all, :shard => "CA",:consistent_read=>true)
-    puts 'cali_models=' + cali_models.inspect
     assert_equal(5, cali_models.size)
     assert_equal(selects + 1, SimpleRecord.stats.selects)
 
-    puts "deleting all of them"
+    # deleting all of them
     found.each do |fo|
       fo.delete
     end
 
-    puts "Now ensure that all are deleted"
+    # Now ensure that all are deleted
     rs = MyShardedByFieldModel.find(:all,:consistent_read=>true)
-    assert rs.size == 0
+    assert_equal rs.size, 0
   end
 
   def test_time_sharding

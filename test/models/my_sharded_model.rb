@@ -16,7 +16,6 @@ class MyShardedModel < SimpleRecord::Base
 
   def my_mapping_function
     shard_num = SimpleRecord::Sharding::Hashing.sdbm_hash(self.id) % self.class.num_shards
-    puts "shard_num=" + shard_num.inspect
     shard_num
   end
 

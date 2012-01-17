@@ -27,11 +27,10 @@ class TestGlobalOptions < TestBase
         sleep 1
 
         sdb_atts = @@sdb.select("select * from someprefix_people")
-        puts 'sdb_atts=' + sdb_atts.inspect
 
         @@sdb.delete_domain("someprefix_people") # doing it here so it's done before assertions might fail
 
-        assert sdb_atts[:items].size == 1, "hmmm, not size 1: " + sdb_atts[:items].size.to_s
+        assert_equal sdb_atts[:items].size, 1
 
     end
 
@@ -42,8 +41,6 @@ class TestGlobalOptions < TestBase
         sleep 1
 
         sdb_atts = @@sdb.select("select * from simplerecord_tests_people")
-        puts 'sdb_atts=' + sdb_atts.inspect
-
 
         @@sdb.delete_domain("simplerecord_tests_people")
 

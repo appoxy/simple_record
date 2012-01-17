@@ -33,36 +33,30 @@ class TestSimpleRecord < TestBase
     assert !mm.created.nil?
     assert !mm.updated.nil?
     assert !mm.id.nil?
-    assert mm.age == 32
-    assert mm.cool == true
-    assert mm.name == "Travis"
+    assert_equal mm.age, 32
+    assert_equal mm.cool, true
+    assert_equal mm.name, "Travis"
 
     id = mm.id
-    puts 'id=' + id.to_s
     # Get the object back
     mm2 = MyModel.find(id,:consistent_read=>true)
-    #puts 'got=' + mm2.name + ' and he/she is ' + mm2.age.to_s + ' years old and he/she is cool? ' + mm2.cool.to_s
-    #puts mm2.cool.class.name
-    assert mm2.id == mm.id
-    assert mm2.age == mm.age
-    assert mm2.cool == mm.cool
-    assert mm2.age == 32
-    assert mm2.cool == true
-    assert mm2.name == "Travis"
+    assert_equal mm2.id, mm.id
+    assert_equal mm2.age, mm.age
+    assert_equal mm2.cool, mm.cool
+    assert_equal mm2.age, 32
+    assert_equal mm2.cool, true
+    assert_equal mm2.name, "Travis"
     assert mm2.created.is_a? DateTime
 
     # test nilification
     mm2.age = nil
     mm2.save
     sleep(1) # not sure why this might work...
-    puts mm2.errors.inspect
     mm2 = MyModel.find(id,:consistent_read=>true)
-    puts mm2.inspect
     assert mm2.age.nil?, "doh, age should be nil, but it's " + mm2.age.inspect
   end
 
   def test_custom_id
-    puts 'test_custom_id...'
     custom_id = "id-travis"
     mm = MyModel.new
     mm.id = custom_id
@@ -71,8 +65,7 @@ class TestSimpleRecord < TestBase
     mm.cool = true
     mm.save
     mm2 = MyModel.find(custom_id,:consistent_read=>true)
-    puts 'mm2=' + mm2.inspect
-    assert mm2.id == mm.id
+    assert_equal mm2.id, mm.id
   end
 
   def test_updates
@@ -90,17 +83,15 @@ class TestSimpleRecord < TestBase
     mm.cool = false
     mm.s1 = "" # test blank string
 
-    puts 'mm=' + mm.inspect
     mm.save
-    puts 'mm2=' + mm.inspect
 
-    assert mm.s1 == "", "mm.s1 is not empty string, it is " + mm.s1.inspect
+    assert_equal mm.s1, ""
 
     mm = MyModel.find(id, :consistent_read=>true)
-    assert mm.name == "Angela2", "Name was not Travis2, it was #{mm.name}"
-    assert mm.age == 10
-    assert mm.cool == false
-    assert mm.s1 == "", "mm.s1 is not empty string, it is #{mm.s1.inspect}"
+    assert_equal mm.name, "Angela2"
+    assert_equal mm.age, 10
+    assert_equal mm.cool, false
+    assert_equal mm.s1, ""
 
   end
 
@@ -108,17 +99,15 @@ class TestSimpleRecord < TestBase
     mm = MyModel.new(:name=>"Funky")
     mm.s1 = "other/2009-11-10/04/84.eml" # reported here: http://groups.google.com/group/simple-record/browse_thread/thread/3659e82491d03a2c?hl=en
     assert mm.save
-    assert mm.errors.size == 0
+    assert_equal mm.errors.size, 0
 
     mm2 = MyModel.find(mm.id,:consistent_read=>true)
-    puts 'mm2=' + mm2.inspect
 
   end
 
 
   def test_create
     mm = MyModel.create(:name=>"Craven", :age=>32, :cool=>true)
-    puts 'mm=' + mm.inspect
     assert !mm.id.nil?
   end
 
@@ -142,12 +131,10 @@ class TestSimpleRecord < TestBase
     items << mm
     MyModel.batch_save(items)
     items.each do |item|
-      puts 'id=' + item.id
       new_item = MyModel.find(item.id,:consistent_read=>true)
-      #puts 'new=' + new_item.inspect
-      assert item.id == new_item.id
-      assert item.name == new_item.name
-      assert item.cool == new_item.cool
+      assert_equal item.id, new_item.id
+      assert_equal item.name, new_item.name
+      assert_equal item.cool, new_item.cool
     end
   end
 
@@ -163,20 +150,13 @@ class TestSimpleRecord < TestBase
     child = MyChildModel.new
     child.name = "Child"
     child.my_model = mm
-    puts 'c1=' + child.inspect
-    puts 'mmid1=' + child.my_model_id.to_s
-    assert child.my_model_id == mm.id
+    assert_equal child.my_model_id, mm.id
     child.save
-    puts 'mmid2=' + child.my_model_id.to_s
-
-    puts "child=" + child.inspect
 
     child = MyChildModel.find(child.id,:consistent_read=>true)
-    puts "child find=" + child.inspect
-    puts "child.my_model_id = " + child.my_model_id.to_s
     assert !child.my_model_id.nil?
     assert !child.my_model.nil?
-    assert child.my_model_id == mm.id
+    assert_equal child.my_model_id, mm.id
   end
 
   def test_callbacks
@@ -184,13 +164,13 @@ class TestSimpleRecord < TestBase
 
     mm = MyModel.new
     assert !mm.save
-    assert mm.errors.count == 1 # name is required
+    assert_equal mm.errors.count, 1 # name is required
 
     # test queued callback before_create
     mm.name = "Oresund"
     assert mm.save
     # now nickname should be set on before_create
-    assert mm.nickname == mm.name
+    assert_equal mm.nickname, mm.name
 
     mm2 = MyModel.find(mm.id,:consistent_read=>true)
     assert_equal mm2.nickname, mm.nickname
@@ -206,14 +186,11 @@ class TestSimpleRecord < TestBase
     mm.cool = true
     mm.save
     id = mm.id
-    puts 'id=' + id.to_s
     # Get the object back
     mm2 = MyModel.find(id,:consistent_read=>true)
-    puts 'mm2=' + mm2.inspect
-    puts 'got=' + mm2.name.to_s + ' and he/she is ' + mm2.age.to_s + ' years old and he/she is cool? ' + mm2.cool.to_s
-    assert mm2.id == mm.id
-    assert mm2.age == mm.age
-    assert mm2.cool == mm.cool
+    assert_equal mm2.id, mm.id
+    assert_equal mm2.age, mm.age
+    assert_equal mm2.cool, mm.cool
 
     mm2.name = "Persephone 2"
     mm2.save(:dirty=>true)
@@ -222,12 +199,10 @@ class TestSimpleRecord < TestBase
     # or check stats and ensure only 1 attribute was put
 
     # Test to ensure that if an item is not dirty, sdb doesn't get hit
-    puts SimpleRecord.stats.saves.to_s
     SimpleRecord.stats.clear
     mm2.save(:dirty=>true)
     sleep(1) #needed because mmc.my_model below does not have :consistent_read set
-    puts SimpleRecord.stats.saves.to_s
-    assert SimpleRecord.stats.saves == 0
+    assert_equal SimpleRecord.stats.saves, 0
 
     mmc = MyChildModel.new
     mmc.my_model = mm
@@ -236,23 +211,20 @@ class TestSimpleRecord < TestBase
 
 
     mmc2 = MyChildModel.find(mmc.id,:consistent_read=>true)
-    assert mmc2.my_model_id == mmc.my_model_id, "mm2.my_model_id=#{mmc2.my_model_id} mmc.my_model_id=#{mmc.my_model_id}"
-    puts 'setting my_model to nil'
+    assert_equal mmc2.my_model_id, mmc.my_model_id
     mmc2.my_model = nil
     mmc2.x = nil
-    puts 'saving my_model to nil'
     SimpleRecord.stats.clear
     assert mmc2.save(:dirty=>true)
-    assert SimpleRecord.stats.saves == 1, "saves is #{SimpleRecord.stats.saves}" # 1 put only for updated, should have a count of attributes saved in stats
-    assert SimpleRecord.stats.deletes == 1, "deletes is #{SimpleRecord.stats.deletes}"
-    assert mmc2.id == mmc.id
-    assert mmc2.my_model_id == nil
-    assert mmc2.my_model == nil, "my_model not nil? #{mmc2.my_model.inspect}"
+    assert_equal SimpleRecord.stats.saves, 1
+    assert_equal SimpleRecord.stats.deletes, 1
+    assert_equal mmc2.id, mmc.id
+    assert_equal mmc2.my_model_id, nil
+    assert_equal mmc2.my_model, nil
 
     mmc3 = MyChildModel.find(mmc.id,:consistent_read=>true)
-    puts "mmc3 1 =" + mmc3.inspect
-    assert mmc3.my_model_id == nil, "my_model_id not nil? #{mmc3.my_model_id.inspect}"
-    assert mmc3.my_model == nil
+    assert_equal mmc3.my_model_id, nil
+    assert_equal mmc3.my_model, nil
 
     mm3 = MyModel.new(:name=>"test")
     assert mm3.save
@@ -261,20 +233,19 @@ class TestSimpleRecord < TestBase
     mmc3.my_model = mm3
     assert mmc3.my_model_changed?
     assert mmc3.save(:dirty=>true)
-    assert mmc3.my_model_id == mm3.id
-    assert mmc3.my_model.id == mm3.id
+    assert_equal mmc3.my_model_id, mm3.id
+    assert_equal mmc3.my_model.id, mm3.id
 
     mmc3 = MyChildModel.find(mmc3.id,:consistent_read=>true)
-    puts "mmc3=" + mmc3.inspect
-    assert mmc3.my_model_id == mm3.id, "my_model_id=#{mmc3.my_model_id.inspect} mm3.id=#{mm3.id.inspect}"
-    assert mmc3.my_model.id == mm3.id
+    assert_equal mmc3.my_model_id, mm3.id
+    assert_equal mmc3.my_model.id, mm3.id
 
     mmc3 = MyChildModel.find(mmc3.id,:consistent_read=>true)
     mmc3.my_model_id = mm2.id
-    assert mmc3.my_model_id == mm2.id
+    assert_equal mmc3.my_model_id, mm2.id
     assert mmc3.changed?
     assert mmc3.my_model_changed?
-    assert mmc3.my_model.id == mm2.id
+    assert_equal mmc3.my_model.id, mm2.id
 
   end
 
@@ -286,27 +257,24 @@ class TestSimpleRecord < TestBase
     mm.cool = true
     mm.save
 
-    puts 'changed?=' + mm.changed?.to_s
-    p mm.changed
     assert !mm.changed?
-    assert mm.changed.size == 0
-    assert mm.changes.size == 0
+    assert_equal mm.changed.size, 0
+    assert_equal mm.changes.size, 0
     assert !mm.name_changed?
 
     mm.name = "Jim"
     assert mm.changed?
-    assert mm.changed.size == 1
-    assert mm.changed[0] == "name"
+    assert_equal mm.changed.size, 1
+    assert_equal mm.changed[0], "name"
 
-    assert mm.changes.size == 1
-    puts 'CHANGES=' + mm.changes.inspect
-    assert mm.changes["name"][0] == "Horace"
-    assert mm.changes["name"][1] == "Jim"
+    assert_equal mm.changes.size, 1
+    assert_equal mm.changes["name"][0], "Horace"
+    assert_equal mm.changes["name"][1], "Jim"
 
     assert mm.name_changed?
-    assert mm.name_was == "Horace", "was #{mm.name_was}"
-    assert mm.name_change[0] == "Horace"
-    assert mm.name_change[1] == "Jim"
+    assert_equal mm.name_was, "Horace"
+    assert_equal mm.name_change[0], "Horace"
+    assert_equal mm.name_change[1], "Jim"
 
   end
 
@@ -318,18 +286,16 @@ class TestSimpleRecord < TestBase
     assert count > 0
 
     mms = MyModel.find(:all,:consistent_read=>true) # select 2
-    puts 'mms=' + mms.inspect
     assert mms.size > 0 # select 3
-    puts 'mms=' + mms.inspect
-    assert mms.size == count, "size != count! size=" + mms.size.to_s + " count=" + count.to_s
-    assert SimpleRecord.stats.selects == 3, "should have been 3 select, but was actually #{SimpleRecord.stats.selects}" # count should not have been called twice
+    assert_equal mms.size, count
+    assert_equal SimpleRecord.stats.selects, 3
 
     count = MyModel.find(:count, :conditions=>["name=?", "Travis"],:consistent_read=>true)
     assert count > 0
 
     mms = MyModel.find(:all, :conditions=>["name=?", "Travis"],:consistent_read=>true)
     assert mms.size > 0
-    assert mms.size == count
+    assert_equal mms.size, count
 
   end
 
@@ -350,9 +316,9 @@ class TestSimpleRecord < TestBase
     assert !mms.empty?
     assert mms.include?(mms[0])
 
-    assert mms[2, 2].size == 2
-    assert mms[2..5].size == 4
-    assert mms[2...5].size == 3
+    assert_equal mms[2, 2].size, 2
+    assert_equal mms[2..5].size, 4
+    assert_equal mms[2...5].size, 3
 
   end
 
@@ -360,10 +326,8 @@ class TestSimpleRecord < TestBase
     create_my_models(120)
     mms = MyModel.find(:all,:consistent_read=>true)
     o = mms[85]
-    puts 'o=' + o.inspect
     assert !o.nil?
     o = mms[111]
-    puts 'o=' + o.inspect
     assert !o.nil?
   end
 
@@ -378,7 +342,6 @@ class TestSimpleRecord < TestBase
     assert mcm.my_model != nil
 
     mcm = MyChildModel.find(mcm.id,:consistent_read=>true)
-    puts 'mcm=' + mcm.inspect
     assert mcm.my_model != nil
 
   end
@@ -393,22 +356,21 @@ class TestSimpleRecord < TestBase
 
     # Should have 1 age attribute
     sdb_atts = @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age')
-    puts 'sdb_atts=' + sdb_atts.inspect
-    assert sdb_atts[:attributes].size == 1, "hmmm, not size 1: " + sdb_atts[:attributes].size.to_s
+    assert_equal sdb_atts[:attributes].size, 1
 
     mm.age = nil
     mm.save
 
     # Should be NIL
-    assert mm.age == nil, "age is #{mm.age}"
+    assert_equal mm.age, nil
 
     # Should have NO age attributes
-    assert @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age')[:attributes].size == 0
+    assert_equal @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age')[:attributes].size, 0
   end
 
   def test_null
-    puts Time.now.to_i.to_s
-    TestHelpers.clear_out_my_models
+    MyModel.delete_domain
+    MyModel.create_domain
 
     mm = MyModel.new(:name=>"birthay is null")
     mm.save
@@ -417,17 +379,16 @@ class TestSimpleRecord < TestBase
     mm2.save
     mms = MyModel.find(:all, :conditions=>["age is null"],:consistent_read=>true)
     mms.each do |m|
-      puts m.inspect
+      m.inspect
     end
-    assert mms.size == 1
-    assert mms[0].id = mm.id
+    assert_equal mms.size, 1
+    assert_equal mms[0].id, mm.id
     mms = MyModel.find(:all, :conditions=>["age is not null"],:consistent_read=>true)
     mms.each do |m|
-      puts m.inspect
+      m.inspect
     end
-    assert mms.size == 1
-    assert mms[0].id = mm2.id
-
+    assert_equal mms.size, 1
+    assert_equal mms[0].id, mm2.id
   end
 
   # Test to add support for IN
@@ -445,19 +406,16 @@ class TestSimpleRecord < TestBase
     mm.save_with_validation!
 
     mm2 = MyModel.find(mm.id,:consistent_read=>true)
-    assert mm2.base_string == mm.base_string
-    assert mm2.name == mm.name
-    assert mm2.id == mm.id
+    assert_equal mm2.base_string, mm.base_string
+    assert_equal mm2.name, mm.name
+    assert_equal mm2.id, mm.id
     mm2.name += " 2"
 
     mm2.base_string = "changed base string"
     mm2.save_with_validation!
 
     mm3 = MyModel.find(mm2.id,:consistent_read=>true)
-    assert mm3.base_string == mm2.base_string
-    puts mm3.inspect
-
-
+    assert_equal mm3.base_string, mm2.base_string
   end
 
   def test_dates
@@ -469,15 +427,12 @@ class TestSimpleRecord < TestBase
     mm.save
 
     mm = MyModel.find(:first, :conditions=>["date1 >= ?", 1.days.ago.to_date],:consistent_read=>true)
-    puts 'mm=' + mm.inspect
     assert mm.is_a? MyModel
 
     mm = MyModel.find(:first, :conditions=>["date2 >= ?", 1.minutes.ago],:consistent_read=>true)
-    puts 'mm=' + mm.inspect
     assert mm.is_a? MyModel
 
     mm = MyModel.find(:first, :conditions=>["date3 >= ?", 1.minutes.ago],:consistent_read=>true)
-    puts 'mm=' + mm.inspect
     assert mm.is_a? MyModel
 
   end
@@ -491,32 +446,26 @@ class TestSimpleRecord < TestBase
     ob.name = "my name"
     ob.ssn = ssn
     ob.password = password
-    puts "ob before save=" + ob.inspect
-    assert ssn == ob.ssn, "#{ssn} != #{ob.ssn} apparently!?"
-    puts "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
+    assert_equal ssn, ob.ssn
     assert password != ob.password # we know this doesn't work right
-    assert ob.password == password, "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
+    assert_equal ob.password, password
     ob.save
 
     # try also with constructor, just to be safe
     ob = ModelWithEnc.create(:ssn=>ssn, :name=>"my name", :password=>password)
-    assert ssn == ob.ssn, "#{ssn} != #{ob.ssn} apparently!?"
-    puts "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
+    assert_equal ssn, ob.ssn
     assert password != ob.password # we know this doesn't work right
-    assert ob.password == password, "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
-    puts "ob after save=" + ob.inspect
-    assert ssn == ob.ssn
-    assert ob.password == password, "#{ob.password.class.name} ob.password=#{ob.password} password=#{password}"
+    assert_equal ob.password, password
+    assert_equal ssn, ob.ssn
+    assert_equal ob.password, password
 
     ob2 = ModelWithEnc.find(ob.id,:consistent_read=>true)
-    puts 'ob2=' + ob2.inspect
-    assert ob2.name == ob.name, "#{ob2.name} vs #{ob.name}"
-    assert ob2.ssn == ob.ssn, "#{ob2.ssn} vs #{ob.ssn}"
-    assert ob2.ssn == ssn, "#{ob2.ssn} vs #{ssn}"
-    assert ob2.password == password, "#{ob2.password} vs #{password}"
+    assert_equal ob2.name, ob.name
+    assert_equal ob2.ssn, ob.ssn
+    assert_equal ob2.ssn, ssn
+    assert_equal ob2.password, password
     assert ob2.attributes["password"] != password
-    assert ob2.password == ob.password, "#{ob2.password} vs #{ob.password}"
-
+    assert_equal ob2.password, ob.password
   end
 
   def test_non_persistent_attributes
@@ -543,10 +492,8 @@ def test_atts_using_strings_and_symbols
     sleep(1) #needed because mm2.my_model below does not have :consistent_read set
 
     mm2 = MyChildModel.new({"name"=>"myname tcubti 2", :my_model_id=>mm.id})
-    puts 'mm2=' + mm2.inspect
     assert_equal mm.id, mm2.my_model_id, "#{mm.id} != #{mm2.my_model_id}"
     mm3 = mm2.my_model
-    puts 'mm3=' + mm3.inspect
     assert_equal mm.name, mm3.name
 
     mm3 = MyChildModel.create(:my_model_id=>mm.id, :name=>"myname tcubti 3")
@@ -563,14 +510,12 @@ def test_atts_using_strings_and_symbols
 
     now = Time.now
     mm.update_attributes(:name=>"name2", :age=>21, "date2"=>now)
-    assert mm.name == "name2", "Name is #{mm.name}"
-    assert mm.age == 21
-#        assert mm.date2.to_time.utc == now.utc, "#{mm.date2.class.name} #{mm.date2.to_time.inspect} != #{now.inspect}"
+    assert_equal mm.name, "name2"
+    assert_equal mm.age, 21
 
     mm = MyModel.find(mm.id,:consistent_read=>true)
-    assert mm.name == "name2", "Name is #{mm.name}"
-    assert mm.age == 21, "Age is not 21, it is #{mm.age}"
-#        assert mm.date2 == now, "Date is not correct, it is #{mm.date2}"
+    assert_equal mm.name, "name2"
+    assert_equal mm.age, 21
   end
 
   def test_explicit_class_name
@@ -579,12 +524,11 @@ def test_atts_using_strings_and_symbols
 
     mm2 = MyChildModel.new({"name"=>"myname tecn 2"})
     mm2.x = mm
-    assert mm2.x.id == mm.id
+    assert_equal mm2.x.id, mm.id
     mm2.save
 
     mm3 = MyChildModel.find(mm2.id,:consistent_read=>true)
-    puts "mm3.x=" + mm3.x.inspect
-    assert mm3.x.id == mm.id
+    assert_equal mm3.x.id, mm.id
   end
 
   def test_storage_format
@@ -595,10 +539,10 @@ def test_atts_using_strings_and_symbols
     mm.save
 
     raw = @@sdb.get_attributes(MyModel.domain, mm.id)
-    puts "raw=" + raw.inspect
-    assert raw[:attributes]["updated"][0].size == "2010-01-06T16:04:23".size
-    assert raw[:attributes]["date1"][0].size == "2010-01-06T16:04:23".size
-    assert raw[:attributes]["date2"][0].size == "2010-01-06T16:04:23".size
+    puts raw.inspect #observation interferes with this in some way
+    assert_equal raw[:attributes]["updated"][0].size, "2010-01-06T16:04:23".size
+    assert_equal raw[:attributes]["date1"][0].size, "2010-01-06T16:04:23".size
+    assert_equal raw[:attributes]["date2"][0].size, "2010-01-06T16:04:23".size
 
   end
 
@@ -612,46 +556,43 @@ def test_atts_using_strings_and_symbols
 
   def test_string_ints
     mm = MyModel.new
-    mm.name = "whatever"
+    mm.name = "whenever"
     mm.age = "1"
-    puts mm.inspect
 
     mm2 = MyModel.new
-    mm2.name = "whatever2"
+    mm2.name = "whenever2"
     mm2.age = 1
     params = {:name=>"scooby", :age=>"123"}
     mm3 = MyModel.new(params)
 
-
-    assert mm.age == 1, "mm.age=#{mm.age}"
-    assert mm2.age == 1
-    assert mm3.age == 123
+    assert_equal mm.age, 1
+    assert_equal mm2.age, 1
+    assert_equal mm3.age, 123
 
     mm.save!
     mm2.save!
     mm3.save!
 
-    assert mm.age == 1
-    assert mm2.age == 1
-    assert mm3.age == 123
+    assert_equal mm.age, 1
+    assert_equal mm2.age, 1
+    assert_equal mm3.age, 123
 
     mmf1 = MyModel.find(mm.id,:consistent_read=>true)
     mmf2 = MyModel.find(mm2.id,:consistent_read=>true)
     mmf3 = MyModel.find(mm3.id,:consistent_read=>true)
 
-    assert mmf1.age == 1
-    assert mmf2.age == 1
-    assert mmf3.age == 123
+    assert_equal mmf1.age, 1
+    assert_equal mmf2.age, 1
+    assert_equal mmf3.age, 123
 
     mmf1.update_attributes({:age=>"456"})
 
-    mmf1.age == 456
-
+    assert_equal mmf1.age, 456
   end
 
   def test_box_usage
     mm = MyModel.new
-    mm.name = "whatever"
+    mm.name = "however"
     mm.age = "1"
     mm.save
 
@@ -659,7 +600,6 @@ def test_atts_using_strings_and_symbols
 
     assert mms.box_usage && mms.box_usage > 0
     assert mms.request_id
-
   end
 
   def test_multi_value_attributes
@@ -678,8 +618,6 @@ def test_atts_using_strings_and_symbols
     # Values are not returned in order
     assert_equal val, mm.name.sort
     assert_equal val2, mm.age.sort
-
-
   end
 
   def test_zzz_last_batter_up
