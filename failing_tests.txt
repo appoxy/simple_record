@@ -1,4 +1,4 @@
-Finished tests in 542.634586s, 0.1253 tests/s, 4.2128 assertions/s.
+Finished tests in 379.366627s, 0.1792 tests/s, 6.0416 assertions/s.
 
   1) Failure:
 test_clobs(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:45]:
@@ -9,32 +9,31 @@ test_single_clob(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:87]
 puts is 1, should be 0.
 
   3) Failure:
+test_id_sharding(TestShards) [/home/ubuntu/src/simple_record/test/test_shards.rb:76]:
+Failed assertion, no message given.
+
+  4) Failure:
 test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:291]:
 <2> expected but was
 <3>.
 
-  4) Failure:
+  5) Failure:
 test_dirty(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:205]:
 <1> expected but was
 <0>.
 
-  5) Failure:
+  6) Failure:
 test_nil_attr_deletion(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:359]:
 <0> expected but was
 <1>.
 
-  6) Failure:
+  7) Failure:
 test_null(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:384]:
 <2> expected but was
 <1>.
 
-  7) Failure:
+  8) Failure:
 test_save_get(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:56]:
 doh, age should be nil, but it's 32
 
-  8) Error:
-test_storage_format(TestSimpleRecord):
-NoMethodError: undefined method `[]' for nil:NilClass
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:543:in `test_storage_format'
-
-68 tests, 2286 assertions, 7 failures, 1 errors, 0 skips
+68 tests, 2292 assertions, 8 failures, 0 errors, 0 skips
