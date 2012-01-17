@@ -27,7 +27,7 @@ class TestResultsArray < TestBase
         end
         assert SimpleRecord.stats.saves == num_made, "SimpleRecord.stats.saves should be #{num_made}, is #{SimpleRecord.stats.saves}"
         SimpleRecord.stats.clear # have to clear them again, as each save above created a select (in pre/post actions)
-        rs = MyModel.find(:all) # should get 100 at a time
+        rs = MyModel.find(:all,:consistent_read=>true) # should get 100 at a time
         assert rs.size == num_made, "rs.size should be #{num_made}, is #{rs.size}"
         i = 0
         rs.each do |x|
@@ -48,7 +48,7 @@ class TestResultsArray < TestBase
 
     def test_limit
         SimpleRecord.stats.clear
-        rs = MyModel.find(:all, :per_token=>2500)
+        rs = MyModel.find(:all, :per_token=>2500,:consistent_read=>true)
         assert rs.size == 110, "rs.size should be 110, is #{rs.size}"
         assert SimpleRecord.stats.selects == 1, "SimpleRecord.stats.selects is #{SimpleRecord.stats.selects}"
 
