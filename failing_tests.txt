@@ -1,4 +1,4 @@
-Finished tests in 552.825713s, 0.1230 tests/s, 4.1894 assertions/s.
+Finished tests in 721.371086s, 0.0943 tests/s, 3.1828 assertions/s.
 
   1) Failure:
 test_clobs(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:45]:
@@ -12,9 +12,13 @@ puts is 1, should be 0.
 test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:295]:
 Failed assertion, no message given.
 
-  4) Error:
-test_storage_format(TestSimpleRecord):
-NoMethodError: undefined method `[]' for nil:NilClass
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:545:in `test_storage_format'
+  4) Failure:
+test_dirty(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:204]:
+<0> expected but was
+<1>.
 
-68 tests, 2316 assertions, 3 failures, 1 errors, 0 skips
+  5) Failure:
+test_first_validations(TestValidations) [/home/ubuntu/src/simple_record/test/test_validations.rb:51]:
+#<ActiveModel::Errors:0x89e129c @base=#<MyModel:0x85f0c14 @errors=#<ActiveModel::Errors:0x89e129c ...>, @dirty={"save_count"=>nil}, @attributes={"name"=>["abcd"], "save_count"=>"09223372036854775809", "id"=>"c452f094-4121-11e1-91b0-080027c736d0", "created"=>["2012-01-17T15:41:48"], "updated"=>["2012-01-17T15:41:48"], "nickname"=>["abcd"]}, @attributes_rb={"name"=>"abcd", "created"=>Tue, 17 Jan 2012 15:41:48 +0000, "updated"=>Tue, 17 Jan 2012 15:41:48 +0000, "nickname"=>"abcd"}, @lobs={}, @new_record=false, @validation_context=nil, @attr_before_save=true, @attr_before_create=true, @attr_after_create=true, @attr_after_save=true>, @messages={:name=>["must be unique."]}>
+
+68 tests, 2296 assertions, 5 failures, 0 errors, 0 skips

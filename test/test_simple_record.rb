@@ -201,9 +201,9 @@ class TestSimpleRecord < TestBase
     # Test to ensure that if an item is not dirty, sdb doesn't get hit
     SimpleRecord.stats.clear
     mm2.save(:dirty=>true)
-    sleep(1) #needed because mmc.my_model below does not have :consistent_read set
     assert_equal 0, SimpleRecord.stats.saves
 
+    sleep(1) #needed because mmc.my_model below does not have :consistent_read set
     mmc = MyChildModel.new
     mmc.my_model = mm
     mmc.x = mm
@@ -290,11 +290,11 @@ class TestSimpleRecord < TestBase
     assert_equal mms.size, count
     assert_equal 2, SimpleRecord.stats.selects
 
-    sleep 1
-    count = MyModel.find(:count, :conditions=>["name=?", "Travis"],:consistent_read=>true)
+    sleep 2
+    count = MyModel.find(:count, :conditions=>["name=?", "Beavis"],:consistent_read=>true)
     assert count > 0
 
-    mms = MyModel.find(:all, :conditions=>["name=?", "Travis"],:consistent_read=>true)
+    mms = MyModel.find(:all, :conditions=>["name=?", "Beavis"],:consistent_read=>true)
     assert mms.size > 0
     assert_equal mms.size, count
 
