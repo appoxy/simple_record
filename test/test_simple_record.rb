@@ -202,7 +202,7 @@ class TestSimpleRecord < TestBase
     SimpleRecord.stats.clear
     mm2.save(:dirty=>true)
     sleep(1) #needed because mmc.my_model below does not have :consistent_read set
-    assert_equal SimpleRecord.stats.saves, 0
+    assert_equal 0, SimpleRecord.stats.saves
 
     mmc = MyChildModel.new
     mmc.my_model = mm
@@ -286,10 +286,11 @@ class TestSimpleRecord < TestBase
     assert count > 0
 
     mms = MyModel.find(:all,:consistent_read=>true) # select 2
-    assert mms.size > 0 # select 3
+    assert mms.size > 0 # still select 2
     assert_equal mms.size, count
-    assert_equal SimpleRecord.stats.selects, 3
+    assert_equal 2, SimpleRecord.stats.selects
 
+    sleep 1
     count = MyModel.find(:count, :conditions=>["name=?", "Travis"],:consistent_read=>true)
     assert count > 0
 
@@ -355,7 +356,7 @@ class TestSimpleRecord < TestBase
     mm.save
 
     # Should have 1 age attribute
-    sdb_atts = @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age')
+    sdb_atts = @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age',true) # consistent_read
     assert_equal sdb_atts[:attributes].size, 1
 
     mm.age = nil
@@ -365,7 +366,7 @@ class TestSimpleRecord < TestBase
     assert_equal mm.age, nil
 
     # Should have NO age attributes
-    assert_equal @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age')[:attributes].size, 0
+    assert_equal @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age',true)[:attributes].size, 0
   end
 
   def test_null
@@ -377,17 +378,17 @@ class TestSimpleRecord < TestBase
     mm2 = MyModel.new(:name=>"birthday is not null")
     mm2.birthday = Time.now
     mm2.save
-    mms = MyModel.find(:all, :conditions=>["age is null"],:consistent_read=>true)
+    mms = MyModel.find(:all, :conditions=>["birthday is null"],:consistent_read=>true)
     mms.each do |m|
       m.inspect
     end
-    assert_equal mms.size, 1
+    assert_equal 1, mms.size
     assert_equal mms[0].id, mm.id
-    mms = MyModel.find(:all, :conditions=>["age is not null"],:consistent_read=>true)
+    mms = MyModel.find(:all, :conditions=>["birthday is not null"],:consistent_read=>true)
     mms.each do |m|
       m.inspect
     end
-    assert_equal mms.size, 1
+    assert_equal 1, mms.size
     assert_equal mms[0].id, mm2.id
   end
 
@@ -527,6 +528,7 @@ def test_atts_using_strings_and_symbols
     assert_equal mm2.x.id, mm.id
     mm2.save
 
+    sleep 1 #sometimes consistent_read isn't good enough. Why? Dunno.
     mm3 = MyChildModel.find(mm2.id,:consistent_read=>true)
     assert_equal mm3.x.id, mm.id
   end
@@ -538,7 +540,7 @@ def test_atts_using_strings_and_symbols
     mm.date2 = DateTime.now
     mm.save
 
-    raw = @@sdb.get_attributes(MyModel.domain, mm.id)
+    raw = @@sdb.get_attributes(MyModel.domain, mm.id, nil, true)
     puts raw.inspect #observation interferes with this in some way
     assert_equal raw[:attributes]["updated"][0].size, "2010-01-06T16:04:23".size
     assert_equal raw[:attributes]["date1"][0].size, "2010-01-06T16:04:23".size

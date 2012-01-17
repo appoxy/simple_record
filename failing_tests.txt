@@ -1,4 +1,4 @@
-Finished tests in 552.351509s, 0.1231 tests/s, 4.1441 assertions/s.
+Finished tests in 552.825713s, 0.1230 tests/s, 4.1894 assertions/s.
 
   1) Failure:
 test_clobs(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:45]:
@@ -9,40 +9,12 @@ test_single_clob(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:87]
 puts is 1, should be 0.
 
   3) Failure:
-test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:291]:
-<2> expected but was
-<3>.
+test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:295]:
+Failed assertion, no message given.
 
-  4) Failure:
-test_dirty(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:205]:
-<1> expected but was
-<0>.
+  4) Error:
+test_storage_format(TestSimpleRecord):
+NoMethodError: undefined method `[]' for nil:NilClass
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:545:in `test_storage_format'
 
-  5) Error:
-test_explicit_class_name(TestSimpleRecord):
-SimpleRecord::RecordNotFound: Couldn't find MyModel with ID ["088e3df4-4109-11e1-a53f-080027c736d0"]
-    /home/ubuntu/src/simple_record/lib/simple_record/translations.rb:93:in `eval'
-    /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:300:in `find_with_metadata'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:967:in `find'
-    (eval):1:in `sdb_to_ruby'
-    /home/ubuntu/src/simple_record/lib/simple_record/translations.rb:93:in `eval'
-    /home/ubuntu/src/simple_record/lib/simple_record/translations.rb:93:in `sdb_to_ruby'
-    /home/ubuntu/src/simple_record/lib/simple_record/attributes.rb:397:in `get_attribute'
-    /home/ubuntu/src/simple_record/lib/simple_record/attributes.rb:186:in `block in belongs_to'
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:531:in `test_explicit_class_name'
-
-  6) Failure:
-test_nil_attr_deletion(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:359]:
-<0> expected but was
-<1>.
-
-  7) Failure:
-test_null(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:384]:
-<2> expected but was
-<1>.
-
-  8) Failure:
-test_first_validations(TestValidations) [/home/ubuntu/src/simple_record/test/test_validations.rb:51]:
-#<ActiveModel::Errors:0x9c562d8 @base=#<MyModel:0x9c293b4 @errors=#<ActiveModel::Errors:0x9c562d8 ...>, @dirty={"save_count"=>nil}, @attributes={"name"=>["abcd"], "save_count"=>"09223372036854775809", "id"=>"29d80436-4109-11e1-a53f-080027c736d0", "created"=>["2012-01-17T12:45:41"], "updated"=>["2012-01-17T12:45:41"], "nickname"=>["abcd"]}, @attributes_rb={"name"=>"abcd", "created"=>Tue, 17 Jan 2012 12:45:41 +0000, "updated"=>Tue, 17 Jan 2012 12:45:41 +0000, "nickname"=>"abcd"}, @lobs={}, @new_record=false, @validation_context=nil, @attr_before_save=true, @attr_before_create=true, @attr_after_create=true, @attr_after_save=true>, @messages={:name=>["must be unique."]}>
-
-68 tests, 2289 assertions, 7 failures, 1 errors, 0 skips
+68 tests, 2316 assertions, 3 failures, 1 errors, 0 skips
