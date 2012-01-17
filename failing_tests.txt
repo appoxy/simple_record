@@ -1,4 +1,4 @@
-Finished tests in 379.366627s, 0.1792 tests/s, 6.0416 assertions/s.
+Finished tests in 756.083893s, 0.0899 tests/s, 3.0512 assertions/s.
 
   1) Failure:
 test_clobs(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:45]:
@@ -9,31 +9,27 @@ test_single_clob(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:87]
 puts is 1, should be 0.
 
   3) Failure:
-test_id_sharding(TestShards) [/home/ubuntu/src/simple_record/test/test_shards.rb:76]:
-Failed assertion, no message given.
-
-  4) Failure:
 test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:291]:
 <2> expected but was
 <3>.
 
-  5) Failure:
-test_dirty(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:205]:
-<1> expected but was
-<0>.
-
-  6) Failure:
+  4) Failure:
 test_nil_attr_deletion(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:359]:
 <0> expected but was
 <1>.
 
-  7) Failure:
+  5) Failure:
 test_null(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:384]:
 <2> expected but was
 <1>.
 
-  8) Failure:
-test_save_get(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:56]:
-doh, age should be nil, but it's 32
+  6) Error:
+test_storage_format(TestSimpleRecord):
+NoMethodError: undefined method `[]' for nil:NilClass
+    /home/ubuntu/src/simple_record/test/test_simple_record.rb:543:in `test_storage_format'
 
-68 tests, 2292 assertions, 8 failures, 0 errors, 0 skips
+  7) Failure:
+test_first_validations(TestValidations) [/home/ubuntu/src/simple_record/test/test_validations.rb:51]:
+#<ActiveModel::Errors:0x8febc8c @base=#<MyModel:0x85e26dc @errors=#<ActiveModel::Errors:0x8febc8c ...>, @dirty={"save_count"=>nil}, @attributes={"name"=>["abcd"], "save_count"=>"09223372036854775809", "id"=>"a012cad4-4107-11e1-b727-080027c736d0", "created"=>["2012-01-17T12:34:40"], "updated"=>["2012-01-17T12:34:40"], "nickname"=>["abcd"]}, @attributes_rb={"name"=>"abcd", "created"=>Tue, 17 Jan 2012 12:34:40 +0000, "updated"=>Tue, 17 Jan 2012 12:34:40 +0000, "nickname"=>"abcd"}, @lobs={}, @new_record=false, @validation_context=nil, @attr_before_save=true, @attr_before_create=true, @attr_after_create=true, @attr_after_save=true>, @messages={:name=>["must be unique."]}>
+
+68 tests, 2307 assertions, 6 failures, 1 errors, 0 skips
