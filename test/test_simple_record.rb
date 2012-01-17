@@ -393,9 +393,9 @@ class TestSimpleRecord < TestBase
 
   # Test to add support for IN
   def test_in_clause
-#        mms = MyModel.find(:all)
+#        mms = MyModel.find(:all,:consistent_read=>true)
 
-#        mms2 = MyModel.find(:all, :conditions=>["id in ?"])
+#        mms2 = MyModel.find(:all, :conditions=>["id in ?"],:consistent_read=>true)
 
   end
 

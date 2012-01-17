@@ -21,7 +21,7 @@ class TestBase < Test::Unit::TestCase
     end
 
     def delete_all(clz)
-        obs = clz.find(:all)
+        obs = clz.find(:all,:consistent_read=>true)
         obs.each do |o|
             o.delete
         end
