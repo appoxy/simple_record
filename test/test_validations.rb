@@ -25,7 +25,7 @@ class TestValidations < TestBase
   def test_first_validations
     mm = MyModel.new()
     assert mm.invalid?, "mm is valid. invalid? returned #{mm.invalid?}"
-    assert_equal mm.errors.size, 1
+    assert_equal 1, mm.errors.size
     assert !mm.attr_before_create
     assert !mm.valid?
     assert mm.save == false, mm.errors.inspect
@@ -34,7 +34,7 @@ class TestValidations < TestBase
     assert !mm.attr_after_create
     mm.name = "abcd"
     assert mm.valid?, mm.errors.inspect
-    assert_equal mm.errors.size, 0
+    assert_equal 0, mm.errors.size
 
     mm.save_count = 2
     assert mm.invalid?
@@ -49,7 +49,7 @@ class TestValidations < TestBase
     assert !mm.attr_after_update
 
     assert mm.valid?, mm.errors.inspect
-    assert_equal mm.save_count, 1
+    assert_equal 1, mm.save_count
 
     mm.name = "abc123"
     assert mm.save
@@ -59,7 +59,7 @@ class TestValidations < TestBase
 
   def test_more_validations
 
-    name = 'more_validations_abcd'
+    name = 'abcd'
     
     model = ValidatedModel.new
     assert !model.valid?
