@@ -37,7 +37,7 @@ class TestGlobalOptions < TestBase
     def test_created_col_and_updated_col
         reset_connection(:created_col=>"created_at", :updated_col=>"updated_at")
 
-        p                                  = Person.create(:name=>"my prefix name")
+        p = Person.create(:name=>"my prefix name")
         sleep 1
 
         sdb_atts = @@sdb.select("select * from simplerecord_tests_people")
@@ -54,7 +54,7 @@ class TestGlobalOptions < TestBase
         assert_nil first["created"]
         assert_not_nil first["created_at"]
 
-
+        # put this back to normal so it doesn't interfere with other tests
+        reset_connection(:created_col=>"created", :updated_col=>"updated")
     end
-
 end

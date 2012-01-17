@@ -22,11 +22,6 @@ class TestValidations < TestBase
     ValidatedModel.create_domain
   end
 
-  def test_zzz9 # run last
-    MyModel.delete_domain
-    ValidatedModel.delete_domain
-  end
-  
   def test_first_validations
     mm = MyModel.new()
     assert mm.invalid?, "mm is valid. invalid? returned #{mm.invalid?}"
@@ -60,18 +55,12 @@ class TestValidations < TestBase
     assert mm.save
 
     assert mm.attr_after_update
-
   end
-
 
   def test_more_validations
 
-    name = 'abcd'
+    name = 'more_validations_abcd'
     
-    result = ValidatedModel.delete_all(:conditions=>['name=?', name])
-    puts "deleted=#{result.inspect}"
-    sleep 1
-
     model = ValidatedModel.new
     assert !model.valid?
     assert !model.save
@@ -85,5 +74,10 @@ class TestValidations < TestBase
     assert !model.valid?
     assert !model.save
     assert model.errors.size > 0
+  end
+
+  def test_zzz9 # run last
+    MyModel.delete_domain
+    ValidatedModel.delete_domain
   end
 end

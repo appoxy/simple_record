@@ -1,61 +1,44 @@
-Finished tests in 534.317159s, 0.1273 tests/s, 4.2465 assertions/s.
+Finished tests in 542.634586s, 0.1253 tests/s, 4.2128 assertions/s.
 
   1) Failure:
-test_json(TestJson) [/home/ubuntu/src/simple_record/test/test_json.rb:51]:
-Failed assertion, no message given.
-
-  2) Failure:
 test_clobs(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:45]:
 puts is 1, should be 3.
 
-  3) Failure:
+  2) Failure:
 test_single_clob(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:87]:
 puts is 1, should be 0.
 
-  4) Failure:
+  3) Failure:
 test_big_result(TestResultsArray) [/home/ubuntu/src/simple_record/test/test_results_array.rb:31]:
 rs.size should be 110, is 109
 
-  5) Failure:
+  4) Failure:
 test_count(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:291]:
 <2> expected but was
 <3>.
 
-  6) Failure:
+  5) Failure:
 test_dirty(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:205]:
 <1> expected but was
 <0>.
 
-  7) Error:
-test_explicit_class_name(TestSimpleRecord):
-SimpleRecord::RecordNotFound: Couldn't find MyModel with ID ["6157ffde-40e5-11e1-ba09-080027c736d0"]
-    /home/ubuntu/src/simple_record/lib/simple_record/translations.rb:93:in `eval'
-    /home/ubuntu/src/simple_record/lib/simple_record/active_sdb.rb:300:in `find_with_metadata'
-    /home/ubuntu/src/simple_record/lib/simple_record.rb:967:in `find'
-    (eval):1:in `sdb_to_ruby'
-    /home/ubuntu/src/simple_record/lib/simple_record/translations.rb:93:in `eval'
-    /home/ubuntu/src/simple_record/lib/simple_record/translations.rb:93:in `sdb_to_ruby'
-    /home/ubuntu/src/simple_record/lib/simple_record/attributes.rb:397:in `get_attribute'
-    /home/ubuntu/src/simple_record/lib/simple_record/attributes.rb:186:in `block in belongs_to'
-    /home/ubuntu/src/simple_record/test/test_simple_record.rb:531:in `test_explicit_class_name'
-
-  8) Failure:
+  6) Failure:
 test_nil_attr_deletion(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:359]:
 <0> expected but was
 <1>.
 
-  9) Failure:
+  7) Failure:
 test_null(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:384]:
 <2> expected but was
 <1>.
 
- 10) Failure:
-test_save_get(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:33]:
-Failed assertion, no message given.
+  8) Failure:
+test_save_get(TestSimpleRecord) [/home/ubuntu/src/simple_record/test/test_simple_record.rb:56]:
+doh, age should be nil, but it's 32
 
- 11) Error:
+  9) Error:
 test_storage_format(TestSimpleRecord):
 NoMethodError: undefined method `[]' for nil:NilClass
     /home/ubuntu/src/simple_record/test/test_simple_record.rb:543:in `test_storage_format'
 
-68 tests, 2269 assertions, 9 failures, 2 errors, 0 skips
+68 tests, 2286 assertions, 8 failures, 1 errors, 0 skips
