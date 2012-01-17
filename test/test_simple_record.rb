@@ -51,7 +51,7 @@ class TestSimpleRecord < TestBase
     # test nilification
     mm2.age = nil
     mm2.save
-    sleep(1) # not sure why this might work...
+    sleep(2) # not sure why this might work... not respecting consistent_read?
     mm2 = MyModel.find(id,:consistent_read=>true)
     assert mm2.age.nil?, "doh, age should be nil, but it's " + mm2.age.inspect
   end
@@ -365,6 +365,7 @@ class TestSimpleRecord < TestBase
     # Should be NIL
     assert_equal mm.age, nil
 
+    sleep 1 #doesn't seem to be respecting consistent_read below
     # Should have NO age attributes
     assert_equal @@sdb.get_attributes('simplerecord_tests_my_models', mm.id, 'age',true)[:attributes].size, 0
   end
