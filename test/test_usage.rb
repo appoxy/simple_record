@@ -30,9 +30,9 @@ class TestUsage < TestBase
       mm = MyModel.create(:name=>"Gravis", :age=>i, :cool=>true)
     end
 
-    mms = MyModel.find(:all, :conditions=>["name=?", "Gravis"])
-    mms = MyModel.find(:all, :conditions=>["name=?", "Gravis"], :order=>"name desc")
-    mms = MyModel.find(:all, :conditions=>["name=? and age>?", "Gravis", 3], :order=>"name desc")
+    mms = MyModel.find(:all, :conditions=>["name=?", "Gravis"],:consistent_read=>true)
+    mms = MyModel.find(:all, :conditions=>["name=?", "Gravis"], :order=>"name desc",:consistent_read=>true)
+    mms = MyModel.find(:all, :conditions=>["name=? and age>?", "Gravis", 3], :order=>"name desc",:consistent_read=>true)
                 
     SimpleRecord.close_usage_log(:select)
   end
