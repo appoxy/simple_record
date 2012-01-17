@@ -29,7 +29,7 @@ class TestJson < TestBase
         puts 'jsoned=' + jsoned
         unjsoned = JSON.parse jsoned
         puts 'unjsoned=' + unjsoned.inspect
-        assert unjsoned.name == "whatever"
+        assert_equal unjsoned.name, "whatever"
 
         mm.save
 
@@ -45,12 +45,12 @@ class TestJson < TestBase
         puts 'jsoned=' + jsoned
         unjsoned = JSON.parse jsoned
         puts 'unjsoned=' + unjsoned.inspect
-        assert unjsoned.size == models.size
-        assert unjsoned[0].name == mm.name
-        assert unjsoned[0].age == mm.age
+        assert_equal unjsoned.size, models.size
+        assert_equal unjsoned[0].name, mm.name
+        assert_equal unjsoned[0].age, mm.age
         assert unjsoned[0].created.present?
         assert unjsoned[0].id.present?
-        assert unjsoned[0].id == mm.id, "unjsoned.id=#{unjsoned[0].id}"
+        assert_equal unjsoned[0].id, mm.id
 
         puts 'array good'
 
@@ -72,7 +72,7 @@ class TestJson < TestBase
         puts 'jsoned=' + jsoned
         unjsoned = JSON.parse jsoned
         puts 'unjsoned=' + unjsoned.inspect
-        assert mcm.my_model.id == unjsoned.my_model.id
+        assert_equal mcm.my_model.id, unjsoned.my_model.id
 
     end
 
