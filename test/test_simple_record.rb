@@ -52,7 +52,7 @@ class TestSimpleRecord < TestBase
     mm2.age = nil
     mm2.save
     sleep(2) # not sure why this might work... not respecting consistent_read?
-    mm2 = MyModel.find(id,:consistent_read=>true)
+    mm3 = MyModel.find(id,:consistent_read=>true)
     assert mm2.age.nil?, "doh, age should be nil, but it's " + mm2.age.inspect
   end
 
