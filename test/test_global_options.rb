@@ -2,8 +2,8 @@ require 'test/unit'
 require_relative "../lib/simple_record"
 require "yaml"
 require 'aws'
-require_relative 'my_model'
-require_relative 'my_child_model'
+require_relative 'models/my_model'
+require_relative 'models/my_child_model'
 require 'active_support/core_ext'
 require_relative 'test_base'
 
@@ -27,23 +27,20 @@ class TestGlobalOptions < TestBase
         sleep 1
 
         sdb_atts = @@sdb.select("select * from someprefix_people")
-        puts 'sdb_atts=' + sdb_atts.inspect
 
         @@sdb.delete_domain("someprefix_people") # doing it here so it's done before assertions might fail
 
-        assert sdb_atts[:items].size == 1, "hmmm, not size 1: " + sdb_atts[:items].size.to_s
+        assert_equal sdb_atts[:items].size, 1
 
     end
 
     def test_created_col_and_updated_col
         reset_connection(:created_col=>"created_at", :updated_col=>"updated_at")
 
-        p                                  = Person.create(:name=>"my prefix name")
+        p = Person.create(:name=>"my prefix name")
         sleep 1
 
         sdb_atts = @@sdb.select("select * from simplerecord_tests_people")
-        puts 'sdb_atts=' + sdb_atts.inspect
-
 
         @@sdb.delete_domain("simplerecord_tests_people")
 
@@ -57,7 +54,7 @@ class TestGlobalOptions < TestBase
         assert_nil first["created"]
         assert_not_nil first["created_at"]
 
-
+        # put this back to normal so it doesn't interfere with other tests
+        reset_connection(:created_col=>"created", :updated_col=>"updated")
     end
-
 end

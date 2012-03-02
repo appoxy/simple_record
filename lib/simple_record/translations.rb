@@ -119,6 +119,8 @@ module SimpleRecord
         value = to_date(value)
       elsif att_meta.type == :boolean
         value = to_bool(value)
+      elsif att_meta.type == :float
+        value = Float(value)
       end
       value
     end

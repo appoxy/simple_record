@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
+require File.expand_path(File.dirname(__FILE__) + "/../../lib/simple_record")
 require_relative 'my_base_model'
 require_relative 'my_sharded_model'
 require 'active_model'
@@ -35,56 +35,43 @@ class MyModel < MyBaseModel
   after_update :after_update
 
   def set_nickname
-    puts 'before_create set nickname'
     @attr_before_create = true
     self.nickname = name if self.nickname.blank?
   end
 
   def before_save
-    puts 'before_save'
     @attr_before_save = true
   end
 
   def after_create
-    puts 'after_create'
     @attr_after_create = true
   end
   
   def after_save
-    puts "after_save"
     @attr_after_save = true
     bump_save_count
   end
     def after_update
-    puts "after_update"
     @attr_after_update = true
   end
 
   def bump_save_count
-    puts 'after_save bump save_count=' + save_count.to_s
     if save_count.nil?
       self.save_count = 1
     else
       self.save_count += 1
     end
-#         puts 'save_count=' + self.save_count.to_s
   end
 
   def validate
-    puts 'MyModel.validate'
     errors.add("name", "can't be empty.") if name.blank?
-#    errors.add("nickname", "can't be empty.") if nickname.blank?
   end
 
   def validate_on_create
-    puts 'MyModel.validate_on_create'
     errors.add("save_count", "should be zero.") if !save_count.blank? && save_count > 0
   end
 
   def validate_on_update
-    puts 'MyModel.validate_on_update'
-#        puts 'save_count = ' + save_count.to_s
-#    errors.add("save_count", "should not be zero.") if save_count.blank? || save_count == 0
   end
 
   def atts

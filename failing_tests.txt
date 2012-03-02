@@ -1,0 +1,11 @@
+Finished tests in 565.677035s, 0.1202 tests/s, 4.1030 assertions/s.
+
+  1) Failure:
+test_clobs(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:45]:
+puts is 1, should be 3.
+
+  2) Failure:
+test_single_clob(TestLobs) [/home/ubuntu/src/simple_record/test/test_lobs.rb:87]:
+puts is 1, should be 0.
+
+68 tests, 2321 assertions, 2 failures, 0 errors, 0 skips

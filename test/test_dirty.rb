@@ -2,8 +2,8 @@ require 'test/unit'
 require File.expand_path(File.dirname(__FILE__) + "/../lib/simple_record")
 require "yaml"
 require 'aws'
-require 'my_model'
-require 'my_child_model'
+require_relative 'models/my_model'
+require_relative 'models/my_child_model'
 require 'active_support'
 require 'test_base'
 
@@ -37,7 +37,6 @@ class DirtyTest < TestBase
         assert !@person.name_changed?
 
         @person.age = 70
-        puts 'age_change2=' + @person.age_change.inspect
         assert !@person.changed?
         assert !@person.age_changed?
     end
@@ -56,7 +55,6 @@ class DirtyTest < TestBase
         assert @person.age_changed?
 
         @person.age = 70
-        puts 'age_change2=' + @person.age_change.inspect
         assert !@person.changed?
         assert !@person.age_changed?
     end
@@ -70,7 +68,6 @@ class DirtyTest < TestBase
         sleep 2
 
         @person.i_as_s = 5
-        puts 'i_as_s_changed=' + @person.i_as_s_change.inspect
         # Maybe this should fail? What do we expect this behavior to be?
 #        assert !@person.changed?
 #        assert !@person.i_as_s_changed?

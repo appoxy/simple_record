@@ -98,6 +98,9 @@ module SimpleRecord
     def close_usage_log(type)
       return unless @usage_logging_options[type]
       @usage_logging_options[type][:file].close if @usage_logging_options[type][:file]
+      # unless we remove it, it will keep trying to log these events
+      # and will fail because the file is closed.
+      @usage_logging_options.delete(type)
     end
 
     def usage_logging_options

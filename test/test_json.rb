@@ -4,9 +4,9 @@ require File.join(File.dirname(__FILE__), "./test_helpers")
 require File.join(File.dirname(__FILE__), "./test_base")
 require "yaml"
 require 'aws'
-require_relative 'my_model'
-require_relative 'my_child_model'
-require_relative 'model_with_enc'
+require_relative 'models/my_model'
+require_relative 'models/my_child_model'
+require_relative 'models/model_with_enc'
 require 'active_support/core_ext'
 
 # Tests for SimpleRecord
@@ -14,6 +14,9 @@ require 'active_support/core_ext'
 
 class TestJson < TestBase
 
+    def test_prep
+      MyModel.delete_domain
+    end
 
     def test_json
         mm = MyModel.new
@@ -26,7 +29,7 @@ class TestJson < TestBase
         puts 'jsoned=' + jsoned
         unjsoned = JSON.parse jsoned
         puts 'unjsoned=' + unjsoned.inspect
-        assert unjsoned.name == "whatever"
+        assert_equal unjsoned.name, "whatever"
 
         mm.save
 
@@ -42,12 +45,12 @@ class TestJson < TestBase
         puts 'jsoned=' + jsoned
         unjsoned = JSON.parse jsoned
         puts 'unjsoned=' + unjsoned.inspect
-        assert unjsoned.size == models.size
-        assert unjsoned[0].name == mm.name
-        assert unjsoned[0].age == mm.age
+        assert_equal unjsoned.size, models.size
+        assert_equal unjsoned[0].name, mm.name
+        assert_equal unjsoned[0].age, mm.age
         assert unjsoned[0].created.present?
         assert unjsoned[0].id.present?
-        assert unjsoned[0].id == mm.id, "unjsoned.id=#{unjsoned[0].id}"
+        assert_equal unjsoned[0].id, mm.id
 
         puts 'array good'
 
@@ -69,8 +72,12 @@ class TestJson < TestBase
         puts 'jsoned=' + jsoned
         unjsoned = JSON.parse jsoned
         puts 'unjsoned=' + unjsoned.inspect
-        assert mcm.my_model.id == unjsoned.my_model.id
+        assert_equal mcm.my_model.id, unjsoned.my_model.id
 
+    end
+
+    def test_cleanup
+      MyModel.delete_domain
     end
 
 end

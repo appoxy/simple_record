@@ -4,8 +4,8 @@ require File.join(File.dirname(__FILE__), "/../lib/simple_record")
 require File.join(File.dirname(__FILE__), "./test_helpers")
 require "yaml"
 require 'aws'
-require_relative 'my_model'
-require_relative 'my_child_model'
+require_relative 'models/my_model'
+require_relative 'models/my_child_model'
 #require 'active_support'
 
 class TestBase < Test::Unit::TestCase
@@ -21,20 +21,14 @@ class TestBase < Test::Unit::TestCase
     end
 
     def delete_all(clz)
-        puts 'delete_all ' + clz.name
-        obs = clz.find(:all)
+        obs = clz.find(:all,:consistent_read=>true)
         obs.each do |o|
             o.delete
         end
-#        @@sdb.select("select * from #{domain}") do |o|
-#            o.delete
-#        end
     end
 
     def reset_connection(options={})
-        puts 'reset_connection'
         @config = YAML::load(File.open(File.expand_path("~/.test_configs/simple_record.yml")))
-        #puts 'inspecting config = ' + @config.inspect
 
         SimpleRecord.enable_logging
 
@@ -54,14 +48,11 @@ class TestBase < Test::Unit::TestCase
     def create_my_models(count)
         batch = []
         count.times do |i|
-            mm = MyModel.new(:name=>"model_" + i.to_s)
+            mm = MyModel.new(:name=>"model_#{i}")
             mm.age = i
             batch << mm
         end
         MyModel.batch_save batch
-
-        sleep 2
-
     end
 
 
