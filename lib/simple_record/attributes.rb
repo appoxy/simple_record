@@ -235,8 +235,10 @@ module SimpleRecord
         #I couldn't pass the id when calling find, since the original find doesn't work that way, so I was left with this.
       end
 
-      def has_one(*args)
-
+      def has_many(association_id, options = {})
+        send(:define_method, association_id) do
+          return eval(%{Activerecordtosdb_subrecord_array.new('#{options[:class_name] ? options[:class_name] : association_id}', '#{options[:class_name] ? association_id.to_s : self.class.name}', id)}).first
+        end
       end
 
 
