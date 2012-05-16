@@ -219,20 +219,13 @@ module SimpleRecord
         define_dirty_methods(arg_s)
       end
 
-      def has_many(*args)
-        args.each do |arg|
-          #okay, this creates an instance method with the pluralized name of the symbol passed to belongs_to
-          send(:define_method, arg) do
-            #when called, the method creates a new, very temporary instance of the Activerecordtosdb_subrecord class
-            #It is passed the three initializers it needs:
-            #note the first parameter is just a string by time new gets it, like "user"
-            #the second and third parameters are still a variable when new gets it, like user_id
-            return eval(%{Activerecordtosdb_subrecord_array.new('#{arg}', self.class.name ,id)})
-          end
+      # allows foreign key through class_name
+      # i.e. options[:class_name] = 'User'
+      def has_many(association_id, options = {})
+
+        send(:define_method, association_id) do
+          return eval(%{Activerecordtosdb_subrecord_array.new('#{options[:class_name] ? options[:class_name] : association_id}', '#{options[:class_name] ? association_id.to_s : self.class.name}', id)})
         end
-        #Disclaimer: this whole funciton just seems crazy to me, and a bit inefficient. But it was the clearest way I could think to do it code wise.
-        #It's bad programming form (imo) to have a class method require something that isn't passed to it through it's variables.
-        #I couldn't pass the id when calling find, since the original find doesn't work that way, so I was left with this.
       end
 
       def has_many(association_id, options = {})
