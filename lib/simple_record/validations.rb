@@ -71,7 +71,9 @@ module SimpleRecord
         val = self.send(k)
         puts 'val=' + val.inspect
         if val
-          ret = self.class.find(:first, :conditions=>["#{k}=?", val])
+          conditions = new_record? ? ["#{k}=?", val] : ["#{k}=? AND id != ?", val, self.id]
+
+          ret = self.class.find(:first, :conditions=>conditions)
           puts 'ret=' + ret.inspect
           if ret
             errors.add(k, "must be unique.")
