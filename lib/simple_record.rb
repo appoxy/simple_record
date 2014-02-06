@@ -505,7 +505,7 @@ module SimpleRecord
     def create_or_update(options) #:nodoc:
                                   #      puts 'create_or_update'
       ret = true
-      _run_save_callbacks do
+      run_callbacks :save do
         result = new_record? ? create(options) : update(options)
 #        puts 'save_callbacks result=' + result.inspect
         ret = result
@@ -516,7 +516,7 @@ module SimpleRecord
     def create(options) #:nodoc:
       puts '3 create'
       ret = true
-      _run_create_callbacks do
+      run_callbacks :create do
         x = do_actual_save(options)
 #        puts 'create old_save result=' + x.to_s
         ret = x
@@ -528,7 +528,7 @@ module SimpleRecord
     def update(options) #:nodoc:
       puts '3 update'
       ret = true
-      _run_update_callbacks do
+      run_callbacks :update do
         x = do_actual_save(options)
 #        puts 'update old_save result=' + x.to_s
         ret = x
@@ -847,7 +847,7 @@ module SimpleRecord
 
     def destroy
       if @@active_model
-        _run_destroy_callbacks do
+        run_callbacks :destroy do
           delete
         end
       else

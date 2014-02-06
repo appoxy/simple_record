@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "simple_record"
-  s.version = "2.2.0"
+  s.version = "4.0.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder", "Chad Arimura", "RightScale"]
@@ -13,55 +13,34 @@ Gem::Specification.new do |s|
   s.description = "ActiveRecord like interface for Amazon SimpleDB. Store, query, shard, etc. By http://www.appoxy.com"
   s.email = "travis@appoxy.com"
   s.extra_rdoc_files = [
-    "LICENSE.markdown",
-    "README.markdown"
+      "LICENSE.markdown",
+      "README.markdown"
   ]
   s.files = [
-    "lib/simple_record.rb",
-    "lib/simple_record/active_sdb.rb",
-    "lib/simple_record/attributes.rb",
-    "lib/simple_record/callbacks.rb",
-    "lib/simple_record/encryptor.rb",
-    "lib/simple_record/errors.rb",
-    "lib/simple_record/json.rb",
-    "lib/simple_record/logging.rb",
-    "lib/simple_record/password.rb",
-    "lib/simple_record/results_array.rb",
-    "lib/simple_record/sharding.rb",
-    "lib/simple_record/stats.rb",
-    "lib/simple_record/translations.rb",
-    "lib/simple_record/validations.rb"
+      "lib/simple_record.rb",
+      "lib/simple_record/active_sdb.rb",
+      "lib/simple_record/attributes.rb",
+      "lib/simple_record/callbacks.rb",
+      "lib/simple_record/encryptor.rb",
+      "lib/simple_record/errors.rb",
+      "lib/simple_record/json.rb",
+      "lib/simple_record/logging.rb",
+      "lib/simple_record/password.rb",
+      "lib/simple_record/results_array.rb",
+      "lib/simple_record/sharding.rb",
+      "lib/simple_record/stats.rb",
+      "lib/simple_record/translations.rb",
+      "lib/simple_record/validations.rb"
   ]
   s.homepage = "http://github.com/appoxy/simple_record/"
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.11"
   s.summary = "ActiveRecord like interface for Amazon SimpleDB. By http://www.appoxy.com"
 
-  if s.respond_to? :specification_version then
-    s.specification_version = 3
+  s.add_runtime_dependency(%q<activesupport>, [">= 0"])
+  s.add_runtime_dependency(%q<i18n>, [">= 0"])
+  s.add_development_dependency(%q<jeweler>, [">= 0"])
+  s.add_runtime_dependency(%q<aws>, [">= 0"])
+  s.add_runtime_dependency(%q<concur>, [">= 0"])
 
-    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<simple_record>, [">= 0"])
-      s.add_runtime_dependency(%q<active_support>, [">= 0"])
-      s.add_runtime_dependency(%q<i18n>, [">= 0"])
-      s.add_development_dependency(%q<jeweler>, [">= 0"])
-      s.add_runtime_dependency(%q<aws>, [">= 0"])
-      s.add_runtime_dependency(%q<concur>, [">= 0"])
-    else
-      s.add_dependency(%q<simple_record>, [">= 0"])
-      s.add_dependency(%q<active_support>, [">= 0"])
-      s.add_dependency(%q<i18n>, [">= 0"])
-      s.add_dependency(%q<jeweler>, [">= 0"])
-      s.add_dependency(%q<aws>, [">= 0"])
-      s.add_dependency(%q<concur>, [">= 0"])
-    end
-  else
-    s.add_dependency(%q<simple_record>, [">= 0"])
-    s.add_dependency(%q<active_support>, [">= 0"])
-    s.add_dependency(%q<i18n>, [">= 0"])
-    s.add_dependency(%q<jeweler>, [">= 0"])
-    s.add_dependency(%q<aws>, [">= 0"])
-    s.add_dependency(%q<concur>, [">= 0"])
-  end
 end
-
