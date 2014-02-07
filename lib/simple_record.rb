@@ -27,7 +27,12 @@
 require 'aws'
 require 'base64'
 require 'active_support'
-require 'active_support/core_ext'
+if ActiveSupport::VERSION::MAJOR >= 3
+  # had to do this due to some bug: https://github.com/rails/rails/issues/12876
+  # fix: https://github.com/railsmachine/shadow_puppet/pull/19/files
+  require 'active_support/deprecation'
+  require 'active_support/core_ext'
+end
 begin
   # comment out line below to test rails2 validations
   require 'active_model'

@@ -20,13 +20,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-
-begin
-  require 'uuidtools'
-rescue LoadError => e
-  STDERR.puts("SimpleRecord requires the uuidtools gem.  Run \'gem install uuidtools\' and try again.")
-  exit
-end
+require 'uuidtools'
 
 module SimpleRecord
 
@@ -355,7 +349,8 @@ module SimpleRecord
         end
 
         def generate_id # :nodoc:
-          UUIDTools::UUID.timestamp_create().to_s
+          # mac address creation sometimes throws errors if mac address isn't available
+          UUIDTools::UUID.random_create().to_s
         end
 
         protected

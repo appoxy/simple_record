@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
   s.rubygems_version = "1.8.11"
   s.summary = "ActiveRecord like interface for Amazon SimpleDB. By http://www.appoxy.com"
 
+  s.add_runtime_dependency(%q<uuidtools>, [">= 0"])
   s.add_runtime_dependency(%q<activesupport>, [">= 0"])
   s.add_runtime_dependency(%q<i18n>, [">= 0"])
   s.add_development_dependency(%q<jeweler>, [">= 0"])
