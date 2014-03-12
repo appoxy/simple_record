@@ -187,7 +187,6 @@ module SimpleRecord
 
 
     if defined?(ActiveModel)
-      puts "Using ActiveModel validations."
       @@active_model = true
       extend ActiveModel::Naming
       include ActiveModel::Conversion
@@ -199,7 +198,6 @@ module SimpleRecord
       alias_method :am_valid?, :valid?
     else
       @@active_model = false
-      puts "NOT using ActiveModel validations."
       attr_accessor :errors
       include SimpleRecord::Callbacks
     end
